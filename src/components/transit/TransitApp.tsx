@@ -206,57 +206,110 @@ function Header({ dark, setDark }: { dark: boolean; setDark: (b: boolean) => voi
 /* ---------------- Search ---------------- */
 
 function SearchScreen({
-  query, setQuery, listening, setListening, onSearch,
+  query, setQuery, listening, setListening,
+  from, setFrom, to, setTo, date, setDate,
+  slot, setSlot, travelClass, setTravelClass,
+  onSwap, onSearch,
 }: {
   query: string; setQuery: (s: string) => void;
-  listening: boolean; setListening: (b: boolean) => void; onSearch: () => void;
+  listening: boolean; setListening: (b: boolean) => void;
+  from: Station; setFrom: (s: Station) => void;
+  to: Station; setTo: (s: Station) => void;
+  date: Date; setDate: (d: Date) => void;
+  slot: string; setSlot: (s: string) => void;
+  travelClass: string; setTravelClass: (s: string) => void;
+  onSwap: () => void; onSearch: () => void;
 }) {
+  const slotIcon = (id: string) =>
+    id === "early" ? <Moon className="h-3.5 w-3.5" /> :
+    id === "morning" ? <Sunrise className="h-3.5 w-3.5" /> :
+    id === "afternoon" ? <Sun className="h-3.5 w-3.5" /> :
+    <Sunset className="h-3.5 w-3.5" />;
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-      className="mx-auto max-w-3xl pt-6"
+      className="mx-auto max-w-5xl pt-4"
     >
       <div className="mb-6 flex justify-center">
         <Badge variant="outline" className="rounded-full border-border/70 bg-background/60 px-3 py-1 text-[11px] font-medium backdrop-blur">
           <Sparkles className="mr-1.5 h-3 w-3 text-[color:var(--accent-orange)]" />
-          New — AI powered booking
+          New — AI powered booking across 8,000+ Indian stations
         </Badge>
       </div>
 
       <h1 className="text-center text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
-        Book your journey with a <span className="text-brand-gradient">single sentence.</span>
+        Every train. Every city. <span className="text-brand-gradient">One search.</span>
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-center text-[15px] text-muted-foreground">
-        No forms. No dropdowns. Just tell Transit India where you're going, and we'll find the fastest, cheapest and smartest way there.
+        From Kanyakumari to Kashmir — pick your stations, date and time, or just ask Yatra in plain English.
       </p>
 
+      {/* Structured booking panel */}
+      <Card className="glass-card mx-auto mt-8 rounded-3xl p-4 md:p-5">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_1fr_auto_auto_auto]">
+          <StationPicker label="From" value={from} onChange={setFrom} />
+          <div className="hidden items-center justify-center md:flex">
+            <button
+              onClick={onSwap}
+              type="button"
+              aria-label="Swap"
+              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:border-primary/50 hover:text-primary"
+            >
+              <ArrowRightLeft className="h-4 w-4" />
+            </button>
+          </div>
+          <StationPicker label="To" value={to} onChange={setTo} />
+          <DatePicker date={date} setDate={setDate} />
+          <TimePicker slot={slot} setSlot={setSlot} slotIcon={slotIcon} />
+          <ClassPicker value={travelClass} onChange={setTravelClass} />
+        </div>
+
+        <div className="mt-3 flex flex-col-reverse gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+              <MapPin className="h-3 w-3" /> {from.city} → {to.city}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+              {slotIcon(slot)} {timeSlots.find((t) => t.id === slot)?.range}
+            </span>
+            <button onClick={onSwap} className="md:hidden underline">Swap stations</button>
+          </div>
+          <Button onClick={onSearch} className="h-11 rounded-full px-6 text-white brand-gradient">
+            Search trains <ArrowRight className="ml-1.5 h-4 w-4" />
+          </Button>
+        </div>
+      </Card>
+
+      {/* AI conversational bar */}
       <form
         onSubmit={(e) => { e.preventDefault(); onSearch(); }}
-        className="glass-card mx-auto mt-10 flex items-center gap-2 rounded-full p-2 pl-5"
+        className="mx-auto mt-5 flex items-center gap-2 rounded-full border border-border/70 bg-background/70 p-2 pl-5 backdrop-blur"
       >
-        <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <Sparkles className="h-4 w-4 shrink-0 text-[color:var(--accent-orange)]" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. Cheapest AC train from Delhi to Jaipur tomorrow morning"
-          className="h-12 flex-1 border-0 bg-transparent text-[15px] shadow-none focus-visible:ring-0"
+          placeholder="Or just ask… e.g. Cheapest AC train from Delhi to Jaipur tomorrow morning"
+          className="h-10 flex-1 border-0 bg-transparent text-[14px] shadow-none focus-visible:ring-0"
         />
         <button
           type="button"
           onClick={() => { setListening(!listening); setTimeout(() => setListening(false), 1500); }}
-          className={`grid h-11 w-11 place-items-center rounded-full transition ${
-            listening ? "bg-[color:var(--accent-orange)]/20 text-[color:var(--accent-orange)] pulse-ring" : "bg-muted text-muted-foreground hover:bg-accent"
-          }`}
+          className={cn(
+            "grid h-9 w-9 place-items-center rounded-full transition",
+            listening ? "bg-[color:var(--accent-orange)]/20 text-[color:var(--accent-orange)] pulse-ring" : "bg-muted text-muted-foreground hover:bg-accent",
+          )}
           aria-label="Voice search"
         >
           <Mic className="h-4 w-4" />
         </button>
-        <Button type="submit" className="h-11 rounded-full px-5 text-white brand-gradient">
-          Search <ArrowRight className="ml-1.5 h-4 w-4" />
+        <Button type="submit" size="sm" className="h-9 rounded-full px-4 text-white brand-gradient">
+          Ask Yatra
         </Button>
       </form>
 
-      <div className="mx-auto mt-5 flex max-w-2xl flex-wrap justify-center gap-2">
+      <div className="mx-auto mt-4 flex max-w-3xl flex-wrap justify-center gap-2">
         {suggestions.map((s) => (
           <button
             key={s}
@@ -268,7 +321,7 @@ function SearchScreen({
         ))}
       </div>
 
-      <div className="mt-16 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-3">
         <FeatureCard icon={<Zap className="h-5 w-5" />} title="Tatkal Ready Queue" text="Prepare in advance. We auto-submit the moment the counter opens." />
         <FeatureCard icon={<Shield className="h-5 w-5" />} title="Confirmation probability" text="See real chance of getting a berth before you book — not after." />
         <FeatureCard icon={<RouteIcon className="h-5 w-5" />} title="Smart alternatives" text="Sold out? We stitch trains, buses and metros into the fastest path." />
@@ -276,6 +329,199 @@ function SearchScreen({
     </motion.section>
   );
 }
+
+function StationPicker({ label, value, onChange }: { label: string; value: Station; onChange: (s: Station) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return stations.slice(0, 30);
+    return stations.filter((s) =>
+      s.name.toLowerCase().includes(term) ||
+      s.code.toLowerCase().includes(term) ||
+      s.city.toLowerCase().includes(term) ||
+      s.state.toLowerCase().includes(term),
+    ).slice(0, 40);
+  }, [q]);
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) setTimeout(() => inputRef.current?.focus(), 30); }}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
+        >
+          <MapPin className="h-4 w-4 text-primary" />
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+            <div className="truncate text-sm font-semibold">{value.city} <span className="text-muted-foreground">({value.code})</span></div>
+            <div className="truncate text-[11px] text-muted-foreground">{value.name} · {value.state}</div>
+          </div>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[320px] p-0 pointer-events-auto">
+        <div className="border-b border-border p-2">
+          <Input
+            ref={inputRef}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search city, station or code…"
+            className="h-9 rounded-lg"
+          />
+        </div>
+        <div className="max-h-72 overflow-y-auto py-1">
+          {filtered.length === 0 && (
+            <div className="px-3 py-6 text-center text-xs text-muted-foreground">No station matches “{q}”.</div>
+          )}
+          {filtered.map((s) => (
+            <button
+              key={s.code}
+              onClick={() => { onChange(s); setOpen(false); setQ(""); }}
+              className={cn(
+                "flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition hover:bg-accent",
+                s.code === value.code && "bg-[color:var(--brand-soft)]",
+              )}
+            >
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-muted text-[10px] font-semibold text-muted-foreground">
+                {s.code}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{s.name}</div>
+                <div className="truncate text-[11px] text-muted-foreground">{s.city} · {s.state}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function DatePicker({ date, setDate }: { date: Date; setDate: (d: Date) => void }) {
+  const [open, setOpen] = useState(false);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const label = date.toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short" });
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
+        >
+          <CalendarDays className="h-4 w-4 text-primary" />
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Date</div>
+            <div className="text-sm font-semibold">{label}</div>
+            <div className="text-[11px] text-muted-foreground">{date.getFullYear()}</div>
+          </div>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-0 pointer-events-auto">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(d) => { if (d) { setDate(d); setOpen(false); } }}
+          disabled={(d) => d < today}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+        <div className="flex gap-1 border-t border-border p-2">
+          {[0, 1, 2].map((offset) => {
+            const d = new Date(); d.setDate(d.getDate() + offset); d.setHours(0, 0, 0, 0);
+            const l = offset === 0 ? "Today" : offset === 1 ? "Tomorrow" : "Day after";
+            return (
+              <button
+                key={offset}
+                onClick={() => { setDate(d); setOpen(false); }}
+                className="flex-1 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+              >
+                {l}
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function TimePicker({ slot, setSlot, slotIcon }: { slot: string; setSlot: (s: string) => void; slotIcon: (id: string) => React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const cur = timeSlots.find((t) => t.id === slot)!;
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
+        >
+          <Clock className="h-4 w-4 text-primary" />
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Depart</div>
+            <div className="text-sm font-semibold">{cur.label}</div>
+            <div className="text-[11px] text-muted-foreground">{cur.range}</div>
+          </div>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[240px] p-2 pointer-events-auto">
+        <div className="grid grid-cols-2 gap-2">
+          {timeSlots.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { setSlot(t.id); setOpen(false); }}
+              className={cn(
+                "flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition",
+                slot === t.id ? "border-primary bg-[color:var(--brand-soft)]" : "border-border hover:border-primary/40",
+              )}
+            >
+              <div className="flex items-center gap-1.5 text-primary">{slotIcon(t.id)}<span className="text-[13px] font-semibold text-foreground">{t.label}</span></div>
+              <div className="text-[11px] text-muted-foreground">{t.range}</div>
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function ClassPicker({ value, onChange }: { value: string; onChange: (s: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const cur = travelClasses.find((c) => c.code === value)!;
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
+        >
+          <Armchair className="h-4 w-4 text-primary" />
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Class</div>
+            <div className="text-sm font-semibold">{cur.code}</div>
+            <div className="text-[11px] text-muted-foreground">{cur.label}</div>
+          </div>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[200px] p-1 pointer-events-auto">
+        {travelClasses.map((c) => (
+          <button
+            key={c.code}
+            onClick={() => { onChange(c.code); setOpen(false); }}
+            className={cn(
+              "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition hover:bg-accent",
+              value === c.code && "bg-[color:var(--brand-soft)] text-primary",
+            )}
+          >
+            <span className="font-medium">{c.label}</span>
+            <span className="text-[11px] text-muted-foreground">{c.code}</span>
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 
 function FeatureCard({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
