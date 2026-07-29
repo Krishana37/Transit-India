@@ -1,13 +1,17 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
+  ArrowRightLeft,
+  Armchair,
   Bus,
+  CalendarDays,
   CheckCircle2,
   ChevronRight,
   Clock,
   Coins,
   Download,
   IndianRupee,
+  MapPin,
   Mic,
   Moon,
   Route as RouteIcon,
@@ -16,19 +20,35 @@ import {
   Shield,
   Sparkles,
   Sun,
+  Sunrise,
+  Sunset,
   Timer,
   Train as TrainIcon,
   UserRound,
   Users,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { alternatives, savedPassengers, suggestions, trains, type Passenger, type Train } from "@/lib/dummy-data";
+import { cn } from "@/lib/utils";
+import {
+  alternatives,
+  savedPassengers,
+  stations,
+  suggestions,
+  timeSlots,
+  trains,
+  travelClasses,
+  type Passenger,
+  type Station,
+  type Train,
+} from "@/lib/dummy-data";
 
 type Screen = "search" | "results" | "passengers" | "payment" | "confirmed";
 
