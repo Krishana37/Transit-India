@@ -123,18 +123,7 @@ export function TransitApp() {
             />
           )}
 
-          {screen === "results" && (
-            <ResultsScreen
-              key="r"
-              query={query}
-              onBack={() => setScreen("search")}
-              onPick={(t, c) => {
-                setSelectedTrain(t);
-                setSelectedClass(c);
-                setScreen("passengers");
-              }}
-            />
-          )}
+
 
           {screen === "passengers" && selectedTrain && cls && (
             <PassengersScreen
