@@ -52,25 +52,6 @@ import {
 
 type Screen = "search" | "results" | "passengers" | "payment" | "confirmed";
 
-export function TransitApp() {
-  const [screen, setScreen] = useState<Screen>("search");
-  const [dark, setDark] = useState(false);
-  const [query, setQuery] = useState("Cheapest AC train from Delhi to Jaipur tomorrow morning");
-  const [listening, setListening] = useState(false);
-  const [selectedTrain, setSelectedTrain] = useState<Train | null>(null);
-  const [selectedClass, setSelectedClass] = useState<string>("CC");
-  const [chosen, setChosen] = useState<string[]>(["p1", "p2"]);
-  const [paying, setPaying] = useState(false);
-  const [pnr] = useState(() => Math.floor(1000000000 + Math.random() * 9000000000).toString());
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
-
-  const chosenPassengers = useMemo(
-    () => savedPassengers.filter((p) => chosen.includes(p.id)),
-    [chosen],
-  );
 
 export function TransitApp() {
   const [screen, setScreen] = useState<Screen>("search");
