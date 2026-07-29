@@ -538,8 +538,15 @@ function FeatureCard({ icon, title, text }: { icon: React.ReactNode; title: stri
 /* ---------------- Results ---------------- */
 
 function ResultsScreen({
-  query, onBack, onPick,
-}: { query: string; onBack: () => void; onPick: (t: Train, c: string) => void }) {
+  query, from, to, date, slot, travelClass, onBack, onPick,
+}: {
+  query: string;
+  from: Station; to: Station; date: Date; slot: string; travelClass: string;
+  onBack: () => void; onPick: (t: Train, c: string) => void;
+}) {
+  const slotLabel = timeSlots.find((t) => t.id === slot)?.label ?? "";
+  const clsLabel = travelClasses.find((c) => c.code === travelClass)?.label ?? "";
+  const dateLabel = date.toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short" });
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
@@ -551,15 +558,16 @@ function ResultsScreen({
           <div className="flex items-center gap-3 text-sm">
             <Sparkles className="h-4 w-4 text-[color:var(--accent-orange)]" />
             <div className="flex-1 truncate text-muted-foreground">"{query}"</div>
-            <Badge className="rounded-full bg-[color:var(--brand-soft)] text-primary">6 matches</Badge>
+            <Badge className="rounded-full bg-[color:var(--brand-soft)] text-primary">{trains.length} matches</Badge>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px]">
-            <Pill><TrainIcon className="mr-1 h-3.5 w-3.5" /> NDLS → JP</Pill>
-            <Pill>Tue, 30 Jul · Morning</Pill>
-            <Pill>AC classes only</Pill>
+            <Pill><TrainIcon className="mr-1 h-3.5 w-3.5" /> {from.code} → {to.code}</Pill>
+            <Pill><CalendarDays className="mr-1 h-3.5 w-3.5" /> {dateLabel} · {slotLabel}</Pill>
+            <Pill>{clsLabel}</Pill>
             <Pill>Sorted by fare</Pill>
           </div>
         </Card>
+
 
         <TatkalCard />
 
