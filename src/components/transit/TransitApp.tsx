@@ -72,11 +72,40 @@ export function TransitApp() {
     [chosen],
   );
 
+export function TransitApp() {
+  const [screen, setScreen] = useState<Screen>("search");
+  const [dark, setDark] = useState(false);
+  const [query, setQuery] = useState("Cheapest AC train from Delhi to Jaipur tomorrow morning");
+  const [listening, setListening] = useState(false);
+  const [from, setFrom] = useState<Station>(stations.find((s) => s.code === "NDLS")!);
+  const [to, setTo] = useState<Station>(stations.find((s) => s.code === "JP")!);
+  const [date, setDate] = useState<Date>(() => {
+    const d = new Date(); d.setDate(d.getDate() + 1); return d;
+  });
+  const [slot, setSlot] = useState<string>("morning");
+  const [travelClass, setTravelClass] = useState<string>("ALL");
+  const [selectedTrain, setSelectedTrain] = useState<Train | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string>("CC");
+  const [chosen, setChosen] = useState<string[]>(["p1", "p2"]);
+  const [paying, setPaying] = useState(false);
+  const [pnr] = useState(() => Math.floor(1000000000 + Math.random() * 9000000000).toString());
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
+
+  const chosenPassengers = useMemo(
+    () => savedPassengers.filter((p) => chosen.includes(p.id)),
+    [chosen],
+  );
+
   const cls = selectedTrain?.classes.find((c) => c.code === selectedClass) ?? selectedTrain?.classes[0];
   const base = (cls?.fare ?? 0) * chosenPassengers.length;
   const taxes = Math.round(base * 0.05);
   const conv = chosenPassengers.length ? 20 : 0;
   const total = base + taxes + conv;
+
+  const swap = () => { const a = from; setFrom(to); setTo(a); };
 
   return (
     <div className="min-h-screen">
@@ -87,11 +116,29 @@ export function TransitApp() {
           {screen === "search" && (
             <SearchScreen
               key="s"
-              query={query}
-              setQuery={setQuery}
-              listening={listening}
-              setListening={setListening}
+              query={query} setQuery={setQuery}
+              listening={listening} setListening={setListening}
+              from={from} setFrom={setFrom}
+              to={to} setTo={setTo}
+              date={date} setDate={setDate}
+              slot={slot} setSlot={setSlot}
+              travelClass={travelClass} setTravelClass={setTravelClass}
+              onSwap={swap}
               onSearch={() => setScreen("results")}
+            />
+          )}
+
+          {screen === "results" && (
+            <ResultsScreen
+              key="r"
+              query={query}
+              from={from} to={to} date={date} slot={slot} travelClass={travelClass}
+              onBack={() => setScreen("search")}
+              onPick={(t, c) => {
+                setSelectedTrain(t);
+                setSelectedClass(c);
+                setScreen("passengers");
+              }}
             />
           )}
 
