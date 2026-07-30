@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CabberIndexRouteImport } from './routes/cabber.index'
+import { Route as BookModeRouteImport } from './routes/book.$mode'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -41,6 +42,11 @@ const CabberIndexRoute = CabberIndexRouteImport.update({
   path: '/cabber/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookModeRoute = BookModeRouteImport.update({
+  id: '/book/$mode',
+  path: '/book/$mode',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/chat': typeof ApiChatRoute
+  '/book/$mode': typeof BookModeRoute
   '/cabber/': typeof CabberIndexRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/chat': typeof ApiChatRoute
+  '/book/$mode': typeof BookModeRoute
   '/cabber': typeof CabberIndexRoute
 }
 export interface FileRoutesById {
@@ -70,13 +78,28 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/chat': typeof ApiChatRoute
+  '/book/$mode': typeof BookModeRoute
   '/cabber/': typeof CabberIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/auth' | '/dashboard' | '/api/chat' | '/cabber/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/auth'
+    | '/dashboard'
+    | '/api/chat'
+    | '/book/$mode'
+    | '/cabber/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/auth' | '/dashboard' | '/api/chat' | '/cabber'
+  to:
+    | '/'
+    | '/about'
+    | '/auth'
+    | '/dashboard'
+    | '/api/chat'
+    | '/book/$mode'
+    | '/cabber'
   id:
     | '__root__'
     | '/'
@@ -84,6 +107,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/api/chat'
+    | '/book/$mode'
     | '/cabber/'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +117,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   ApiChatRoute: typeof ApiChatRoute
+  BookModeRoute: typeof BookModeRoute
   CabberIndexRoute: typeof CabberIndexRoute
 }
 
@@ -133,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CabberIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/book/$mode': {
+      id: '/book/$mode'
+      path: '/book/$mode'
+      fullPath: '/book/$mode'
+      preLoaderRoute: typeof BookModeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -149,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   ApiChatRoute: ApiChatRoute,
+  BookModeRoute: BookModeRoute,
   CabberIndexRoute: CabberIndexRoute,
 }
 export const routeTree = rootRouteImport
