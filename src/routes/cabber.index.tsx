@@ -92,7 +92,9 @@ function CabberPage() {
     const now = new Date();
     const arrive = new Date(now.getTime() + eta * 60000);
     addBooking({
+      pnr: String(Math.floor(1000000000 + Math.random() * 9000000000)),
       mode: "cab",
+
       serviceName: `${driver.model} · ${driver.name}`,
       serviceCode: driver.plate,
       fromCode: "PICKUP",
