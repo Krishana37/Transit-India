@@ -79,8 +79,9 @@ export function PassengerFormDialog({
           : {
               fullName: "", age: undefined as unknown as number, gender: "Male", mobile: "", email: "",
               nationality: "Indian", idType: "Aadhaar", idNumber: "", berth: "No Preference",
-            },
+            }) as PassengerFormValues,
       );
+
     }
   }, [open, initial, reset]);
 
