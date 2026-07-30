@@ -61,7 +61,8 @@ export function PassengerFormDialog({
   useEffect(() => {
     if (open) {
       reset(
-        initial
+        (initial
+
           ? {
               fullName: initial.fullName,
               age: initial.age,
