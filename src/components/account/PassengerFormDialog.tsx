@@ -62,7 +62,19 @@ export function PassengerFormDialog({
     if (open) {
       reset(
         initial
-          ? { ...initial, berth: initial.berth ?? "No Preference" }
+          ? {
+              fullName: initial.fullName,
+              age: initial.age,
+              gender: initial.gender,
+              mobile: initial.mobile,
+              email: initial.email,
+              nationality: initial.nationality,
+              idType: (identityTypes as readonly string[]).includes(initial.idType)
+                ? (initial.idType as PassengerFormValues["idType"])
+                : "Aadhaar",
+              idNumber: initial.idNumber,
+              berth: initial.berth ?? "No Preference",
+            }
           : {
               fullName: "", age: undefined as unknown as number, gender: "Male", mobile: "", email: "",
               nationality: "Indian", idType: "Aadhaar", idNumber: "", berth: "No Preference",
