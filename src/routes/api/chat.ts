@@ -45,7 +45,7 @@ export const Route = createFileRoute("/api/chat")({
           const result = streamText({
             model: lovable("google/gemini-3.6-flash"),
             system: SYSTEM_PROMPT,
-            messages: convertToModelMessages(messages),
+            messages: await convertToModelMessages(messages),
             tools: { searchTravel },
             stopWhen: stepCountIs(50),
           });
