@@ -88,6 +88,21 @@ export const dictionary: Record<string, Partial<Record<LangCode, string>>> = {
   "common.add": { en: "Add", hi: "जोड़ें", ar: "إضافة", es: "Añadir" },
   "common.continue": { en: "Continue", hi: "जारी रखें", ar: "متابعة", es: "Continuar" },
   "common.language": { en: "Language", hi: "भाषा", ar: "اللغة", es: "Idioma" },
+  "common.location": { en: "Location", hi: "स्थान", ar: "الموقع", es: "Ubicación" },
+  "common.search.lang": { en: "Search languages", hi: "भाषाएँ खोजें" },
+
+  "greet.morning": { en: "Good morning", hi: "सुप्रभात", ar: "صباح الخير", es: "Buenos días", fr: "Bonjour" },
+  "greet.afternoon": { en: "Good afternoon", hi: "नमस्कार", ar: "مساء الخير", es: "Buenas tardes", fr: "Bon après-midi" },
+  "greet.evening": { en: "Good evening", hi: "शुभ संध्या", ar: "مساء الخير", es: "Buenas noches", fr: "Bonsoir" },
+
+  "auth.fullName": { en: "Full name", hi: "पूरा नाम", ar: "الاسم الكامل", es: "Nombre completo" },
+  "auth.confirmPassword": { en: "Confirm password", hi: "पासवर्ड की पुष्टि करें", ar: "تأكيد كلمة المرور", es: "Confirmar contraseña" },
+  "auth.rememberMe": { en: "Remember me on this device", hi: "इस डिवाइस पर मुझे याद रखें", ar: "تذكرني على هذا الجهاز", es: "Recordarme en este dispositivo" },
+  "auth.forgot": { en: "Forgot password?", hi: "पासवर्ड भूल गए?", ar: "نسيت كلمة المرور؟", es: "¿Olvidaste tu contraseña?" },
+  "auth.reset": { en: "Reset password", hi: "पासवर्ड रीसेट करें", ar: "إعادة تعيين كلمة المرور", es: "Restablecer contraseña" },
+  "auth.locationPermission": { en: "Use my location for nearby suggestions", hi: "आस-पास के सुझावों के लिए मेरा स्थान उपयोग करें", ar: "استخدم موقعي للاقتراحات القريبة", es: "Usar mi ubicación para sugerencias cercanas" },
+  "auth.logoutConfirm": { en: "Are you sure you want to log out?", hi: "क्या आप वाकई लॉग आउट करना चाहते हैं?", ar: "هل تريد تسجيل الخروج؟", es: "¿Seguro que quieres cerrar sesión?" },
+
 
   "error.sameStation": {
     en: "Source and destination cannot be the same.",
