@@ -3,6 +3,10 @@ import {
   Bot, Bus, Globe, LogOut, Moon, Plane, Ship, Sun, Ticket, Train as TrainIcon, TrainFront, User, Menu,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -36,6 +40,7 @@ export function SiteHeader() {
   const { account, logout, dark, setDark } = useStore();
   const navigate = useNavigate();
   const [openMobile, setOpenMobile] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
@@ -96,7 +101,7 @@ export function SiteHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => { logout(); navigate({ to: "/auth" }); }}
+                  onSelect={(e) => { e.preventDefault(); setConfirmLogout(true); }}
                   className="text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" /> {t("auth.logout")}
@@ -132,6 +137,23 @@ export function SiteHeader() {
           ))}
         </div>
       )}
+      <AlertDialog open={confirmLogout} onOpenChange={setConfirmLogout}>
+        <AlertDialogContent className="rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("auth.logout")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("auth.logoutConfirm")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-full brand-gradient text-white"
+              onClick={() => { logout(); navigate({ to: "/auth" }); }}
+            >
+              {t("auth.logout")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 }

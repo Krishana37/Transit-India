@@ -59,8 +59,11 @@ const statusStyles: Record<BookingStatus, string> = {
 
 function DashboardPage() {
   const { account, hydrated } = useStore();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const search = Route.useSearch();
+  const hour = new Date().getHours();
+  const greetKey = hour < 12 ? "greet.morning" : hour < 17 ? "greet.afternoon" : "greet.evening";
   const activeTab: DashboardTab = search.tab ?? "profile";
 
   useEffect(() => {
@@ -86,7 +89,10 @@ function DashboardPage() {
         className="space-y-6"
       >
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Dashboard</h1>
+          <p className="text-[12px] uppercase tracking-widest text-muted-foreground">{t("dash.profile")}</p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {t(greetKey)}, {account.fullName || account.username}
+          </h1>
           <p className="text-[13px] text-muted-foreground">Manage your profile, bookings and travel preferences.</p>
         </div>
 
