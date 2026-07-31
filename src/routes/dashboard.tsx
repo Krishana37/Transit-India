@@ -272,7 +272,7 @@ function BookingsPanel() {
           Once you book a train, bus, flight or hotel, it will show up here with live status and PNR tracking.
         </p>
         <Button asChild className="rounded-full brand-gradient text-white">
-          <Link to="/book/train">Book your first trip</Link>
+          <Link to="/book/$mode" params={{ mode: "train" }}>Book your first trip</Link>
         </Button>
       </Card>
     );

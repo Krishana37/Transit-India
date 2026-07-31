@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", key: "nav.home", icon: TrainIcon },
-  { to: "/book/train", key: "nav.book", icon: Ticket },
+  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", icon: Ticket },
   { to: "/pnr", key: "nav.pnr", icon: TrainFront },
   { to: "/cabber", key: "nav.cabber", icon: Bus },
   { to: "/about", key: "nav.about", icon: Ship },
@@ -53,8 +53,9 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-1 text-sm md:flex">
           {navItems.map((n) => (
             <Link
-              key={n.to}
+              key={n.key}
               to={n.to}
+              params={"params" in n ? n.params : undefined}
               className="rounded-full px-3 py-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
               activeProps={{ className: "bg-[color:var(--brand-soft)] text-primary" }}
               activeOptions={{ exact: n.to === "/" }}
@@ -118,8 +119,9 @@ export function SiteHeader() {
         <div className="border-t border-border/60 bg-background/95 px-4 py-2 md:hidden">
           {navItems.map((n) => (
             <Link
-              key={n.to}
+              key={n.key}
               to={n.to}
+              params={"params" in n ? n.params : undefined}
               onClick={() => setOpenMobile(false)}
               className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
               activeProps={{ className: "text-primary" }}
