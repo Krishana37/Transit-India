@@ -192,7 +192,6 @@ function BookPage() {
       status: statusOverride ?? "confirmed",
       coach: m === "train" || m === "bus" ? `${classCode}${1 + (Math.abs(pnr.charCodeAt(0)) % 9)}` : undefined,
       seats: [`${10 + (Number(pnr.slice(-2)) % 60)}`],
-      createdAt: new Date().toISOString(),
       tatkal: statusOverride === "queued",
     });
     setBooking(created);
