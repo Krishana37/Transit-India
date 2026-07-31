@@ -1,25 +1,50 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type LangCode =
-  | "en" | "hi" | "ar" | "es" | "fr" | "de" | "zh" | "ja" | "ko" | "pt" | "ru" | "it" | "tr" | "id";
+export type LangCode = string;
 
 export type Language = { code: LangCode; label: string; native: string; locale: string; rtl?: boolean };
 
 export const languages: Language[] = [
   { code: "en", label: "English", native: "English", locale: "en-IN" },
   { code: "hi", label: "Hindi", native: "हिन्दी", locale: "hi-IN" },
+  { code: "mr", label: "Marathi", native: "मराठी", locale: "mr-IN" },
+  { code: "gu", label: "Gujarati", native: "ગુજરાતી", locale: "gu-IN" },
+  { code: "ta", label: "Tamil", native: "தமிழ்", locale: "ta-IN" },
+  { code: "te", label: "Telugu", native: "తెలుగు", locale: "te-IN" },
+  { code: "kn", label: "Kannada", native: "ಕನ್ನಡ", locale: "kn-IN" },
+  { code: "ml", label: "Malayalam", native: "മലയാളം", locale: "ml-IN" },
+  { code: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ", locale: "pa-IN" },
+  { code: "bn", label: "Bengali", native: "বাংলা", locale: "bn-IN" },
+  { code: "ur", label: "Urdu", native: "اردو", locale: "ur-IN", rtl: true },
+  { code: "or", label: "Odia", native: "ଓଡ଼ିଆ", locale: "or-IN" },
+  { code: "as", label: "Assamese", native: "অসমীয়া", locale: "as-IN" },
+  { code: "ne", label: "Nepali", native: "नेपाली", locale: "ne-NP" },
+  { code: "si", label: "Sinhala", native: "සිංහල", locale: "si-LK" },
   { code: "ar", label: "Arabic", native: "العربية", locale: "ar-AE", rtl: true },
+  { code: "fa", label: "Persian", native: "فارسی", locale: "fa-IR", rtl: true },
+  { code: "he", label: "Hebrew", native: "עברית", locale: "he-IL", rtl: true },
   { code: "es", label: "Spanish", native: "Español", locale: "es-ES" },
   { code: "fr", label: "French", native: "Français", locale: "fr-FR" },
   { code: "de", label: "German", native: "Deutsch", locale: "de-DE" },
+  { code: "it", label: "Italian", native: "Italiano", locale: "it-IT" },
+  { code: "pt", label: "Portuguese", native: "Português", locale: "pt-BR" },
+  { code: "nl", label: "Dutch", native: "Nederlands", locale: "nl-NL" },
+  { code: "el", label: "Greek", native: "Ελληνικά", locale: "el-GR" },
+  { code: "ru", label: "Russian", native: "Русский", locale: "ru-RU" },
+  { code: "pl", label: "Polish", native: "Polski", locale: "pl-PL" },
+  { code: "ro", label: "Romanian", native: "Română", locale: "ro-RO" },
+  { code: "hu", label: "Hungarian", native: "Magyar", locale: "hu-HU" },
+  { code: "sv", label: "Swedish", native: "Svenska", locale: "sv-SE" },
+  { code: "no", label: "Norwegian", native: "Norsk", locale: "nb-NO" },
+  { code: "fi", label: "Finnish", native: "Suomi", locale: "fi-FI" },
+  { code: "tr", label: "Turkish", native: "Türkçe", locale: "tr-TR" },
   { code: "zh", label: "Chinese", native: "中文", locale: "zh-CN" },
   { code: "ja", label: "Japanese", native: "日本語", locale: "ja-JP" },
   { code: "ko", label: "Korean", native: "한국어", locale: "ko-KR" },
-  { code: "pt", label: "Portuguese", native: "Português", locale: "pt-BR" },
-  { code: "ru", label: "Russian", native: "Русский", locale: "ru-RU" },
-  { code: "it", label: "Italian", native: "Italiano", locale: "it-IT" },
-  { code: "tr", label: "Turkish", native: "Türkçe", locale: "tr-TR" },
+  { code: "th", label: "Thai", native: "ไทย", locale: "th-TH" },
+  { code: "vi", label: "Vietnamese", native: "Tiếng Việt", locale: "vi-VN" },
   { code: "id", label: "Indonesian", native: "Bahasa Indonesia", locale: "id-ID" },
+  { code: "ms", label: "Malay", native: "Bahasa Melayu", locale: "ms-MY" },
 ];
 
 /**
@@ -63,6 +88,21 @@ export const dictionary: Record<string, Partial<Record<LangCode, string>>> = {
   "common.add": { en: "Add", hi: "जोड़ें", ar: "إضافة", es: "Añadir" },
   "common.continue": { en: "Continue", hi: "जारी रखें", ar: "متابعة", es: "Continuar" },
   "common.language": { en: "Language", hi: "भाषा", ar: "اللغة", es: "Idioma" },
+  "common.location": { en: "Location", hi: "स्थान", ar: "الموقع", es: "Ubicación" },
+  "common.search.lang": { en: "Search languages", hi: "भाषाएँ खोजें" },
+
+  "greet.morning": { en: "Good morning", hi: "सुप्रभात", ar: "صباح الخير", es: "Buenos días", fr: "Bonjour" },
+  "greet.afternoon": { en: "Good afternoon", hi: "नमस्कार", ar: "مساء الخير", es: "Buenas tardes", fr: "Bon après-midi" },
+  "greet.evening": { en: "Good evening", hi: "शुभ संध्या", ar: "مساء الخير", es: "Buenas noches", fr: "Bonsoir" },
+
+  "auth.fullName": { en: "Full name", hi: "पूरा नाम", ar: "الاسم الكامل", es: "Nombre completo" },
+  "auth.confirmPassword": { en: "Confirm password", hi: "पासवर्ड की पुष्टि करें", ar: "تأكيد كلمة المرور", es: "Confirmar contraseña" },
+  "auth.rememberMe": { en: "Remember me on this device", hi: "इस डिवाइस पर मुझे याद रखें", ar: "تذكرني على هذا الجهاز", es: "Recordarme en este dispositivo" },
+  "auth.forgot": { en: "Forgot password?", hi: "पासवर्ड भूल गए?", ar: "نسيت كلمة المرور؟", es: "¿Olvidaste tu contraseña?" },
+  "auth.reset": { en: "Reset password", hi: "पासवर्ड रीसेट करें", ar: "إعادة تعيين كلمة المرور", es: "Restablecer contraseña" },
+  "auth.locationPermission": { en: "Use my location for nearby suggestions", hi: "आस-पास के सुझावों के लिए मेरा स्थान उपयोग करें", ar: "استخدم موقعي للاقتراحات القريبة", es: "Usar mi ubicación para sugerencias cercanas" },
+  "auth.logoutConfirm": { en: "Are you sure you want to log out?", hi: "क्या आप वाकई लॉग आउट करना चाहते हैं?", ar: "هل تريد تسجيل الخروج؟", es: "¿Seguro que quieres cerrar sesión?" },
+
 
   "error.sameStation": {
     en: "Source and destination cannot be the same.",

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PnrRouteImport } from './routes/pnr'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
@@ -18,6 +19,11 @@ import { Route as CabberDriverRouteImport } from './routes/cabber.driver'
 import { Route as BookModeRouteImport } from './routes/book.$mode'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const PnrRoute = PnrRouteImport.update({
+  id: '/pnr',
+  path: '/pnr',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/pnr': typeof PnrRoute
   '/api/chat': typeof ApiChatRoute
   '/book/$mode': typeof BookModeRoute
   '/cabber/driver': typeof CabberDriverRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/pnr': typeof PnrRoute
   '/api/chat': typeof ApiChatRoute
   '/book/$mode': typeof BookModeRoute
   '/cabber/driver': typeof CabberDriverRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/pnr': typeof PnrRoute
   '/api/chat': typeof ApiChatRoute
   '/book/$mode': typeof BookModeRoute
   '/cabber/driver': typeof CabberDriverRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/dashboard'
+    | '/pnr'
     | '/api/chat'
     | '/book/$mode'
     | '/cabber/driver'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/dashboard'
+    | '/pnr'
     | '/api/chat'
     | '/book/$mode'
     | '/cabber/driver'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/dashboard'
+    | '/pnr'
     | '/api/chat'
     | '/book/$mode'
     | '/cabber/driver'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  PnrRoute: typeof PnrRoute
   ApiChatRoute: typeof ApiChatRoute
   BookModeRoute: typeof BookModeRoute
   CabberDriverRoute: typeof CabberDriverRoute
@@ -136,6 +149,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pnr': {
+      id: '/pnr'
+      path: '/pnr'
+      fullPath: '/pnr'
+      preLoaderRoute: typeof PnrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  PnrRoute: PnrRoute,
   ApiChatRoute: ApiChatRoute,
   BookModeRoute: BookModeRoute,
   CabberDriverRoute: CabberDriverRoute,

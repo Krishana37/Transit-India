@@ -3,6 +3,10 @@ import {
   Bot, Bus, Globe, LogOut, Moon, Plane, Ship, Sun, Ticket, Train as TrainIcon, TrainFront, User, Menu,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -13,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", key: "nav.home", icon: TrainIcon },
-  { to: "/book/train", key: "nav.book", icon: Ticket },
+  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", icon: Ticket },
   { to: "/pnr", key: "nav.pnr", icon: TrainFront },
   { to: "/cabber", key: "nav.cabber", icon: Bus },
   { to: "/about", key: "nav.about", icon: Ship },
@@ -36,6 +40,7 @@ export function SiteHeader() {
   const { account, logout, dark, setDark } = useStore();
   const navigate = useNavigate();
   const [openMobile, setOpenMobile] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
@@ -53,8 +58,9 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-1 text-sm md:flex">
           {navItems.map((n) => (
             <Link
-              key={n.to}
+              key={n.key}
               to={n.to}
+              params={"params" in n ? n.params : undefined}
               className="rounded-full px-3 py-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
               activeProps={{ className: "bg-[color:var(--brand-soft)] text-primary" }}
               activeOptions={{ exact: n.to === "/" }}
@@ -95,7 +101,7 @@ export function SiteHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => { logout(); navigate({ to: "/auth" }); }}
+                  onSelect={(e) => { e.preventDefault(); setConfirmLogout(true); }}
                   className="text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" /> {t("auth.logout")}
@@ -118,8 +124,9 @@ export function SiteHeader() {
         <div className="border-t border-border/60 bg-background/95 px-4 py-2 md:hidden">
           {navItems.map((n) => (
             <Link
-              key={n.to}
+              key={n.key}
               to={n.to}
+              params={"params" in n ? n.params : undefined}
               onClick={() => setOpenMobile(false)}
               className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
               activeProps={{ className: "text-primary" }}
@@ -130,6 +137,23 @@ export function SiteHeader() {
           ))}
         </div>
       )}
+      <AlertDialog open={confirmLogout} onOpenChange={setConfirmLogout}>
+        <AlertDialogContent className="rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("auth.logout")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("auth.logoutConfirm")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-full brand-gradient text-white"
+              onClick={() => { logout(); navigate({ to: "/auth" }); }}
+            >
+              {t("auth.logout")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 }

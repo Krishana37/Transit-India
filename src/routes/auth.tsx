@@ -7,8 +7,10 @@ import { LanguageSwitcher } from "@/components/transit/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useI18n } from "@/lib/i18n";
+import { languages, useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/auth")({
@@ -30,7 +32,7 @@ function AuthPage() {
   const { t } = useI18n();
   const { account, hydrated, login, signUp } = useStore();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"signin" | "signup">("signin");
+  const [tab, setTab] = useState<"signin" | "signup" | "reset">("signin");
 
   useEffect(() => {
     if (hydrated && account) navigate({ to: "/" });
@@ -94,38 +96,45 @@ function AuthPage() {
           <div className="hidden justify-end lg:flex">
             <LanguageSwitcher />
           </div>
-          <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup")} className="mt-2">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as "signin" | "signup" | "reset")} className="mt-2">
             <TabsList className="grid w-full grid-cols-2 rounded-full">
               <TabsTrigger value="signin" className="rounded-full">{t("auth.signIn")}</TabsTrigger>
               <TabsTrigger value="signup" className="rounded-full">{t("auth.signUp")}</TabsTrigger>
             </TabsList>
             <TabsContent value="signin" className="mt-6">
-              <SignInForm onSuccess={() => navigate({ to: "/dashboard" })} />
+              <SignInForm onSuccess={() => navigate({ to: "/dashboard" })} onForgot={() => setTab("reset")} />
+            </TabsContent>
+            <TabsContent value="reset" className="mt-6">
+              <ResetForm onDone={() => setTab("signin")} />
             </TabsContent>
             <TabsContent value="signup" className="mt-6">
               <SignUpForm onSuccess={() => navigate({ to: "/dashboard" })} />
             </TabsContent>
           </Tabs>
-          <p className="mt-6 text-center text-[11px] text-muted-foreground">
-            Prototype only — no real accounts are created and data stays on this device.
-          </p>
+          <div className="mt-6 rounded-2xl border border-border/70 bg-muted/40 p-3">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Hackathon prototype
+            </div>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">{t("disclaimer.text")}</p>
+          </div>
         </motion.div>
       </div>
     </div>
   );
 }
 
-function SignInForm({ onSuccess }: { onSuccess: () => void }) {
+function SignInForm({ onSuccess, onForgot }: { onSuccess: () => void; onForgot: () => void }) {
   const { t } = useI18n();
   const { login } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const result = login({ email, password });
+    const result = login({ email, password, remember });
     if (!result.ok) {
       setError(result.error ?? "Something went wrong.");
       toast.error(result.error ?? "Something went wrong.");
@@ -164,6 +173,14 @@ function SignInForm({ onSuccess }: { onSuccess: () => void }) {
           </button>
         </div>
       </div>
+      <div className="flex items-center justify-between">
+        <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
+          <Checkbox checked={remember} onCheckedChange={(v) => setRemember(v === true)} /> {t("auth.rememberMe")}
+        </label>
+        <button type="button" onClick={onForgot} className="text-[12px] font-medium text-primary hover:underline">
+          {t("auth.forgot")}
+        </button>
+      </div>
       {error && <p className="text-xs text-[color:var(--destructive)]">{error}</p>}
       <Button type="submit" className="w-full rounded-full brand-gradient text-white">
         {t("auth.signIn")}
@@ -172,14 +189,85 @@ function SignInForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+function ResetForm({ onDone }: { onDone: () => void }) {
+  const { t } = useI18n();
+  const { resetPassword } = useStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!sent) {
+    return (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          setSent(true);
+          toast.success("Prototype reset link sent", { description: "No real email is delivered — continue below." });
+        }}
+        className="space-y-4"
+      >
+        <p className="text-[13px] text-muted-foreground">
+          Enter your email and we will simulate sending a reset link. Nothing leaves this device.
+        </p>
+        <div className="space-y-1.5">
+          <Label htmlFor="reset-email">{t("auth.email")}</Label>
+          <Input id="reset-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
+        </div>
+        <Button type="submit" className="w-full rounded-full brand-gradient text-white">
+          Send reset link
+        </Button>
+        <button type="button" onClick={onDone} className="w-full text-center text-[12px] text-muted-foreground hover:text-foreground">
+          Back to sign in
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const res = resetPassword({ email, password });
+        if (!res.ok) {
+          setError(res.error ?? "Something went wrong.");
+          toast.error(res.error ?? "Something went wrong.");
+          return;
+        }
+        toast.success("Password updated — please sign in.");
+        onDone();
+      }}
+      className="space-y-4"
+    >
+      <div className="space-y-1.5">
+        <Label htmlFor="reset-new">New password</Label>
+        <Input id="reset-new" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" />
+      </div>
+      {error && <p className="text-xs text-[color:var(--destructive)]">{error}</p>}
+      <Button type="submit" className="w-full rounded-full brand-gradient text-white">
+        {t("auth.reset")}
+      </Button>
+      <button type="button" onClick={onDone} className="w-full text-center text-[12px] text-muted-foreground hover:text-foreground">
+        Back to sign in
+      </button>
+    </form>
+  );
+}
+
 function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
   const { t } = useI18n();
   const { signUp } = useStore();
+  const { lang, setLang } = useI18n();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [photo, setPhoto] = useState<string | undefined>(undefined);
+  const [remember, setRemember] = useState(true);
+  const [location, setLocation] = useState<string | undefined>(undefined);
+  const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -197,7 +285,16 @@ function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const result = signUp({ email, username, password, photo });
+    if (!email.toLowerCase().endsWith("@gmail.com") && !email.includes("@")) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      toast.error("Passwords do not match.");
+      return;
+    }
+    const result = signUp({ email, username, password, photo, fullName, language: lang, location, remember });
     if (!result.ok) {
       setError(result.error ?? "Something went wrong.");
       toast.error(result.error ?? "Something went wrong.");
@@ -234,6 +331,10 @@ function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div className="space-y-1.5">
+        <Label htmlFor="signup-name">{t("auth.fullName")}</Label>
+        <Input id="signup-name" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="e.g. Rahul Verma" />
+      </div>
+      <div className="space-y-1.5">
         <Label htmlFor="signup-email">{t("auth.email")}</Label>
         <Input id="signup-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
       </div>
@@ -263,6 +364,80 @@ function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
           </button>
         </div>
       </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="signup-confirm">{t("auth.confirmPassword")}</Label>
+        <Input
+          id="signup-confirm"
+          type={showPassword ? "text" : "password"}
+          required
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="Re-enter your password"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label>{t("common.language")}</Label>
+        <Select value={lang} onValueChange={(v) => setLang(v)}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            {languages.map((l) => (
+              <SelectItem key={l.code} value={l.code}>
+                {l.native} · {l.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="rounded-2xl border border-border/60 bg-muted/40 p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[13px] font-medium">{t("common.location")}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {location ? `Using ${location} for nearby suggestions.` : t("auth.locationPermission")}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            disabled={locating}
+            onClick={() => {
+              setLocating(true);
+              if (!navigator.geolocation) {
+                setLocation("New Delhi");
+                setLocating(false);
+                toast("Location unavailable — using New Delhi for the demo.");
+                return;
+              }
+              navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                  setLocation(`${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`);
+                  setLocating(false);
+                  toast.success("Location enabled — nearby suggestions unlocked.");
+                },
+                () => {
+                  setLocation("New Delhi");
+                  setLocating(false);
+                  toast("Permission denied — using New Delhi for the demo.");
+                },
+                { timeout: 8000 },
+              );
+            }}
+          >
+            {locating ? "Locating…" : location ? "Update" : "Allow"}
+          </Button>
+        </div>
+      </div>
+
+      <label className="flex items-center gap-2 text-[12px] text-muted-foreground">
+        <Checkbox checked={remember} onCheckedChange={(v) => setRemember(v === true)} /> {t("auth.rememberMe")}
+      </label>
+
       {error && <p className="text-xs text-[color:var(--destructive)]">{error}</p>}
       <Button type="submit" className="w-full rounded-full brand-gradient text-white">
         {t("auth.signUp")}

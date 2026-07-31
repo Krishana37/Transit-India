@@ -7,6 +7,10 @@ export type Account = {
   password: string;
   photo?: string;
   phone?: string;
+  fullName?: string;
+  language?: string;
+  location?: string;
+  remember?: boolean;
   createdAt: string;
 };
 
@@ -89,8 +93,9 @@ const initialState: State = {
 
 type StoreValue = State & {
   hydrated: boolean;
-  signUp: (data: { email: string; username: string; password: string; photo?: string }) => { ok: boolean; error?: string };
-  login: (data: { email: string; password: string }) => { ok: boolean; error?: string };
+  signUp: (data: { email: string; username: string; password: string; photo?: string; fullName?: string; language?: string; location?: string; remember?: boolean }) => { ok: boolean; error?: string };
+  login: (data: { email: string; password: string; remember?: boolean }) => { ok: boolean; error?: string };
+  resetPassword: (data: { email: string; password: string }) => { ok: boolean; error?: string };
   logout: () => void;
   updateAccount: (patch: Partial<Account>) => void;
   addPassenger: (p: Omit<SavedPassenger, "id">) => SavedPassenger;
@@ -148,6 +153,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         username: data.username.trim(),
         password: data.password,
         photo: data.photo,
+        fullName: data.fullName?.trim() || data.username.trim(),
+        language: data.language,
+        location: data.location,
+        remember: data.remember,
         createdAt: new Date().toISOString(),
       },
     }));
@@ -174,7 +183,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           result = { ok: false, error: "Incorrect password." };
           return s;
         }
-        return { ...s, account: known };
+        return { ...s, account: { ...known, remember: data.remember ?? known.remember } };
       });
       return result;
     },
@@ -187,6 +196,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       hydrated,
       signUp,
       login,
+      resetPassword: ({ email, password }) => {
+        let out: { ok: boolean; error?: string } = { ok: true };
+        setState((s) => {
+          if (!s.account || s.account.email.toLowerCase() !== email.trim().toLowerCase()) {
+            out = { ok: false, error: "No account found for this email address." };
+            return s;
+          }
+          if (password.length < 6) {
+            out = { ok: false, error: "Password must be at least 6 characters." };
+            return s;
+          }
+          return { ...s, account: { ...s.account, password } };
+        });
+        return out;
+      },
       logout: () => setState((s) => ({ ...s, account: null })),
       updateAccount: (patch) => setState((s) => (s.account ? { ...s, account: { ...s.account, ...patch } } : s)),
       addPassenger: (p) => {
