@@ -223,6 +223,7 @@ function DriverDashboard() {
     ]);
     addBooking({
       mode: "cab",
+      pnr: `CB${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`,
       serviceName: `${driver.vehicleModel} · ${driver.name}`,
       serviceCode: driver.vehicleNumber,
       fromCode: "PICKUP",
