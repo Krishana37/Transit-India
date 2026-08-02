@@ -60,6 +60,11 @@ export const dictionary: Record<string, Partial<Record<LangCode, string>>> = {
   "nav.pnr": { en: "PNR", hi: "पीएनआर", ar: "PNR", es: "PNR" },
   "nav.cabber": { en: "Cabber", hi: "कैबर", ar: "كابر", es: "Cabber" },
   "nav.dashboard": { en: "Dashboard", hi: "डैशबोर्ड", ar: "لوحة التحكم", es: "Panel" },
+  "nav.trips": { en: "My Trips", hi: "मेरी यात्राएँ", ar: "رحلاتي", es: "Mis viajes" },
+  "nav.wallet": { en: "Wallet", hi: "वॉलेट", ar: "المحفظة", es: "Cartera" },
+  "nav.complaints": { en: "Complaints", hi: "शिकायतें", ar: "الشكاوى", es: "Quejas" },
+  "nav.rewards": { en: "Rewards", hi: "रिवॉर्ड्स", ar: "المكافآت", es: "Recompensas" },
+  "nav.notifications": { en: "Notifications", hi: "सूचनाएँ", ar: "الإشعارات", es: "Notificaciones" },
   "nav.about": { en: "About", hi: "परिचय", ar: "حول", es: "Acerca de" },
 
   "auth.welcome": { en: "Welcome back", hi: "वापसी पर स्वागत है", ar: "مرحبًا بعودتك", es: "Bienvenido de nuevo" },

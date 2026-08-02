@@ -55,6 +55,7 @@ const statusStyles: Record<BookingStatus, string> = {
   queued: "bg-[color:var(--accent-orange)]/15 text-[color:var(--accent-orange)]",
   cancelled: "bg-[color:var(--destructive)]/15 text-[color:var(--destructive)]",
   refunded: "bg-muted text-muted-foreground",
+  completed: "bg-primary/10 text-primary",
 };
 
 function DashboardPage() {

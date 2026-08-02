@@ -289,15 +289,226 @@ export const popularStationCodes = ["NDLS", "BCT", "MAS", "HWH", "SBC", "SC", "J
 
 export const routeCountFor = (s: Station) => 8 + (hash(s.code) % 40);
 
-export const meals = [
-  { id: "veg-thali", name: "Veg Thali", category: "Vegetarian", price: 180 },
-  { id: "paneer-wrap", name: "Paneer Kathi Wrap", category: "Vegetarian", price: 140 },
-  { id: "chicken-biryani", name: "Chicken Biryani", category: "Non Vegetarian", price: 260 },
-  { id: "egg-curry", name: "Egg Curry Rice", category: "Non Vegetarian", price: 190 },
-  { id: "samosa", name: "Samosa (2 pcs)", category: "Snacks", price: 60 },
-  { id: "sandwich", name: "Grilled Sandwich", category: "Snacks", price: 110 },
-  { id: "masala-chai", name: "Masala Chai", category: "Drinks", price: 40 },
-  { id: "cold-coffee", name: "Cold Coffee", category: "Drinks", price: 90 },
+/* ---------- meals: full onboard catering catalogue ---------- */
+
+export const mealCategories = [
+  "Breakfast", "Lunch", "Dinner", "Snacks", "Regional", "Healthy",
+  "Kids", "Jain", "Vegetarian", "Non Vegetarian", "Special", "Beverages", "Desserts",
+] as const;
+
+export type MealCategory = (typeof mealCategories)[number];
+
+export type Meal = { id: string; name: string; category: MealCategory; price: number; veg: boolean; note?: string };
+
+export const meals: Meal[] = [
+  // Breakfast
+  { id: "poha", name: "Kanda Poha with Sev", category: "Breakfast", price: 90, veg: true },
+  { id: "idli", name: "Idli Sambar (3 pcs)", category: "Breakfast", price: 110, veg: true },
+  { id: "paratha", name: "Aloo Paratha & Curd", category: "Breakfast", price: 130, veg: true },
+  { id: "omelette", name: "Masala Omelette & Toast", category: "Breakfast", price: 140, veg: false },
+  { id: "upma", name: "Rava Upma", category: "Breakfast", price: 85, veg: true },
+  // Lunch
+  { id: "veg-thali", name: "Veg Thali", category: "Lunch", price: 180, veg: true },
+  { id: "rajma-rice", name: "Rajma Chawal Bowl", category: "Lunch", price: 160, veg: true },
+  { id: "chicken-thali", name: "Chicken Thali", category: "Lunch", price: 260, veg: false },
+  { id: "dal-khichdi", name: "Dal Khichdi & Kadhi", category: "Lunch", price: 150, veg: true },
+  // Dinner
+  { id: "paneer-dinner", name: "Paneer Butter Masala & Roti", category: "Dinner", price: 230, veg: true },
+  { id: "chicken-curry", name: "Chicken Curry & Rice", category: "Dinner", price: 250, veg: false },
+  { id: "veg-pulao", name: "Veg Pulao & Raita", category: "Dinner", price: 170, veg: true },
+  // Snacks
+  { id: "samosa", name: "Samosa (2 pcs)", category: "Snacks", price: 60, veg: true },
+  { id: "sandwich", name: "Grilled Veg Sandwich", category: "Snacks", price: 110, veg: true },
+  { id: "cutlet", name: "Chicken Cutlet", category: "Snacks", price: 130, veg: false },
+  { id: "bhel", name: "Roasted Bhel Cup", category: "Snacks", price: 70, veg: true },
+  // Regional
+  { id: "misal", name: "Kolhapuri Misal Pav", category: "Regional", price: 140, veg: true },
+  { id: "litti", name: "Litti Chokha (4 pcs)", category: "Regional", price: 150, veg: true },
+  { id: "dhokla", name: "Khaman Dhokla Box", category: "Regional", price: 100, veg: true },
+  { id: "fish-curry", name: "Coastal Fish Curry Meal", category: "Regional", price: 290, veg: false },
+  { id: "chettinad", name: "Chettinad Veg Meal", category: "Regional", price: 200, veg: true },
+  // Healthy
+  { id: "salad", name: "Sprout & Quinoa Salad", category: "Healthy", price: 160, veg: true },
+  { id: "millet", name: "Millet Khichdi (low oil)", category: "Healthy", price: 170, veg: true },
+  { id: "grilled-chicken", name: "Grilled Chicken & Greens", category: "Healthy", price: 280, veg: false },
+  { id: "soup", name: "Clear Vegetable Soup", category: "Healthy", price: 90, veg: true },
+  // Kids
+  { id: "kids-pasta", name: "Kids Cheesy Pasta", category: "Kids", price: 150, veg: true },
+  { id: "kids-nuggets", name: "Kids Nuggets & Fries", category: "Kids", price: 180, veg: false },
+  { id: "kids-combo", name: "Kids Mini Meal Box", category: "Kids", price: 140, veg: true },
+  // Jain
+  { id: "jain-thali", name: "Jain Thali (no onion/garlic)", category: "Jain", price: 190, veg: true },
+  { id: "jain-paratha", name: "Jain Paratha Combo", category: "Jain", price: 150, veg: true },
+  // Vegetarian
+  { id: "paneer-wrap", name: "Paneer Kathi Wrap", category: "Vegetarian", price: 140, veg: true },
+  { id: "chole-bhature", name: "Chole Bhature", category: "Vegetarian", price: 170, veg: true },
+  // Non Vegetarian
+  { id: "chicken-biryani", name: "Chicken Biryani", category: "Non Vegetarian", price: 260, veg: false },
+  { id: "egg-curry", name: "Egg Curry Rice", category: "Non Vegetarian", price: 190, veg: false },
+  { id: "mutton-biryani", name: "Mutton Biryani", category: "Non Vegetarian", price: 320, veg: false },
+  // Special
+  { id: "diabetic", name: "Low-GI Diabetic Meal", category: "Special", price: 210, veg: true, note: "Doctor-style prototype menu" },
+  { id: "gluten-free", name: "Gluten-Free Meal Box", category: "Special", price: 230, veg: true },
+  { id: "festive", name: "Festive Special Thali", category: "Special", price: 350, veg: true },
+  { id: "senior", name: "Senior Citizen Soft Meal", category: "Special", price: 180, veg: true },
+  // Beverages
+  { id: "masala-chai", name: "Masala Chai", category: "Beverages", price: 40, veg: true },
+  { id: "filter-coffee", name: "Filter Coffee", category: "Beverages", price: 50, veg: true },
+  { id: "cold-coffee", name: "Cold Coffee", category: "Beverages", price: 90, veg: true },
+  { id: "buttermilk", name: "Spiced Buttermilk", category: "Beverages", price: 45, veg: true },
+  { id: "water", name: "Packaged Water 1L", category: "Beverages", price: 20, veg: true },
+  // Desserts
+  { id: "gulab", name: "Gulab Jamun (2 pcs)", category: "Desserts", price: 70, veg: true },
+  { id: "rasmalai", name: "Rasmalai Cup", category: "Desserts", price: 90, veg: true },
+  { id: "icecream", name: "Kulfi Falooda", category: "Desserts", price: 110, veg: true },
+  { id: "brownie", name: "Walnut Brownie", category: "Desserts", price: 120, veg: true },
 ];
 
-export const mealCategories = ["Vegetarian", "Non Vegetarian", "Snacks", "Drinks"] as const;
+/* ---------- independent route networks per transport mode ---------- */
+
+export type RouteMode = TransportMode | "cab";
+
+export type RouteStop = { name: string; at: string; km: number; halt?: string };
+
+export type RoutePreview = {
+  networkName: string;
+  label: string;
+  origin: string;
+  destination: string;
+  stops: RouteStop[];
+  distanceKm: number;
+  duration: string;
+  note: string;
+};
+
+/** Fictional, mode-specific intermediate node pools — no two modes share a network. */
+const networkNodes: Record<RouteMode, { network: string; nodes: string[]; note: string }> = {
+  train: {
+    network: "Bharat Rail Grid (fictional)",
+    nodes: ["Amaravati Jn", "Sundarpur", "Kesari Road", "Neelgarh", "Chandrapeth", "Vishrampur", "Rohitgarh", "Tapikund", "Malwan Jn", "Devnagar"],
+    note: "Rail corridor with scheduled technical and commercial halts.",
+  },
+  bus: {
+    network: "Highway Coach Network (fictional)",
+    nodes: ["Ratanpur Toll", "Ghatpara Bypass", "Sundar Dhaba Stop", "Kalyani Chowk", "Barwani Crossing", "Panchvati Plaza", "Hilltop Junction", "Nandgaon Depot"],
+    note: "Expressway coach route with driver-change and refreshment halts.",
+  },
+  flight: {
+    network: "Skyway Air Corridor (fictional)",
+    nodes: ["Waypoint ALFA-21", "Waypoint TARA-08", "Sector Delta Handoff", "Waypoint NOVA-14", "Coastal Handoff Point"],
+    note: "Air corridor waypoints — no passenger boarding at intermediate points.",
+  },
+  metro: {
+    network: "City Rapid Metro Loop (fictional)",
+    nodes: ["Ashoka Park", "Civic Centre", "Lotus Garden", "Textile Market", "Riverbank", "University Gate", "Tech Corridor", "Old Fort"],
+    note: "Every station is a boarding station. Trains every 4–6 minutes.",
+  },
+  ferry: {
+    network: "Coastal Ferry Lanes (fictional)",
+    nodes: ["Pearl Jetty", "Mangrove Channel", "Lighthouse Point", "Turtle Bay Anchorage", "Palm Islet Dock"],
+    note: "Sea lane with tide-dependent timings and jetty stops.",
+  },
+  cab: {
+    network: "Cabber Street Grid (fictional)",
+    nodes: ["Ring Road Signal", "Market Underpass", "Green Avenue", "Sector 9 Circle", "Riverside Flyover"],
+    note: "Door-to-door road route. Waypoints are traffic checkpoints only.",
+  },
+  hotel: {
+    network: "Stay Access Route (fictional)",
+    nodes: ["Station Exit Gate", "Hotel Shuttle Bay"],
+    note: "Short access route from your arrival point to the property.",
+  },
+};
+
+function pickMany(seed: string, arr: string[], n: number) {
+  const out: string[] = [];
+  let h = hash(seed);
+  const pool = [...arr];
+  for (let i = 0; i < n && pool.length; i++) {
+    h = Math.imul(h ^ (i + 1), 16777619);
+    out.push(pool.splice(Math.abs(h) % pool.length, 1)[0]);
+  }
+  return out;
+}
+
+export function buildRoutePreview(
+  mode: RouteMode,
+  origin: string,
+  destination: string,
+  km: number,
+  totalMins: number,
+  seed: string,
+): RoutePreview {
+  const net = networkNodes[mode];
+  const maxStops = mode === "hotel" ? 1 : mode === "flight" ? 2 : mode === "metro" ? 6 : 4;
+  const count = Math.max(1, 1 + (hash(seed + mode) % maxStops));
+  const mids = pickMany(seed + mode, net.nodes, count);
+  const startMins = 0;
+
+  const stops: RouteStop[] = [
+    { name: origin, at: "00:00", km: 0, halt: "Source" },
+    ...mids.map((name, i) => {
+      const frac = (i + 1) / (mids.length + 1);
+      const m = Math.round(startMins + totalMins * frac);
+      return {
+        name,
+        at: `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`,
+        km: Math.round(km * frac),
+        halt: mode === "flight" ? "Overfly" : mode === "metro" ? "1 min" : `${2 + (hash(seed + name) % 8)} min`,
+      };
+    }),
+    {
+      name: destination,
+      at: `${String(Math.floor(totalMins / 60)).padStart(2, "0")}:${String(totalMins % 60).padStart(2, "0")}`,
+      km,
+      halt: "Destination",
+    },
+  ];
+
+  return {
+    networkName: net.network,
+    label: `${origin} → ${destination}`,
+    origin,
+    destination,
+    stops,
+    distanceKm: km,
+    duration: fmtDuration(totalMins),
+    note: net.note,
+  };
+}
+
+/* ---------- live-ish seat availability & service disruptions ---------- */
+
+export type SeatState = { available: number; label: string; tone: "ok" | "low" | "rac" | "wl" | "sold" };
+
+/** Seats drain over time using a deterministic curve so the demo feels alive. */
+export function seatState(seed: string, base: number, tick = 0): SeatState {
+  const drift = (hash(seed) % 7) + 3;
+  const left = Math.max(0, base - Math.floor(tick * drift));
+  if (left > 60) return { available: left, label: `${left} Available`, tone: "ok" };
+  if (left > 12) return { available: left, label: `${left} Available`, tone: "ok" };
+  if (left > 4) return { available: left, label: `${left} Available`, tone: "low" };
+  if (left > 0) return { available: left, label: `RAC ${left}`, tone: "rac" };
+  const wl = 1 + (hash(seed + "wl") % 48);
+  return wl > 40 ? { available: 0, label: "Sold Out", tone: "sold" } : { available: 0, label: `WL ${wl}`, tone: "wl" };
+}
+
+export const cancellationReasons = [
+  "Track maintenance block",
+  "Operational reasons",
+  "Adverse weather advisory",
+  "Rolling-stock unavailability",
+  "Low occupancy on this date",
+  "Crew rostering shortfall",
+];
+
+/** ~1 in 9 services is cancelled, deterministically. */
+export function serviceDisruption(seed: string): { cancelled: boolean; reason?: string; delayMins: number } {
+  const h = hash(seed + "disrupt");
+  const cancelled = h % 9 === 0;
+  return {
+    cancelled,
+    reason: cancelled ? cancellationReasons[h % cancellationReasons.length] : undefined,
+    delayMins: cancelled ? 0 : [0, 0, 0, 10, 25, 45][h % 6],
+  };
+}

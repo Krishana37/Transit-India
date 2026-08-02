@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowLeft, Bus, CheckCircle2, Plane, Shield, Ship, Sparkles, Ticket, Train, TrainFront, TrendingUp,
+  AlertTriangle, ArrowLeft, Bus, CheckCircle2, Clock, Plane, Ship, Sparkles, Ticket, Train, TrainFront, TrendingUp,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/transit/AppShell";
@@ -12,18 +12,21 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { CoinRedeemCard } from "@/components/booking/CoinRedeemCard";
 import { FareSidebar, type FareLine } from "@/components/booking/FareSidebar";
 import { MealPicker } from "@/components/booking/MealPicker";
 import { PassengerPicker } from "@/components/booking/PassengerPicker";
 import { PaymentFlow } from "@/components/booking/PaymentFlow";
 import { PreTatkalCard } from "@/components/booking/PreTatkalCard";
 import { ProbabilityBar, RouteLine } from "@/components/booking/ProbabilityBar";
+import { RoutePreview } from "@/components/booking/RoutePreview";
 import { TicketCard } from "@/components/booking/TicketCard";
 import { useI18n } from "@/lib/i18n";
 import {
-  computeFare, demandIndex, distanceKm, generateResults, transportModes, type Segment, type TransportMode,
+  computeFare, demandIndex, distanceKm, generateResults, meals, seatState, serviceDisruption,
+  transportModes, type Segment, type TransportMode,
 } from "@/lib/inventory";
-import { useStore, type Booking, type SavedPassenger } from "@/lib/store";
+import { useStore, type Booking, type PreTatkalDraft, type SavedPassenger } from "@/lib/store";
 
 type Search = { from?: string; to?: string; date?: string; slot?: string; q?: string };
 
@@ -48,7 +51,7 @@ const modeIcons: Record<TransportMode, typeof Train> = {
   train: Train, bus: Bus, flight: Plane, hotel: Ticket, metro: TrainFront, ferry: Ship,
 };
 
-type Step = "results" | "passengers" | "meals" | "payment" | "ticket";
+type Step = "results" | "passengers" | "meals" | "waitlist" | "payment" | "ticket";
 
 function uid() {
   return Math.random().toString(36).slice(2, 10);
@@ -65,7 +68,10 @@ function BookPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { t, formatCurrency, formatDate } = useI18n();
-  const { account, hydrated, passengers, addBooking, updateBooking } = useStore();
+  const {
+    account, hydrated, passengers, addBooking, walletBalance, coins, spendCoins,
+    reward, notify, paymentMethods, removeTatkalDraft,
+  } = useStore();
 
   const m = (transportModes.some((x) => x.id === mode) ? mode : "train") as TransportMode;
 
@@ -90,6 +96,14 @@ function BookPage() {
   const [mealQty, setMealQty] = useState<Record<string, number>>({});
   const [booking, setBooking] = useState<Booking | null>(null);
   const [isTatkalFlow, setIsTatkalFlow] = useState(false);
+  const [activeTatkalDraftId, setActiveTatkalDraftId] = useState<string | null>(null);
+  const [appliedCoins, setAppliedCoins] = useState(0);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((x) => x + 1), 12000);
+    return () => clearInterval(id);
+  }, []);
 
   const results = useMemo(
     () => generateResults(m, state.from, state.to, state.date, state.slot, 6),
@@ -132,25 +146,37 @@ function BookPage() {
     });
   };
 
+  const seatFor = (seg: Segment, code: string, availableBase: number) => seatState(`${seg.id}-${code}`, availableBase, tick);
+
   const pickOption = (seg: Segment, code: string) => {
+    const option = seg.options.find((o) => o.code === code)!;
+    const st = seatFor(seg, code, option.available);
+    if (st.tone === "sold") return;
     setSegment(seg);
     setClassCode(code);
-    setStep("passengers");
+    if (st.tone === "rac" || st.tone === "wl") {
+      setStep("waitlist");
+    } else {
+      setStep("passengers");
+    }
   };
 
   const togglePax = (id: string) => setSelectedPax((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   const chosenPassengers: SavedPassenger[] = passengers.filter((p) => selectedPax.includes(p.id));
   const option = segment?.options.find((o) => o.code === classCode);
+  const currentSeatState = segment && option ? seatFor(segment, option.code, option.available) : null;
   const base = option ? option.fare * Math.max(1, chosenPassengers.length) : 0;
   const surge = Math.round(base * (demand - 1 > 0 ? demand - 1 : 0));
   const gst = Math.round((base + surge) * 0.05);
   const convenience = chosenPassengers.length > 0 ? 25 + chosenPassengers.length * 5 : 0;
   const mealsTotal = Object.entries(mealQty).reduce((sum, [id, qty]) => {
-    const meal = require("@/lib/inventory").meals.find((mm: any) => mm.id === id);
+    const meal = meals.find((mm) => mm.id === id);
     return sum + (meal ? meal.price * qty : 0);
   }, 0);
-  const total = base + surge + gst + convenience + mealsTotal;
+  const preCoinTotal = base + surge + gst + convenience + mealsTotal;
+  const coinDiscount = Math.round(appliedCoins * 0.25);
+  const total = Math.max(0, preCoinTotal - coinDiscount);
 
   const fareLines: FareLine[] = [
     { label: `Base fare × ${Math.max(1, chosenPassengers.length)}`, amount: base },
@@ -159,18 +185,19 @@ function BookPage() {
     { label: "Convenience fee", amount: convenience, muted: true },
   ];
   if (mealsTotal > 0) fareLines.push({ label: "Meals", amount: mealsTotal });
+  if (coinDiscount > 0) fareLines.push({ label: "Transit Coins discount", amount: -coinDiscount });
 
   const showMeals = m !== "hotel" && m !== "metro";
 
   const goPayment = () => setStep("payment");
 
-  const finalizeBooking = (statusOverride?: Booking["status"]) => {
+  const finalizeBooking = (statusOverride?: Booking["status"], statusLabel?: string) => {
     if (!segment || !option) return;
     const pnr = genPnr();
     const mealsPayload = Object.entries(mealQty)
       .filter(([, qty]) => qty > 0)
       .map(([id, qty]) => {
-        const meal = require("@/lib/inventory").meals.find((mm: any) => mm.id === id);
+        const meal = meals.find((mm) => mm.id === id);
         return { id, name: meal?.name ?? id, price: meal?.price ?? 0, qty };
       });
     const created = addBooking({
@@ -185,40 +212,46 @@ function BookPage() {
       date: state.date.toISOString().slice(0, 10),
       depart: segment.depart,
       arrive: segment.arrive,
-      classCode,
+      classCode: statusLabel ? `${classCode} · ${statusLabel}` : classCode,
       passengers: chosenPassengers.length ? chosenPassengers : passengers.slice(0, 1),
       meals: mealsPayload,
       total,
       status: statusOverride ?? "confirmed",
       coach: m === "train" || m === "bus" ? `${classCode}${1 + (Math.abs(pnr.charCodeAt(0)) % 9)}` : undefined,
       seats: [`${10 + (Number(pnr.slice(-2)) % 60)}`],
-      tatkal: statusOverride === "queued",
+      tatkal: isTatkalFlow || statusOverride === "queued",
+      coinsUsed: appliedCoins,
     });
     setBooking(created);
     return created;
   };
 
-  const onPaymentSuccess = () => {
-    const created = finalizeBooking("confirmed");
-    if (created) setStep("ticket");
+  const onPaymentSuccess = (paidWith: string) => {
+    if (paidWith === "Transit Wallet") reward("wallet");
+    if (appliedCoins > 0) spendCoins(appliedCoins);
+    const statusLabel = currentSeatState && (currentSeatState.tone === "rac" || currentSeatState.tone === "wl") ? currentSeatState.label : undefined;
+    const created = finalizeBooking("confirmed", statusLabel);
+    if (created) {
+      if (activeTatkalDraftId) removeTatkalDraft(activeTatkalDraftId);
+      reward("booking");
+      if (mealsTotal > 0) reward("meal");
+      if (m === "hotel") reward("hotel");
+      setStep("ticket");
+    }
   };
 
-  const saveForTatkal = () => {
-    if (!segment || !option) return;
-    finalizeBooking("queued");
-    setStep("results");
-  };
-
-  const completeTatkalPayment = (b: Booking) => {
+  const proceedFromTatkalDraft = (draft: PreTatkalDraft) => {
     setSegment({
-      id: b.id, mode: m, name: b.serviceName, code: b.serviceCode, depart: b.depart, arrive: b.arrive,
+      id: draft.id, mode: m, name: draft.serviceName, code: draft.classCode, depart: "—", arrive: "—",
       durationMins: 0, duration: "", distanceKm: km, tags: [],
-      options: [{ code: b.classCode, label: b.classCode, fare: Math.round(b.total), available: 10, probability: 80 }],
+      options: [{ code: draft.classCode, label: draft.classCode, fare: draft.total, available: 10, probability: 80 }],
     });
-    setClassCode(b.classCode);
-    setSelectedPax(b.passengers.map((p) => p.id));
+    setClassCode(draft.classCode);
+    setSelectedPax(draft.passengerIds);
+    setMealQty(Object.fromEntries(draft.mealIds.map((mi) => [mi.id, mi.qty])));
     setIsTatkalFlow(true);
-    setBooking(b);
+    setActiveTatkalDraftId(draft.id);
+    setBooking(null);
     setStep("payment");
   };
 
@@ -265,53 +298,93 @@ function BookPage() {
                   Fares update live with distance ({km} km), class and demand (×{demand}).
                 </p>
 
-                {sortedResults.map((seg) => (
-                  <Card key={seg.id} className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold">{seg.name}</div>
-                        <div className="text-[12px] text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
+                {sortedResults.map((seg, segIdx) => {
+                  const disruption = serviceDisruption(seg.id);
+                  const alternatives = sortedResults.filter((s) => s.id !== seg.id).slice(0, 2);
+                  return (
+                    <Card key={seg.id} className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold">{seg.name}</div>
+                          <div className="text-[12px] text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {disruption.cancelled && (
+                            <Badge className="rounded-full border-none bg-destructive text-white text-[10px]">Cancelled</Badge>
+                          )}
+                          {!disruption.cancelled && disruption.delayMins > 0 && (
+                            <Badge variant="outline" className="rounded-full border-[color:var(--accent-orange)]/40 text-[10px] text-[color:var(--accent-orange)]">
+                              Delayed by {disruption.delayMins}m
+                            </Badge>
+                          )}
+                          {seg.tags.map((tg) => (
+                            <Badge key={tg} variant="outline" className="rounded-full text-[10px]">{tg}</Badge>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {seg.tags.map((tg) => (
-                          <Badge key={tg} variant="outline" className="rounded-full text-[10px]">{tg}</Badge>
-                        ))}
+
+                      <div className="mt-3">
+                        {m === "hotel" ? (
+                          <div className="text-sm text-muted-foreground">Check-in {seg.depart} · Check-out {seg.arrive} · {seg.duration}</div>
+                        ) : (
+                          <RouteLine depart={seg.depart} arrive={seg.arrive} duration={seg.duration} />
+                        )}
                       </div>
-                    </div>
 
-                    <div className="mt-3">
-                      {m === "hotel" ? (
-                        <div className="text-sm text-muted-foreground">Check-in {seg.depart} · Check-out {seg.arrive} · {seg.duration}</div>
-                      ) : (
-                        <RouteLine depart={seg.depart} arrive={seg.arrive} duration={seg.duration} />
-                      )}
-                    </div>
+                      <RoutePreview mode={m} origin={state.from.city} destination={state.to.city} km={seg.distanceKm} totalMins={seg.durationMins} seed={seg.id} />
 
-                    <Separator className="my-3" />
+                      <Separator className="my-3" />
 
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {seg.options.map((o) => (
-                        <button
-                          key={o.code}
-                          onClick={() => pickOption(seg, o.code)}
-                          className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:border-primary/40 hover:-translate-y-0.5"
-                        >
-                          <div>
-                            <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{o.label}</div>
-                            <div className="text-base font-bold">{formatCurrency(o.fare)}</div>
-                            <div className="text-[11px] text-muted-foreground">{o.available} left</div>
-                            <ProbabilityBar probability={o.probability} className="mt-1.5 w-32" />
+                      {disruption.cancelled ? (
+                        <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
+                          <div className="flex items-center gap-2 text-[13px] font-medium text-destructive">
+                            <AlertTriangle className="h-4 w-4" /> Service cancelled — {disruption.reason}
                           </div>
-                          <Button size="sm" className="rounded-full brand-gradient text-white">Book</Button>
-                        </button>
-                      ))}
-                    </div>
-                  </Card>
-                ))}
+                          <p className="text-[12px] text-muted-foreground">
+                            Full refund is automatically eligible if you had already booked this service. Try one of these instead:
+                          </p>
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            {alternatives.map((alt) => (
+                              <div key={alt.id} className="rounded-xl border border-border bg-background/70 p-2.5 text-[12px]">
+                                <div className="font-medium">{alt.name}</div>
+                                <div className="text-muted-foreground">{alt.depart} → {alt.arrive}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          {seg.options.map((o) => {
+                            const st = seatFor(seg, o.code, o.available);
+                            const toneClass = st.tone === "sold" ? "text-destructive" : st.tone === "wl" ? "text-destructive" : st.tone === "rac" ? "text-[color:var(--accent-orange)]" : st.tone === "low" ? "text-[color:var(--accent-orange)]" : "text-[color:var(--success)]";
+                            return (
+                              <button
+                                key={o.code}
+                                onClick={() => pickOption(seg, o.code)}
+                                disabled={st.tone === "sold"}
+                                className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:border-primary/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                              >
+                                <div>
+                                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{o.label}</div>
+                                  <div className="text-base font-bold">{formatCurrency(o.fare)}</div>
+                                  <div className={`text-[11px] font-medium ${toneClass}`}>{st.label}</div>
+                                  <ProbabilityBar probability={o.probability} className="mt-1.5 w-32" />
+                                </div>
+                                <Button size="sm" className="rounded-full brand-gradient text-white" disabled={st.tone === "sold"}>
+                                  {st.tone === "sold" ? "Sold Out" : "Book"}
+                                </Button>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
               </div>
 
               <div className="space-y-4">
-                <Card className="glass-card rounded-2xl p-4">
+                <Card className="glass-card rounded-2xl p-4" data-a11y="optional">
                   <div className="flex items-center gap-2 text-sm font-semibold"><TrendingUp className="h-4 w-4 text-primary" /> Alternative travel</div>
                   <div className="mt-3 space-y-2">
                     {["bus", "metro"].filter((alt) => alt !== m).map((alt) => (
@@ -329,10 +402,56 @@ function BookPage() {
                 </Card>
 
                 {m === "train" && (
-                  <PreTatkalCard onSaveQueued={saveForTatkal} onCompletePayment={completeTatkalPayment} />
+                  <PreTatkalCard
+                    segments={sortedResults}
+                    fromCode={state.from.code}
+                    toCode={state.to.code}
+                    date={state.date.toISOString().slice(0, 10)}
+                    onProceedToPayment={proceedFromTatkalDraft}
+                  />
                 )}
               </div>
             </div>
+          </motion.section>
+        )}
+
+        {step === "waitlist" && segment && option && currentSeatState && (
+          <motion.section key="waitlist" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            <BackButton onClick={() => setStep("results")} />
+            <Card className="mx-auto max-w-xl rounded-2xl p-6">
+              <div className="flex items-center gap-2 text-[color:var(--accent-orange)]">
+                <Clock className="h-5 w-5" />
+                <span className="text-sm font-semibold">{currentSeatState.label} on {segment.name}</span>
+              </div>
+              <p className="mt-2 text-[13px] text-muted-foreground">
+                {currentSeatState.tone === "rac"
+                  ? "RAC (Reservation Against Cancellation) confirms a shared berth now, and may upgrade to a full berth before departure."
+                  : "This class is currently waitlisted. Waitlisted tickets confirm automatically as seats free up before charting; they're auto-cancelled if not confirmed by chart preparation."}
+              </p>
+
+              <div className="mt-4 space-y-2">
+                <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Alternative departures on this route</div>
+                {sortedResults.filter((s) => s.id !== segment.id).slice(0, 3).map((alt) => (
+                  <div key={alt.id} className="flex items-center justify-between rounded-xl border border-border bg-background/70 p-3 text-[13px]">
+                    <div>
+                      <div className="font-medium">{alt.name}</div>
+                      <div className="text-muted-foreground">{alt.depart} → {alt.arrive}</div>
+                    </div>
+                    <Button size="sm" variant="outline" className="rounded-full" onClick={() => pickOption(alt, alt.options[0].code)}>View</Button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Button variant="outline" className="rounded-full" onClick={() => setStep("results")}>Try another date</Button>
+                <Button className="rounded-full brand-gradient text-white" onClick={() => setStep("passengers")}>
+                  Continue with {currentSeatState.label}
+                </Button>
+                <Button asChild variant="ghost" className="rounded-full">
+                  <Link to="/">Back to home</Link>
+                </Button>
+              </div>
+            </Card>
           </motion.section>
         )}
 
@@ -343,6 +462,11 @@ function BookPage() {
               <Card className="rounded-2xl p-5">
                 <div className="text-sm font-semibold">Select or add passengers</div>
                 <p className="mt-1 text-[13px] text-muted-foreground">{segment.name} · {option.label} · {formatDate(state.date)}</p>
+                {currentSeatState && (currentSeatState.tone === "rac" || currentSeatState.tone === "wl") && (
+                  <Badge variant="outline" className="mt-2 rounded-full border-[color:var(--accent-orange)]/40 text-[10px] text-[color:var(--accent-orange)]">
+                    Booking as {currentSeatState.label}
+                  </Badge>
+                )}
                 <div className="mt-4">
                   <PassengerPicker selected={selectedPax} onToggle={togglePax} />
                 </div>
@@ -392,8 +516,9 @@ function BookPage() {
         {step === "payment" && (
           <motion.section key="payment" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
             {!isTatkalFlow && <BackButton onClick={() => setStep(showMeals ? "meals" : "passengers")} />}
-            <div className="mx-auto max-w-lg">
-              <PaymentFlow total={isTatkalFlow && booking ? booking.total : total} onSuccess={onPaymentSuccess} />
+            <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-[1fr_280px]">
+              <PaymentFlow total={total} walletBalance={walletBalance} paymentMethods={paymentMethods} onSuccess={onPaymentSuccess} />
+              <CoinRedeemCard coins={coins} total={preCoinTotal} applied={appliedCoins} onApply={setAppliedCoins} />
             </div>
           </motion.section>
         )}

@@ -9,8 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as TripsRouteImport } from './routes/trips'
+import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as PnrRouteImport } from './routes/pnr'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,14 +24,39 @@ import { Route as CabberDriverRouteImport } from './routes/cabber.driver'
 import { Route as BookModeRouteImport } from './routes/book.$mode'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TripsRoute = TripsRouteImport.update({
+  id: '/trips',
+  path: '/trips',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RewardsRoute = RewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PnrRoute = PnrRouteImport.update({
   id: '/pnr',
   path: '/pnr',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsRoute = ComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -69,8 +99,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
+  '/notifications': typeof NotificationsRoute
   '/pnr': typeof PnrRoute
+  '/rewards': typeof RewardsRoute
+  '/trips': typeof TripsRoute
+  '/wallet': typeof WalletRoute
   '/api/chat': typeof ApiChatRoute
   '/book/$mode': typeof BookModeRoute
   '/cabber/driver': typeof CabberDriverRoute
@@ -80,8 +115,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
+  '/notifications': typeof NotificationsRoute
   '/pnr': typeof PnrRoute
+  '/rewards': typeof RewardsRoute
+  '/trips': typeof TripsRoute
+  '/wallet': typeof WalletRoute
   '/api/chat': typeof ApiChatRoute
   '/book/$mode': typeof BookModeRoute
   '/cabber/driver': typeof CabberDriverRoute
@@ -92,8 +132,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
+  '/notifications': typeof NotificationsRoute
   '/pnr': typeof PnrRoute
+  '/rewards': typeof RewardsRoute
+  '/trips': typeof TripsRoute
+  '/wallet': typeof WalletRoute
   '/api/chat': typeof ApiChatRoute
   '/book/$mode': typeof BookModeRoute
   '/cabber/driver': typeof CabberDriverRoute
@@ -105,8 +150,13 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
+    | '/notifications'
     | '/pnr'
+    | '/rewards'
+    | '/trips'
+    | '/wallet'
     | '/api/chat'
     | '/book/$mode'
     | '/cabber/driver'
@@ -116,8 +166,13 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
+    | '/notifications'
     | '/pnr'
+    | '/rewards'
+    | '/trips'
+    | '/wallet'
     | '/api/chat'
     | '/book/$mode'
     | '/cabber/driver'
@@ -127,8 +182,13 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/complaints'
     | '/dashboard'
+    | '/notifications'
     | '/pnr'
+    | '/rewards'
+    | '/trips'
+    | '/wallet'
     | '/api/chat'
     | '/book/$mode'
     | '/cabber/driver'
@@ -139,8 +199,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  ComplaintsRoute: typeof ComplaintsRoute
   DashboardRoute: typeof DashboardRoute
+  NotificationsRoute: typeof NotificationsRoute
   PnrRoute: typeof PnrRoute
+  RewardsRoute: typeof RewardsRoute
+  TripsRoute: typeof TripsRoute
+  WalletRoute: typeof WalletRoute
   ApiChatRoute: typeof ApiChatRoute
   BookModeRoute: typeof BookModeRoute
   CabberDriverRoute: typeof CabberDriverRoute
@@ -149,6 +214,27 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trips': {
+      id: '/trips'
+      path: '/trips'
+      fullPath: '/trips'
+      preLoaderRoute: typeof TripsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rewards': {
+      id: '/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof RewardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pnr': {
       id: '/pnr'
       path: '/pnr'
@@ -156,11 +242,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PnrRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints': {
+      id: '/complaints'
+      path: '/complaints'
+      fullPath: '/complaints'
+      preLoaderRoute: typeof ComplaintsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -219,8 +319,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  ComplaintsRoute: ComplaintsRoute,
   DashboardRoute: DashboardRoute,
+  NotificationsRoute: NotificationsRoute,
   PnrRoute: PnrRoute,
+  RewardsRoute: RewardsRoute,
+  TripsRoute: TripsRoute,
+  WalletRoute: WalletRoute,
   ApiChatRoute: ApiChatRoute,
   BookModeRoute: BookModeRoute,
   CabberDriverRoute: CabberDriverRoute,
