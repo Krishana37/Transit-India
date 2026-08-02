@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Bot, Bus, Globe, LogOut, Moon, Plane, Ship, Sun, Ticket, Train as TrainIcon, TrainFront, User, Menu,
+  Accessibility, Bell, Bot, Bus, Coins, Globe, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
+  Ticket, Train as TrainIcon, TrainFront, User, Menu, Wallet,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import {
@@ -12,16 +13,27 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useI18n, languages } from "@/lib/i18n";
-import { useStore } from "@/lib/store";
+import { useStore, type AccessibilityMode } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/", key: "nav.home", icon: TrainIcon },
-  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", icon: Ticket },
-  { to: "/pnr", key: "nav.pnr", icon: TrainFront },
-  { to: "/cabber", key: "nav.cabber", icon: Bus },
-  { to: "/about", key: "nav.about", icon: Ship },
+  { to: "/", key: "nav.home", label: "Home", icon: TrainIcon },
+  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", label: "Book", icon: Ticket },
+  { to: "/trips", key: "nav.trips", label: "My Trips", icon: TrainFront },
+  { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront },
+  { to: "/cabber", key: "nav.cabber", label: "Cabber", icon: Bus },
+  { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet },
+  { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning },
+  { to: "/about", key: "nav.about", label: "About", icon: Ship },
 ] as const;
+
+const a11yModes: { id: AccessibilityMode; label: string; hint: string }[] = [
+  { id: "default", label: "Default", hint: "Standard layout" },
+  { id: "large", label: "Large text", hint: "Bigger type & targets" },
+  { id: "senior", label: "Senior citizen", hint: "High contrast, calmer motion" },
+  { id: "simple", label: "Simple interface", hint: "Only essential controls" },
+];
+
 
 export function AppShell({ children, wide }: { children: ReactNode; wide?: boolean }) {
   return (
@@ -37,44 +49,92 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
 
 export function SiteHeader() {
   const { t } = useI18n();
-  const { account, logout, dark, setDark } = useStore();
+  const { account, logout, dark, setDark, unreadCount, accessibility, setAccessibility, coins } = useStore();
   const navigate = useNavigate();
   const [openMobile, setOpenMobile] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const label = (n: (typeof navItems)[number]) => {
+    const v = t(n.key);
+    return v === n.key ? n.label : v;
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="grid h-9 w-9 place-items-center rounded-xl text-white shadow-lg brand-gradient">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white shadow-lg brand-gradient">
             <TrainIcon className="h-5 w-5" />
           </div>
-          <div className="leading-tight">
-            <div className="text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{t("brand.tagline")}</div>
+          <div className="min-w-0 leading-tight">
+            <div className="truncate text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
+            <div className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">{t("brand.tagline")}</div>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-1 text-sm md:flex">
+        <nav className="hidden items-center gap-0.5 text-[13px] lg:flex">
           {navItems.map((n) => (
             <Link
               key={n.key}
               to={n.to}
               params={"params" in n ? n.params : undefined}
-              className="rounded-full px-3 py-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+              className="rounded-full px-2.5 py-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
               activeProps={{ className: "bg-[color:var(--brand-soft)] text-primary" }}
               activeOptions={{ exact: n.to === "/" }}
             >
-              {t(n.key)}
+              {label(n)}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1">
+          <Link
+            to="/rewards"
+            data-a11y="optional"
+            className="hidden items-center gap-1.5 rounded-full border border-border bg-background/70 px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition hover:border-primary/40 hover:text-primary sm:inline-flex"
+          >
+            <Coins className="h-3.5 w-3.5 text-[color:var(--accent-orange)]" /> {coins}
+          </Link>
+
+          <Link
+            to="/notifications"
+            aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
+            className="relative grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:bg-accent hover:text-foreground"
+          >
+            <Bell className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Accessibility options">
+                <Accessibility className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Accessibility</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {a11yModes.map((m) => (
+                <DropdownMenuItem
+                  key={m.id}
+                  onClick={() => setAccessibility(m.id)}
+                  className={cn("flex-col items-start gap-0.5", accessibility === m.id && "text-primary")}
+                >
+                  <span className="text-sm font-medium">{m.label}</span>
+                  <span className="text-[11px] text-muted-foreground">{m.hint}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <LanguageSwitcher />
           <Button variant="ghost" size="icon" onClick={() => setDark(!dark)} aria-label="Toggle theme">
             {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
+
 
           {account ? (
             <DropdownMenu>
@@ -114,14 +174,14 @@ export function SiteHeader() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpenMobile((o) => !o)} aria-label="Menu">
+          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpenMobile((o) => !o)} aria-label="Menu">
             <Menu className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {openMobile && (
-        <div className="border-t border-border/60 bg-background/95 px-4 py-2 md:hidden">
+        <div className="border-t border-border/60 bg-background/95 px-4 py-2 lg:hidden">
           {navItems.map((n) => (
             <Link
               key={n.key}
@@ -132,7 +192,7 @@ export function SiteHeader() {
               activeProps={{ className: "text-primary" }}
               activeOptions={{ exact: n.to === "/" }}
             >
-              <n.icon className="h-4 w-4" /> {t(n.key)}
+              <n.icon className="h-4 w-4" /> {label(n)}
             </Link>
           ))}
         </div>

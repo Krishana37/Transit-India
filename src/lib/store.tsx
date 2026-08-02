@@ -27,7 +27,8 @@ export type SavedPassenger = {
   berth?: string;
 };
 
-export type BookingStatus = "confirmed" | "queued" | "cancelled" | "refunded";
+export type BookingStatus = "confirmed" | "queued" | "cancelled" | "refunded" | "completed";
+export type RefundStatus = "none" | "requested" | "processing" | "credited";
 
 export type Booking = {
   id: string;
@@ -51,6 +52,12 @@ export type Booking = {
   seats?: string[];
   createdAt: string;
   tatkal?: boolean;
+  coinsUsed?: number;
+  paidWith?: string;
+  refundStatus?: RefundStatus;
+  refundAmount?: number;
+  refundedAt?: string;
+  cancelReason?: string;
 };
 
 export type DriverProfile = {
@@ -65,6 +72,53 @@ export type DriverProfile = {
   registeredAt: string;
 };
 
+export type WalletTxn = {
+  id: string;
+  type: "credit" | "debit" | "refund";
+  amount: number;
+  label: string;
+  at: string;
+};
+
+export type PaymentMethodKind = "upi" | "bank" | "debit" | "credit" | "wallet";
+
+export type PaymentMethod = {
+  id: string;
+  kind: PaymentMethodKind;
+  label: string;
+  detail: string;
+  primary?: boolean;
+};
+
+export type AppNotification = {
+  id: string;
+  kind:
+    | "tatkal" | "booking" | "refund" | "cab" | "platform" | "delay"
+    | "cancelled" | "wallet" | "coins" | "meal" | "hotel" | "reminder";
+  title: string;
+  body: string;
+  at: string;
+  read?: boolean;
+};
+
+export type AccessibilityMode = "default" | "large" | "senior" | "simple";
+
+export type PreTatkalDraft = {
+  id: string;
+  serviceName: string;
+  fromCode: string;
+  toCode: string;
+  date: string;
+  classCode: string;
+  passengerIds: string[];
+  mealIds: { id: string; qty: number }[];
+  boarding: string;
+  paymentMethodId?: string;
+  total: number;
+  createdAt: string;
+  armed: boolean;
+};
+
 type State = {
   account: Account | null;
   passengers: SavedPassenger[];
@@ -72,14 +126,28 @@ type State = {
   driver: DriverProfile | null;
   recentSearches: string[];
   dark: boolean;
+  accessibility: AccessibilityMode;
+  walletBalance: number;
+  walletTxns: WalletTxn[];
+  coins: number;
+  points: number;
+  paymentMethods: PaymentMethod[];
+  notifications: AppNotification[];
+  tatkalDrafts: PreTatkalDraft[];
+  lastDailyBonus?: string;
 };
 
-const STORAGE_KEY = "transit-india-state-v1";
+const STORAGE_KEY = "transit-india-state-v2";
 
 const seedPassengers: SavedPassenger[] = [
   { id: "p1", fullName: "Aarav Sharma", age: 32, gender: "Male", mobile: "98100 12345", email: "aarav@example.com", nationality: "Indian", idType: "Aadhaar", idNumber: "XXXX-XXXX-1234", berth: "Lower" },
   { id: "p2", fullName: "Priya Iyer", age: 29, gender: "Female", mobile: "98200 55810", email: "priya@example.com", nationality: "Indian", idType: "Aadhaar", idNumber: "XXXX-XXXX-5581", berth: "Side Lower" },
   { id: "p3", fullName: "Rohan Mehta", age: 8, gender: "Male", mobile: "98100 12345", email: "aarav@example.com", nationality: "Indian", idType: "Birth Certificate", idNumber: "BC-2017-9921", berth: "No Preference" },
+];
+
+const seedPaymentMethods: PaymentMethod[] = [
+  { id: "pm1", kind: "upi", label: "Primary UPI", detail: "aarav@transitpay", primary: true },
+  { id: "pm2", kind: "credit", label: "Transit Card", detail: "•••• 4412 · 09/29" },
 ];
 
 const initialState: State = {
@@ -89,10 +157,52 @@ const initialState: State = {
   driver: null,
   recentSearches: [],
   dark: false,
+  accessibility: "default",
+  walletBalance: 2500,
+  walletTxns: [
+    { id: "w0", type: "credit", amount: 2500, label: "Welcome prototype balance", at: new Date().toISOString() },
+  ],
+  coins: 480,
+  points: 120,
+  paymentMethods: seedPaymentMethods,
+  notifications: [],
+  tatkalDrafts: [],
 };
+
+/** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
+export const COIN_VALUE = 0.25;
+export const COIN_MAX_SHARE = 0.15;
+
+export function maxCoinDiscount(total: number, coins: number) {
+  const cap = Math.floor(total * COIN_MAX_SHARE);
+  return Math.max(0, Math.min(cap, Math.floor(coins * COIN_VALUE)));
+}
+
+export const POINT_EVENTS: Record<string, { points: number; coins: number; label: string }> = {
+  search: { points: 2, coins: 1, label: "Searched a route" },
+  booking: { points: 40, coins: 25, label: "Completed a booking" },
+  pnr: { points: 3, coins: 2, label: "Checked PNR status" },
+  wallet: { points: 5, coins: 5, label: "Used Transit Wallet" },
+  cabber: { points: 20, coins: 12, label: "Booked a Cabber ride" },
+  hotel: { points: 25, coins: 15, label: "Booked a hotel" },
+  meal: { points: 10, coins: 6, label: "Ordered a meal" },
+  daily: { points: 15, coins: 10, label: "Daily login bonus" },
+};
+
+export const TIERS = [
+  { name: "Explorer", min: 0, perk: "5% coin discount cap" },
+  { name: "Voyager", min: 250, perk: "10% coin discount cap + priority queue" },
+  { name: "Pathfinder", min: 750, perk: "15% coin discount cap + free meal upgrade" },
+  { name: "Wayfarer", min: 1800, perk: "15% cap + lounge passes + instant refunds" },
+];
+
+export function tierFor(points: number) {
+  return [...TIERS].reverse().find((t) => points >= t.min) ?? TIERS[0];
+}
 
 type StoreValue = State & {
   hydrated: boolean;
+  unreadCount: number;
   signUp: (data: { email: string; username: string; password: string; photo?: string; fullName?: string; language?: string; location?: string; remember?: boolean }) => { ok: boolean; error?: string };
   login: (data: { email: string; password: string; remember?: boolean }) => { ok: boolean; error?: string };
   resetPassword: (data: { email: string; password: string }) => { ok: boolean; error?: string };
@@ -103,15 +213,58 @@ type StoreValue = State & {
   deletePassenger: (id: string) => void;
   addBooking: (b: Omit<Booking, "id" | "createdAt">) => Booking;
   updateBooking: (id: string, patch: Partial<Booking>) => void;
+  cancelBooking: (id: string, reason?: string) => void;
+  requestRefund: (id: string) => { ok: boolean; error?: string };
   registerDriver: (d: Omit<DriverProfile, "registeredAt">) => void;
   updateDriver: (patch: Partial<DriverProfile>) => void;
   pushRecentSearch: (q: string) => void;
   setDark: (b: boolean) => void;
+  setAccessibility: (m: AccessibilityMode) => void;
+  addMoney: (amount: number, label?: string) => void;
+  payFromWallet: (amount: number, label: string) => { ok: boolean; error?: string };
+  addPaymentMethod: (m: Omit<PaymentMethod, "id">) => void;
+  removePaymentMethod: (id: string) => void;
+  spendCoins: (coins: number) => void;
+  reward: (event: keyof typeof POINT_EVENTS | string) => void;
+  notify: (n: Omit<AppNotification, "id" | "at" | "read">) => void;
+  markAllRead: () => void;
+  clearNotifications: () => void;
+  saveTatkalDraft: (d: Omit<PreTatkalDraft, "id" | "createdAt">) => PreTatkalDraft;
+  removeTatkalDraft: (id: string) => void;
 };
 
 const StoreContext = createContext<StoreValue | null>(null);
 
 const uid = () => Math.random().toString(36).slice(2, 10);
+
+/** Journey status derived from the scheduled date/time, not stored. */
+export function journeyPhase(b: Booking): "upcoming" | "completed" | "cancelled" {
+  if (b.status === "cancelled" || b.status === "refunded") return "cancelled";
+  const [h, m] = (b.arrive || "23:59").split(":").map(Number);
+  const end = new Date(`${b.date}T00:00:00`);
+  end.setHours(h || 23, m || 59, 0, 0);
+  if (b.arrive < b.depart) end.setDate(end.getDate() + 1);
+  return end.getTime() < Date.now() ? "completed" : "upcoming";
+}
+
+/** Refunds only for upcoming, non-cancelled, not-already-refunded bookings. */
+export function refundEligibility(b: Booking): { eligible: boolean; reason: string; amount: number } {
+  if (b.status === "refunded" || b.refundStatus === "credited")
+    return { eligible: false, reason: "Already refunded to your Transit Wallet.", amount: 0 };
+  if (b.refundStatus === "requested" || b.refundStatus === "processing")
+    return { eligible: false, reason: "A refund is already in progress.", amount: 0 };
+  const phase = journeyPhase(b);
+  if (phase === "completed")
+    return { eligible: false, reason: "Journey completed — refunds are not available.", amount: 0 };
+  const hoursLeft = (new Date(`${b.date}T${b.depart || "00:00"}`).getTime() - Date.now()) / 3600000;
+  const fee = hoursLeft >= 48 ? 0.05 : hoursLeft >= 12 ? 0.2 : hoursLeft >= 4 ? 0.5 : 1;
+  if (fee === 1) return { eligible: false, reason: "Under 4 hours to departure — no refund is payable.", amount: 0 };
+  return {
+    eligible: true,
+    reason: `Cancellation fee ${Math.round(fee * 100)}% · credited to Transit Wallet`,
+    amount: Math.round(b.total * (1 - fee)),
+  };
+}
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initialState);
@@ -141,6 +294,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle("dark", state.dark);
   }, [state.dark]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const el = document.documentElement;
+    el.classList.remove("a11y-large", "a11y-senior", "a11y-simple");
+    if (state.accessibility === "large") el.classList.add("a11y-large");
+    if (state.accessibility === "senior") el.classList.add("a11y-senior");
+    if (state.accessibility === "simple") el.classList.add("a11y-simple");
+  }, [state.accessibility]);
+
   const signUp = useCallback<StoreValue["signUp"]>((data) => {
     if (!data.email.includes("@")) return { ok: false, error: "Enter a valid email address." };
     if (data.password.length < 6) return { ok: false, error: "Password must be at least 6 characters." };
@@ -163,79 +325,183 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return { ok: true };
   }, []);
 
-  const login = useCallback<StoreValue["login"]>(
-    (data) => {
-      let result: { ok: boolean; error?: string } = { ok: true };
-      setState((s) => {
-        const raw = (() => {
-          try {
-            return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "null") as State | null;
-          } catch {
-            return null;
-          }
-        })();
-        const known = s.account ?? raw?.account ?? null;
-        if (!known || known.email.toLowerCase() !== data.email.trim().toLowerCase()) {
-          result = { ok: false, error: "No account found for this email. Please sign up first." };
-          return s;
+  const login = useCallback<StoreValue["login"]>((data) => {
+    let result: { ok: boolean; error?: string } = { ok: true };
+    setState((s) => {
+      const raw = (() => {
+        try {
+          return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "null") as State | null;
+        } catch {
+          return null;
         }
-        if (known.password !== data.password) {
-          result = { ok: false, error: "Incorrect password." };
-          return s;
-        }
-        return { ...s, account: { ...known, remember: data.remember ?? known.remember } };
-      });
-      return result;
-    },
-    [],
-  );
+      })();
+      const known = s.account ?? raw?.account ?? null;
+      if (!known || known.email.toLowerCase() !== data.email.trim().toLowerCase()) {
+        result = { ok: false, error: "No account found for this email. Please sign up first." };
+        return s;
+      }
+      if (known.password !== data.password) {
+        result = { ok: false, error: "Incorrect password." };
+        return s;
+      }
+      return { ...s, account: { ...known, remember: data.remember ?? known.remember } };
+    });
+    return result;
+  }, []);
 
-  const value = useMemo<StoreValue>(
-    () => ({
-      ...state,
-      hydrated,
-      signUp,
-      login,
-      resetPassword: ({ email, password }) => {
-        let out: { ok: boolean; error?: string } = { ok: true };
-        setState((s) => {
-          if (!s.account || s.account.email.toLowerCase() !== email.trim().toLowerCase()) {
-            out = { ok: false, error: "No account found for this email address." };
-            return s;
-          }
-          if (password.length < 6) {
-            out = { ok: false, error: "Password must be at least 6 characters." };
-            return s;
-          }
-          return { ...s, account: { ...s.account, password } };
+  const pushNotification = useCallback((s: State, n: Omit<AppNotification, "id" | "at" | "read">): State => ({
+    ...s,
+    notifications: [{ ...n, id: uid(), at: new Date().toISOString(), read: false }, ...s.notifications].slice(0, 40),
+  }), []);
+
+  const value = useMemo<StoreValue>(() => ({
+    ...state,
+    hydrated,
+    unreadCount: state.notifications.filter((n) => !n.read).length,
+    signUp,
+    login,
+    resetPassword: ({ email, password }) => {
+      let out: { ok: boolean; error?: string } = { ok: true };
+      setState((s) => {
+        if (!s.account || s.account.email.toLowerCase() !== email.trim().toLowerCase()) {
+          out = { ok: false, error: "No account found for this email address." };
+          return s;
+        }
+        if (password.length < 6) {
+          out = { ok: false, error: "Password must be at least 6 characters." };
+          return s;
+        }
+        return { ...s, account: { ...s.account, password } };
+      });
+      return out;
+    },
+    logout: () => setState((s) => ({ ...s, account: null })),
+    updateAccount: (patch) => setState((s) => (s.account ? { ...s, account: { ...s.account, ...patch } } : s)),
+    addPassenger: (p) => {
+      const created: SavedPassenger = { ...p, id: uid() };
+      setState((s) => ({ ...s, passengers: [...s.passengers, created] }));
+      return created;
+    },
+    updatePassenger: (id, patch) =>
+      setState((s) => ({ ...s, passengers: s.passengers.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
+    deletePassenger: (id) => setState((s) => ({ ...s, passengers: s.passengers.filter((p) => p.id !== id) })),
+    addBooking: (b) => {
+      const created: Booking = { ...b, id: uid(), createdAt: new Date().toISOString(), refundStatus: b.refundStatus ?? "none" };
+      setState((s) => {
+        const next = { ...s, bookings: [created, ...s.bookings] };
+        return pushNotification(next, {
+          kind: "booking",
+          title: "Booking successful",
+          body: `${created.serviceName} · ${created.fromCity} → ${created.toCity} on ${created.date}`,
         });
-        return out;
-      },
-      logout: () => setState((s) => ({ ...s, account: null })),
-      updateAccount: (patch) => setState((s) => (s.account ? { ...s, account: { ...s.account, ...patch } } : s)),
-      addPassenger: (p) => {
-        const created: SavedPassenger = { ...p, id: uid() };
-        setState((s) => ({ ...s, passengers: [...s.passengers, created] }));
-        return created;
-      },
-      updatePassenger: (id, patch) =>
-        setState((s) => ({ ...s, passengers: s.passengers.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
-      deletePassenger: (id) => setState((s) => ({ ...s, passengers: s.passengers.filter((p) => p.id !== id) })),
-      addBooking: (b) => {
-        const created: Booking = { ...b, id: uid(), createdAt: new Date().toISOString() };
-        setState((s) => ({ ...s, bookings: [created, ...s.bookings] }));
-        return created;
-      },
-      updateBooking: (id, patch) =>
-        setState((s) => ({ ...s, bookings: s.bookings.map((b) => (b.id === id ? { ...b, ...patch } : b)) })),
-      registerDriver: (d) => setState((s) => ({ ...s, driver: { ...d, registeredAt: new Date().toISOString() } })),
-      updateDriver: (patch) => setState((s) => (s.driver ? { ...s, driver: { ...s.driver, ...patch } } : s)),
-      pushRecentSearch: (q) =>
-        setState((s) => ({ ...s, recentSearches: [q, ...s.recentSearches.filter((r) => r !== q)].slice(0, 6) })),
-      setDark: (b) => setState((s) => ({ ...s, dark: b })),
-    }),
-    [state, hydrated, signUp, login],
-  );
+      });
+      return created;
+    },
+    updateBooking: (id, patch) =>
+      setState((s) => ({ ...s, bookings: s.bookings.map((b) => (b.id === id ? { ...b, ...patch } : b)) })),
+    cancelBooking: (id, reason) =>
+      setState((s) => {
+        const b = s.bookings.find((x) => x.id === id);
+        if (!b || b.status === "cancelled" || b.status === "refunded") return s;
+        const next = {
+          ...s,
+          bookings: s.bookings.map((x) =>
+            x.id === id ? { ...x, status: "cancelled" as BookingStatus, cancelReason: reason ?? "Cancelled by passenger" } : x,
+          ),
+        };
+        return pushNotification(next, {
+          kind: "cancelled",
+          title: "Booking cancelled",
+          body: `${b.serviceName} · request a refund from My Trips if eligible.`,
+        });
+      }),
+    requestRefund: (id) => {
+      let out: { ok: boolean; error?: string } = { ok: true };
+      setState((s) => {
+        const b = s.bookings.find((x) => x.id === id);
+        if (!b) { out = { ok: false, error: "Booking not found." }; return s; }
+        const elig = refundEligibility(b);
+        if (!elig.eligible) { out = { ok: false, error: elig.reason }; return s; }
+        const next: State = {
+          ...s,
+          walletBalance: s.walletBalance + elig.amount,
+          walletTxns: [
+            { id: uid(), type: "refund", amount: elig.amount, label: `Refund · ${b.serviceName}`, at: new Date().toISOString() },
+            ...s.walletTxns,
+          ],
+          bookings: s.bookings.map((x) =>
+            x.id === id
+              ? { ...x, status: "refunded" as BookingStatus, refundStatus: "credited" as RefundStatus, refundAmount: elig.amount, refundedAt: new Date().toISOString() }
+              : x,
+          ),
+        };
+        return pushNotification(next, {
+          kind: "refund",
+          title: "Refund credited",
+          body: `₹${elig.amount} added to your Transit Wallet for ${b.serviceName}.`,
+        });
+      });
+      return out;
+    },
+    registerDriver: (d) => setState((s) => ({ ...s, driver: { ...d, registeredAt: new Date().toISOString() } })),
+    updateDriver: (patch) => setState((s) => (s.driver ? { ...s, driver: { ...s.driver, ...patch } } : s)),
+    pushRecentSearch: (q) =>
+      setState((s) => ({ ...s, recentSearches: [q, ...s.recentSearches.filter((r) => r !== q)].slice(0, 6) })),
+    setDark: (b) => setState((s) => ({ ...s, dark: b })),
+    setAccessibility: (m) => setState((s) => ({ ...s, accessibility: m })),
+    addMoney: (amount, label) =>
+      setState((s) => {
+        const next: State = {
+          ...s,
+          walletBalance: s.walletBalance + amount,
+          walletTxns: [{ id: uid(), type: "credit", amount, label: label ?? "Money added", at: new Date().toISOString() }, ...s.walletTxns],
+        };
+        return pushNotification(next, { kind: "wallet", title: "Wallet credited", body: `₹${amount} added to your Transit Wallet.` });
+      }),
+    payFromWallet: (amount, label) => {
+      let out: { ok: boolean; error?: string } = { ok: true };
+      setState((s) => {
+        if (s.walletBalance < amount) { out = { ok: false, error: "Insufficient wallet balance." }; return s; }
+        return {
+          ...s,
+          walletBalance: s.walletBalance - amount,
+          walletTxns: [{ id: uid(), type: "debit", amount, label, at: new Date().toISOString() }, ...s.walletTxns],
+        };
+      });
+      return out;
+    },
+    addPaymentMethod: (m) => setState((s) => ({ ...s, paymentMethods: [...s.paymentMethods, { ...m, id: uid() }] })),
+    removePaymentMethod: (id) => setState((s) => ({ ...s, paymentMethods: s.paymentMethods.filter((m) => m.id !== id) })),
+    spendCoins: (coins) => setState((s) => ({ ...s, coins: Math.max(0, s.coins - coins) })),
+    reward: (event) =>
+      setState((s) => {
+        const e = POINT_EVENTS[event];
+        if (!e) return s;
+        if (event === "daily" && s.lastDailyBonus === new Date().toDateString()) return s;
+        const next: State = {
+          ...s,
+          coins: s.coins + e.coins,
+          points: s.points + e.points,
+          lastDailyBonus: event === "daily" ? new Date().toDateString() : s.lastDailyBonus,
+        };
+        return e.coins >= 10
+          ? pushNotification(next, { kind: "coins", title: "Transit Coins earned", body: `+${e.coins} coins · ${e.label}` })
+          : next;
+      }),
+    notify: (n) => setState((s) => pushNotification(s, n)),
+    markAllRead: () => setState((s) => ({ ...s, notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
+    clearNotifications: () => setState((s) => ({ ...s, notifications: [] })),
+    saveTatkalDraft: (d) => {
+      const created: PreTatkalDraft = { ...d, id: uid(), createdAt: new Date().toISOString() };
+      setState((s) => pushNotification({ ...s, tatkalDrafts: [created, ...s.tatkalDrafts] }, {
+        kind: "tatkal",
+        title: "Pre-Tatkal saved",
+        body: `${created.serviceName} is queued. We'll alert you when Tatkal opens.`,
+      }));
+      return created;
+    },
+    removeTatkalDraft: (id) => setState((s) => ({ ...s, tatkalDrafts: s.tatkalDrafts.filter((d) => d.id !== id) })),
+  }), [state, hydrated, signUp, login, pushNotification]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

@@ -4,7 +4,6 @@ import { ArrowRight, Bus, Plane, RouteIcon, Shield, Ship, Sparkles, Ticket, Trai
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/transit/AppShell";
 import { AIChat } from "@/components/transit/AIChat";
-import { NostalgicIntro } from "@/components/transit/NostalgicIntro";
 import { SmartSearch, stationByCode, type SearchState } from "@/components/transit/SmartSearch";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -30,9 +29,9 @@ const modeIcons: Record<TransportMode, typeof Train> = {
 };
 
 function Home() {
-  const { account, hydrated } = useStore();
+  const { account, hydrated, reward } = useStore();
   const navigate = useNavigate();
-  const [showIntro, setShowIntro] = useState(false);
+  
   const [search, setSearch] = useState<SearchState>(() => ({
     from: stationByCode("NDLS"),
     to: stationByCode("JP"),
@@ -42,12 +41,9 @@ function Home() {
   }));
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!window.sessionStorage.getItem("transit-intro-seen")) {
-      setShowIntro(true);
-      window.sessionStorage.setItem("transit-intro-seen", "1");
-    }
-  }, []);
+    if (hydrated && account) reward("daily");
+  }, [hydrated, account, reward]);
+
 
   useEffect(() => {
     if (hydrated && !account) navigate({ to: "/auth" });
@@ -70,7 +66,6 @@ function Home() {
 
   return (
     <>
-      {showIntro && <NostalgicIntro onDone={() => setShowIntro(false)} />}
       <AppShell>
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-5xl pt-2">
           <div className="mb-6 flex justify-center">

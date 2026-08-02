@@ -7,12 +7,14 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { AnimatePresence } from "framer-motion";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { I18nProvider } from "../lib/i18n";
 import { StoreProvider } from "../lib/store";
+import { SplashScreen } from "../components/transit/SplashScreen";
 import { Toaster } from "../components/ui/sonner";
 
 
@@ -116,6 +118,29 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function SplashGate({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const seen = window.sessionStorage.getItem("transit-splash-seen");
+    if (!seen) {
+      setShow(true);
+      window.sessionStorage.setItem("transit-splash-seen", "1");
+    }
+    setReady(true);
+  }, []);
+
+  if (!ready) return null;
+
+  return (
+    <>
+      <AnimatePresence>{show && <SplashScreen key="splash" onDone={() => setShow(false)} />}</AnimatePresence>
+      {children}
+    </>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -123,8 +148,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
         <StoreProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
+          <SplashGate>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </SplashGate>
           <Toaster position="top-center" richColors />
         </StoreProvider>
       </I18nProvider>
