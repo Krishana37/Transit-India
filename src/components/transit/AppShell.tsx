@@ -191,7 +191,12 @@ export function SiteHeader() {
               activeProps={{ className: "text-primary" }}
               activeOptions={{ exact: n.to === "/" }}
             >
-              <n.icon className="h-4 w-4" /> {label(n)}
+              {n.brand ? (
+                <BrandIcon name={n.brand} label={n.label} size={24} rounded="rounded-lg" />
+              ) : (
+                <n.icon className="h-4 w-4" />
+              )}{" "}
+              {label(n)}
             </Link>
           ))}
         </div>
