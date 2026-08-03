@@ -24,6 +24,7 @@ export const brandIcons = {
   cab: cabberAsset.url,
   home: homeAsset.url,
   language: languageAsset.url,
+  accessibility: accessibilityAsset.url,
 } as const;
 
 export type BrandIconName = keyof typeof brandIcons;
