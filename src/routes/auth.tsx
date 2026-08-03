@@ -78,9 +78,7 @@ function AuthPage() {
       <div className="flex flex-col justify-center gap-6 px-5 py-10 sm:px-10 lg:px-14">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl text-white brand-gradient">
-              <Train className="h-5 w-5" />
-            </div>
+            <BrandLogo size={36} />
             <span className="text-sm font-semibold">{t("brand.name")}</span>
           </Link>
           <LanguageSwitcher />
