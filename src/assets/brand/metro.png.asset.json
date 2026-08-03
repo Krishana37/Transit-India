@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "5a210973-3bd9-4ce8-bf82-5eb2768ddc36",
-  "project_id": "9f611476-1c8c-43a3-b9e4-29247e0ae022",
-  "url": "/__l5e/assets-v1/5a210973-3bd9-4ce8-bf82-5eb2768ddc36/metro.png",
-  "r2_key": "a/v1/9f611476-1c8c-43a3-b9e4-29247e0ae022/5a210973-3bd9-4ce8-bf82-5eb2768ddc36/metro.png",
-  "original_filename": "metro.png",
-  "size": 1068262,
   "content_type": "image/png",
-  "created_at": "2026-08-03T10:00:54Z"
+  "created_at": "2026-08-03T10:00:54Z",
+  "original_filename": "metro.png",
+  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
+  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/5a210973-3bd9-4ce8-bf82-5eb2768ddc36/metro.png",
+  "size": 1068262,
+  "url": "/__l5e/assets-v1/5a210973-3bd9-4ce8-bf82-5eb2768ddc36/metro.png",
+  "version": 1
 }

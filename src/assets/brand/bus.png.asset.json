@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "01aec4a0-d04a-432a-a668-a8fdfb32f502",
-  "project_id": "9f611476-1c8c-43a3-b9e4-29247e0ae022",
-  "url": "/__l5e/assets-v1/01aec4a0-d04a-432a-a668-a8fdfb32f502/bus.png",
-  "r2_key": "a/v1/9f611476-1c8c-43a3-b9e4-29247e0ae022/01aec4a0-d04a-432a-a668-a8fdfb32f502/bus.png",
-  "original_filename": "bus.png",
-  "size": 1000727,
   "content_type": "image/png",
-  "created_at": "2026-08-03T10:00:45Z"
+  "created_at": "2026-08-03T10:00:45Z",
+  "original_filename": "bus.png",
+  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
+  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/01aec4a0-d04a-432a-a668-a8fdfb32f502/bus.png",
+  "size": 1000727,
+  "url": "/__l5e/assets-v1/01aec4a0-d04a-432a-a668-a8fdfb32f502/bus.png",
+  "version": 1
 }
