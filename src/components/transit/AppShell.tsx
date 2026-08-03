@@ -62,9 +62,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
         <Link to="/" className="flex min-w-0 items-center gap-2.5">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white shadow-lg brand-gradient">
-            <TrainIcon className="h-5 w-5" />
-          </div>
+          <BrandLogo size={36} />
           <div className="min-w-0 leading-tight">
             <div className="truncate text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
             <div className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">{t("brand.tagline")}</div>
