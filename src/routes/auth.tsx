@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, ShieldCheck, Sparkles, Train, Upload, User } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Sparkles, Upload, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/brand/BrandAssets";
 import { LanguageSwitcher } from "@/components/transit/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,9 +45,7 @@ function AuthPage() {
         <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute -bottom-24 -left-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <Link to="/" className="relative flex items-center gap-2.5">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15">
-            <Train className="h-5 w-5" />
-          </div>
+          <BrandLogo size={44} rounded="rounded-full" />
           <div className="leading-tight">
             <div className="text-base font-semibold tracking-tight">{t("brand.name")}</div>
             <div className="text-[10px] uppercase tracking-widest text-white/70">{t("brand.tagline")}</div>
@@ -79,9 +78,7 @@ function AuthPage() {
       <div className="flex flex-col justify-center gap-6 px-5 py-10 sm:px-10 lg:px-14">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl text-white brand-gradient">
-              <Train className="h-5 w-5" />
-            </div>
+            <BrandLogo size={36} />
             <span className="text-sm font-semibold">{t("brand.name")}</span>
           </Link>
           <LanguageSwitcher />

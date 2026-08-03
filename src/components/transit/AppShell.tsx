@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Accessibility, Bell, Bot, Bus, Coins, Globe, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
+  Accessibility, Bell, Bot, Bus, Coins, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
   Ticket, Train as TrainIcon, TrainFront, User, Menu, Wallet,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -12,19 +12,20 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BrandLogo, BrandIcon } from "@/components/brand/BrandAssets";
 import { useI18n, languages } from "@/lib/i18n";
 import { useStore, type AccessibilityMode } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/", key: "nav.home", label: "Home", icon: TrainIcon },
-  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", label: "Book", icon: Ticket },
-  { to: "/trips", key: "nav.trips", label: "My Trips", icon: TrainFront },
-  { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront },
-  { to: "/cabber", key: "nav.cabber", label: "Cabber", icon: Bus },
-  { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet },
-  { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning },
-  { to: "/about", key: "nav.about", label: "About", icon: Ship },
+  { to: "/", key: "nav.home", label: "Home", icon: TrainIcon, brand: "home" },
+  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", label: "Book", icon: Ticket, brand: "train" },
+  { to: "/trips", key: "nav.trips", label: "My Trips", icon: TrainFront, brand: "metro" },
+  { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront, brand: "flight" },
+  { to: "/cabber", key: "nav.cabber", label: "Cabber", icon: Bus, brand: "cabber" },
+  { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet, brand: undefined },
+  { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning, brand: undefined },
+  { to: "/about", key: "nav.about", label: "About", icon: Ship, brand: "ferry" },
 ] as const;
 
 const a11yModes: { id: AccessibilityMode; label: string; hint: string }[] = [
@@ -62,9 +63,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
         <Link to="/" className="flex min-w-0 items-center gap-2.5">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white shadow-lg brand-gradient">
-            <TrainIcon className="h-5 w-5" />
-          </div>
+          <BrandLogo size={36} />
           <div className="min-w-0 leading-tight">
             <div className="truncate text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
             <div className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">{t("brand.tagline")}</div>
@@ -192,7 +191,12 @@ export function SiteHeader() {
               activeProps={{ className: "text-primary" }}
               activeOptions={{ exact: n.to === "/" }}
             >
-              <n.icon className="h-4 w-4" /> {label(n)}
+              {n.brand ? (
+                <BrandIcon name={n.brand} label={n.label} size={24} rounded="rounded-full" />
+              ) : (
+                <n.icon className="h-4 w-4" />
+              )}{" "}
+              {label(n)}
             </Link>
           ))}
         </div>
@@ -234,8 +238,8 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("common.language")}>
-          <Globe className="h-4 w-4" />
+        <Button variant="ghost" size="icon" aria-label={t("common.language")} className="relative">
+          <BrandIcon name="language" label={t("common.language")} size={22} rounded="rounded-full" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-80 w-52 overflow-y-auto">
@@ -260,9 +264,7 @@ export function SiteFooter() {
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="grid h-9 w-9 place-items-center rounded-xl text-white shadow-lg brand-gradient">
-                <TrainIcon className="h-5 w-5" />
-              </div>
+              <BrandLogo size={40} rounded="rounded-full" />
               <div className="text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
             </div>
             <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
