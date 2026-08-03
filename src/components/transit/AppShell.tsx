@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Accessibility, Bell, Bot, Bus, Coins, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
+  Bell, Bot, Bus, Coins, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
   Ticket, Train as TrainIcon, TrainFront, User, Menu, Wallet,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
