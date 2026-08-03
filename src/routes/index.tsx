@@ -25,9 +25,6 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const modeIcons: Record<TransportMode, typeof Train> = {
-  train: Train, bus: Bus, flight: Plane, hotel: Ticket, metro: TrainFront, ferry: Ship,
-};
 
 function Home() {
   const { account, hydrated, reward } = useStore();
