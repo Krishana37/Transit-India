@@ -1,11 +1,11 @@
 {
-  "asset_id": "c870644e-5f47-4cd3-9a1d-dd7afcc152c6",
-  "content_type": "image/png",
-  "created_at": "2026-08-03T10:00:58Z",
-  "original_filename": "ferry.png",
+  "version": 1,
+  "asset_id": "3e09533a-0b2c-48c9-af90-fe4d911c9305",
   "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/c870644e-5f47-4cd3-9a1d-dd7afcc152c6/ferry.png",
-  "size": 1078200,
-  "url": "/__l5e/assets-v1/c870644e-5f47-4cd3-9a1d-dd7afcc152c6/ferry.png",
-  "version": 1
+  "url": "/__l5e/assets-v1/3e09533a-0b2c-48c9-af90-fe4d911c9305/ferry.png",
+  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/3e09533a-0b2c-48c9-af90-fe4d911c9305/ferry.png",
+  "original_filename": "ferry.png",
+  "size": 491371,
+  "content_type": "image/png",
+  "created_at": "2026-08-03T10:30:58Z"
 }

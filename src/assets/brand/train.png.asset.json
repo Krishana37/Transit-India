@@ -1,11 +1,11 @@
 {
-  "asset_id": "81fa7c5f-777a-497a-b2fc-1bfe1a2b3eb7",
-  "content_type": "image/png",
-  "created_at": "2026-08-03T10:00:40Z",
-  "original_filename": "train.png",
+  "version": 1,
+  "asset_id": "3a210dd0-5bea-4ecb-ab88-e424aca9f6fa",
   "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/81fa7c5f-777a-497a-b2fc-1bfe1a2b3eb7/train.png",
-  "size": 936696,
-  "url": "/__l5e/assets-v1/81fa7c5f-777a-497a-b2fc-1bfe1a2b3eb7/train.png",
-  "version": 1
+  "url": "/__l5e/assets-v1/3a210dd0-5bea-4ecb-ab88-e424aca9f6fa/train.png",
+  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/3a210dd0-5bea-4ecb-ab88-e424aca9f6fa/train.png",
+  "original_filename": "train.png",
+  "size": 404470,
+  "content_type": "image/png",
+  "created_at": "2026-08-03T10:30:40Z"
 }
