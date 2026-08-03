@@ -87,25 +87,20 @@ function Home() {
           </div>
 
           <div className="mt-12 grid grid-cols-2 gap-3 md:grid-cols-3">
-            {transportModes.map((m) => {
-              const Icon = modeIcons[m.id];
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => go(m.id)}
-                  className="group flex items-start gap-3 rounded-2xl border border-border/70 bg-card/70 p-4 text-left backdrop-blur transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
-                >
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[color:var(--brand-soft)] text-primary">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold">{m.label}</div>
-                    <div className="text-[12px] leading-relaxed text-muted-foreground">{m.blurb}</div>
-                  </div>
-                  <ArrowRight className="ml-auto mt-1 h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
-                </button>
-              );
-            })}
+            {transportModes.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => go(m.id)}
+                className="group flex items-start gap-3 rounded-2xl border border-border/70 bg-card/70 p-4 text-left backdrop-blur transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
+              >
+                <BrandIcon name={m.id} label={m.label} size={44} />
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">{m.label}</div>
+                  <div className="text-[12px] leading-relaxed text-muted-foreground">{m.blurb}</div>
+                </div>
+                <ArrowRight className="ml-auto mt-1 h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+              </button>
+            ))}
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-3">
