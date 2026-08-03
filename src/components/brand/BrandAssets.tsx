@@ -8,6 +8,7 @@ import hotelAsset from "@/assets/brand/hotel.png.asset.json";
 import cabberAsset from "@/assets/brand/cabber.png.asset.json";
 import homeAsset from "@/assets/brand/home.png.asset.json";
 import languageAsset from "@/assets/brand/language.png.asset.json";
+import accessibilityAsset from "@/assets/brand/accessibility.png.asset.json";
 import { cn } from "@/lib/utils";
 
 export const brandLogoUrl = logoAsset.url;
