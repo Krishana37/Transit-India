@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BrandLogo, BrandIcon } from "@/components/brand/BrandAssets";
 import { useI18n, languages } from "@/lib/i18n";
 import { useStore, type AccessibilityMode } from "@/lib/store";
 import { cn } from "@/lib/utils";
