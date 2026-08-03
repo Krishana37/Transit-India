@@ -238,8 +238,8 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("common.language")}>
-          <Globe className="h-4 w-4" />
+        <Button variant="ghost" size="icon" aria-label={t("common.language")} className="relative">
+          <BrandIcon name="language" label={t("common.language")} size={22} rounded="rounded-lg" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-80 w-52 overflow-y-auto">
