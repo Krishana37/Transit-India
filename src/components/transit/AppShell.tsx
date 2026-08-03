@@ -192,7 +192,7 @@ export function SiteHeader() {
               activeOptions={{ exact: n.to === "/" }}
             >
               {n.brand ? (
-                <BrandIcon name={n.brand} label={n.label} size={24} rounded="rounded-lg" />
+                <BrandIcon name={n.brand} label={n.label} size={24} rounded="rounded-full" />
               ) : (
                 <n.icon className="h-4 w-4" />
               )}{" "}
@@ -239,7 +239,7 @@ export function LanguageSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={t("common.language")} className="relative">
-          <BrandIcon name="language" label={t("common.language")} size={22} rounded="rounded-lg" />
+          <BrandIcon name="language" label={t("common.language")} size={22} rounded="rounded-full" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-80 w-52 overflow-y-auto">
@@ -264,7 +264,7 @@ export function SiteFooter() {
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <BrandLogo size={40} rounded="rounded-2xl" />
+              <BrandLogo size={40} rounded="rounded-full" />
               <div className="text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
             </div>
             <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-muted-foreground">

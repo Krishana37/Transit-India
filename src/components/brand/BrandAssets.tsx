@@ -34,7 +34,7 @@ export type BrandIconName = keyof typeof brandIcons;
 export function BrandLogo({
   className,
   size = 36,
-  rounded = "rounded-xl",
+  rounded = "rounded-full",
 }: {
   className?: string;
   size?: number;
@@ -71,7 +71,7 @@ export function BrandIcon({
   label,
   size = 40,
   className,
-  rounded = "rounded-2xl",
+  rounded = "rounded-full",
   plain,
 }: {
   name: BrandIconName;
