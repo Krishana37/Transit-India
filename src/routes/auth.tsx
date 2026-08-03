@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, ShieldCheck, Sparkles, Train, Upload, User } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Sparkles, Upload, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { BrandLogo } from "@/components/brand/BrandAssets";
