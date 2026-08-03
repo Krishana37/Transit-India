@@ -264,9 +264,7 @@ export function SiteFooter() {
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="grid h-9 w-9 place-items-center rounded-xl text-white shadow-lg brand-gradient">
-                <TrainIcon className="h-5 w-5" />
-              </div>
+              <BrandLogo size={40} rounded="rounded-2xl" />
               <div className="text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
             </div>
             <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
