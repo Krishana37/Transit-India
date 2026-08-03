@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import { BrandLogo } from "@/components/brand/BrandAssets";
 
 /**
  * Transit India opening splash. Original branding only — no third-party
