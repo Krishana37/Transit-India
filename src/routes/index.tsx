@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowRight, Bus, Plane, RouteIcon, Shield, Ship, Sparkles, Ticket, Train, TrainFront, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { AppShell } from "@/components/transit/AppShell";
 import { AIChat } from "@/components/transit/AIChat";
 import { SmartSearch, stationByCode, type SearchState } from "@/components/transit/SmartSearch";
