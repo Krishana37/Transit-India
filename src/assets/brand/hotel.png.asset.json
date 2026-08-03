@@ -1,11 +1,11 @@
 {
-  "asset_id": "fab2d306-74fb-4790-bddf-be3b6c140338",
-  "content_type": "image/png",
-  "created_at": "2026-08-03T10:01:02Z",
-  "original_filename": "hotel.png",
+  "version": 1,
+  "asset_id": "ca361382-1223-4660-91f3-f5a0af533a37",
   "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/fab2d306-74fb-4790-bddf-be3b6c140338/hotel.png",
-  "size": 1047966,
-  "url": "/__l5e/assets-v1/fab2d306-74fb-4790-bddf-be3b6c140338/hotel.png",
-  "version": 1
+  "url": "/__l5e/assets-v1/ca361382-1223-4660-91f3-f5a0af533a37/hotel.png",
+  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/ca361382-1223-4660-91f3-f5a0af533a37/hotel.png",
+  "original_filename": "hotel.png",
+  "size": 492723,
+  "content_type": "image/png",
+  "created_at": "2026-08-03T10:29:53Z"
 }
