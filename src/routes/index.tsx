@@ -9,7 +9,7 @@ import { SmartSearch, stationByCode, type SearchState } from "@/components/trans
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useStore } from "@/lib/store";
-import { transportModes } from "@/lib/inventory";
+import { transportModes, type TransportMode } from "@/lib/inventory";
 
 export const Route = createFileRoute("/")({
   head: () => ({
