@@ -109,8 +109,8 @@ export function SiteHeader() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Accessibility options">
-                <Accessibility className="h-4 w-4" />
+              <Button variant="ghost" size="icon" aria-label="Accessibility options" className="relative">
+                <BrandIcon name="accessibility" label="Accessibility" size={22} rounded="rounded-full" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
