@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, ShieldCheck, Sparkles, Train, Upload, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { BrandLogo } from "@/components/brand/BrandAssets";
 import { LanguageSwitcher } from "@/components/transit/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
