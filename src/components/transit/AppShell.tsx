@@ -18,14 +18,14 @@ import { useStore, type AccessibilityMode } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/", key: "nav.home", label: "Home", icon: TrainIcon },
-  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", label: "Book", icon: Ticket },
-  { to: "/trips", key: "nav.trips", label: "My Trips", icon: TrainFront },
-  { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront },
-  { to: "/cabber", key: "nav.cabber", label: "Cabber", icon: Bus },
-  { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet },
-  { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning },
-  { to: "/about", key: "nav.about", label: "About", icon: Ship },
+  { to: "/", key: "nav.home", label: "Home", icon: TrainIcon, brand: "home" },
+  { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", label: "Book", icon: Ticket, brand: "train" },
+  { to: "/trips", key: "nav.trips", label: "My Trips", icon: TrainFront, brand: "metro" },
+  { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront, brand: "flight" },
+  { to: "/cabber", key: "nav.cabber", label: "Cabber", icon: Bus, brand: "cabber" },
+  { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet, brand: undefined },
+  { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning, brand: undefined },
+  { to: "/about", key: "nav.about", label: "About", icon: Ship, brand: "ferry" },
 ] as const;
 
 const a11yModes: { id: AccessibilityMode; label: string; hint: string }[] = [
