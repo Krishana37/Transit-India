@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { motion } from "framer-motion";
 import {
   Banknote, Building2, CreditCard, IndianRupee, Landmark, Plus, Smartphone, Trash2, Wallet as WalletIcon,
@@ -80,10 +81,13 @@ function WalletPage() {
   return (
     <AppShell>
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6">
-        <div>
-          <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Transit Wallet</p>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My Wallet</h1>
-          <p className="text-[13px] text-muted-foreground">Add money, review transactions and manage payment methods.</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <BrandIcon name="wallet" label="Wallet" size={72} className="sm:!h-20 sm:!w-20" eager />
+          <div className="min-w-0">
+            <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Transit Wallet</p>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My Wallet</h1>
+            <p className="text-[13px] text-muted-foreground">Add money, review transactions and manage payment methods.</p>
+          </div>
         </div>
 
         <Card className="brand-gradient rounded-3xl p-6 text-white">

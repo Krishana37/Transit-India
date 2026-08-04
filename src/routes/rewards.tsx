@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { motion } from "framer-motion";
 import {
   Coins, Star, Sparkles, Search, Ticket, ScanLine, Wallet, Car, Hotel, Utensils, CalendarCheck,
@@ -63,10 +64,13 @@ function RewardsPage() {
   return (
     <AppShell>
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6">
-        <div>
-          <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Loyalty</p>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Transit Coins & Points</h1>
-          <p className="text-[13px] text-muted-foreground">Earn on every action, redeem for discounts and perks.</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <BrandIcon name="coins" label="Transit Coins" size={72} className="sm:!h-20 sm:!w-20" eager />
+          <div className="min-w-0">
+            <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Loyalty</p>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Transit Coins & Points</h1>
+            <p className="text-[13px] text-muted-foreground">Earn on every action, redeem for discounts and perks.</p>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

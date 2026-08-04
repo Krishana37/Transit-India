@@ -53,7 +53,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
           transition={{ type: "spring", stiffness: 180, damping: 16 }}
           className="relative"
         >
-          <BrandLogo size={112} rounded="rounded-full" className="shadow-2xl" />
+          <BrandLogo size={148} rounded="rounded-full" className="shadow-2xl" />
           <motion.span
             className="pointer-events-none absolute inset-0 rounded-full"
             initial={{ boxShadow: "0 0 0 0 color-mix(in oklab, var(--brand) 45%, transparent)" }}

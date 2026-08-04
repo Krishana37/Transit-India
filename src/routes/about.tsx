@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import {
   AlertTriangle, Bot, Car, Globe2, Languages, MapPinned, ReceiptText, Ticket, Timer, Users,
 } from "lucide-react";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { AppShell } from "@/components/transit/AppShell";
 import { Card } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n";
@@ -43,7 +44,7 @@ const steps = [
   { title: "Confirm & get your ticket", body: "Complete the mock payment flow and receive an instant digital ticket with QR code." },
 ];
 
-const stack = ["React", "TanStack Start", "TypeScript", "Tailwind CSS", "Framer Motion", "Lovable AI"];
+
 
 function AboutPage() {
   const { t } = useI18n();
@@ -57,6 +58,7 @@ function AboutPage() {
           transition={{ duration: 0.5 }}
           className="mx-auto max-w-3xl space-y-5 text-center"
         >
+          <BrandIcon name="about" label="About" size={112} className="mx-auto" eager />
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-[color:var(--brand-soft)] px-3 py-1 text-[10px] uppercase tracking-widest text-muted-foreground">
             <Globe2 className="h-3 w-3" /> Hackathon Prototype
           </span>
@@ -119,17 +121,6 @@ function AboutPage() {
           </div>
         </section>
 
-        <section className="text-center">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Under the hood</p>
-          <h2 className="mt-1 text-2xl font-semibold">Tech stack</h2>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
-            {stack.map((s) => (
-              <span key={s} className="rounded-full border border-border bg-card px-4 py-1.5 text-[13px] text-foreground">
-                {s}
-              </span>
-            ))}
-          </div>
-        </section>
 
         <section className="mx-auto max-w-3xl">
           <Card className="rounded-3xl border-[color:var(--accent-orange)]/30 bg-[color:var(--brand-soft)] p-6">

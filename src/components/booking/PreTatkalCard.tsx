@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Zap } from "lucide-react";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -98,10 +98,8 @@ export function PreTatkalCard({
 
   return (
     <Card className="glass-card rounded-2xl p-4">
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <span className="grid h-8 w-8 place-items-center rounded-xl bg-[color:var(--brand-soft)] text-primary">
-          <Zap className="h-4 w-4" />
-        </span>
+      <div className="flex items-center gap-3 text-sm font-semibold">
+        <BrandIcon name="pretatkal" label="Pre-Tatkal queue" size={56} rounded="rounded-2xl" />
         Pre-Tatkal queue
       </div>
       <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">

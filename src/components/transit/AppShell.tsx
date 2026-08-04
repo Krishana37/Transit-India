@@ -20,12 +20,12 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { to: "/", key: "nav.home", label: "Home", icon: TrainIcon, brand: "home" },
   { to: "/book/$mode", params: { mode: "train" }, key: "nav.book", label: "Book", icon: Ticket, brand: "train" },
-  { to: "/trips", key: "nav.trips", label: "My Trips", icon: TrainFront, brand: "metro" },
-  { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront, brand: "flight" },
+  { to: "/trips", key: "nav.trips", label: "My Trips", icon: TrainFront, brand: "trips" },
+  { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront, brand: "pnr" },
   { to: "/cabber", key: "nav.cabber", label: "Cabber", icon: Bus, brand: "cabber" },
-  { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet, brand: undefined },
-  { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning, brand: undefined },
-  { to: "/about", key: "nav.about", label: "About", icon: Ship, brand: "ferry" },
+  { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet, brand: "wallet" },
+  { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning, brand: "complaint" },
+  { to: "/about", key: "nav.about", label: "About", icon: Ship, brand: "about" },
 ] as const;
 
 const a11yModes: { id: AccessibilityMode; label: string; hint: string }[] = [
@@ -63,7 +63,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
         <Link to="/" className="flex min-w-0 items-center gap-2.5">
-          <BrandLogo size={36} />
+          <BrandLogo size={48} />
           <div className="min-w-0 leading-tight">
             <div className="truncate text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
             <div className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">{t("brand.tagline")}</div>
@@ -76,10 +76,11 @@ export function SiteHeader() {
               key={n.key}
               to={n.to}
               params={"params" in n ? n.params : undefined}
-              className="rounded-full px-2.5 py-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+              className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-muted-foreground transition hover:bg-accent hover:text-foreground"
               activeProps={{ className: "bg-[color:var(--brand-soft)] text-primary" }}
               activeOptions={{ exact: n.to === "/" }}
             >
+              <BrandIcon name={n.brand} label={n.label} size={26} rounded="rounded-full" eager />
               {label(n)}
             </Link>
           ))}
@@ -91,7 +92,7 @@ export function SiteHeader() {
             data-a11y="optional"
             className="hidden items-center gap-1.5 rounded-full border border-border bg-background/70 px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition hover:border-primary/40 hover:text-primary sm:inline-flex"
           >
-            <Coins className="h-3.5 w-3.5 text-[color:var(--accent-orange)]" /> {coins}
+            <Coins className="h-4 w-4 text-[color:var(--accent-orange)]" /> {coins}
           </Link>
 
           <Link
@@ -110,7 +111,7 @@ export function SiteHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" aria-label="Accessibility options" className="relative">
-                <BrandIcon name="accessibility" label="Accessibility" size={22} rounded="rounded-full" />
+                <BrandIcon name="accessibility" label="Accessibility" size={32} rounded="rounded-full" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
@@ -187,15 +188,11 @@ export function SiteHeader() {
               to={n.to}
               params={"params" in n ? n.params : undefined}
               onClick={() => setOpenMobile(false)}
-              className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              activeProps={{ className: "text-primary" }}
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+              activeProps={{ className: "text-primary bg-[color:var(--brand-soft)]" }}
               activeOptions={{ exact: n.to === "/" }}
             >
-              {n.brand ? (
-                <BrandIcon name={n.brand} label={n.label} size={24} rounded="rounded-full" />
-              ) : (
-                <n.icon className="h-4 w-4" />
-              )}{" "}
+              <BrandIcon name={n.brand} label={n.label} size={34} rounded="rounded-full" eager />
               {label(n)}
             </Link>
           ))}
@@ -239,7 +236,7 @@ export function LanguageSwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={t("common.language")} className="relative">
-          <BrandIcon name="language" label={t("common.language")} size={22} rounded="rounded-full" />
+          <BrandIcon name="language" label={t("common.language")} size={32} rounded="rounded-full" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-80 w-52 overflow-y-auto">
@@ -264,7 +261,7 @@ export function SiteFooter() {
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <BrandLogo size={40} rounded="rounded-full" />
+              <BrandLogo size={64} rounded="rounded-full" />
               <div className="text-[15px] font-semibold tracking-tight">{t("brand.name")}</div>
             </div>
             <p className="mt-3 max-w-sm text-[13px] leading-relaxed text-muted-foreground">

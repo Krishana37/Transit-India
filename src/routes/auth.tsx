@@ -45,7 +45,7 @@ function AuthPage() {
         <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute -bottom-24 -left-10 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <Link to="/" className="relative flex items-center gap-2.5">
-          <BrandLogo size={44} rounded="rounded-full" />
+          <BrandLogo size={64} rounded="rounded-full" />
           <div className="leading-tight">
             <div className="text-base font-semibold tracking-tight">{t("brand.name")}</div>
             <div className="text-[10px] uppercase tracking-widest text-white/70">{t("brand.tagline")}</div>
@@ -78,7 +78,7 @@ function AuthPage() {
       <div className="flex flex-col justify-center gap-6 px-5 py-10 sm:px-10 lg:px-14">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <BrandLogo size={36} />
+            <BrandLogo size={48} />
             <span className="text-sm font-semibold">{t("brand.name")}</span>
           </Link>
           <LanguageSwitcher />
