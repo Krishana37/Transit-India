@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { motion } from "framer-motion";
 import { CheckCircle2, Clock, MapPin, Search, Ticket as TicketIcon, TrainFront } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -70,13 +71,16 @@ function PnrPage() {
   return (
     <AppShell>
       <div className="space-y-8">
-        <header className="space-y-2">
-          <Badge variant="secondary" className="rounded-full">Prototype tracking</Badge>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">PNR status</h1>
-          <p className="max-w-2xl text-[13px] text-muted-foreground">
-            Search by PNR, service number or passenger name. All journeys, charts and platforms shown here are
-            fictional demonstration data.
-          </p>
+        <header className="flex min-w-0 items-start gap-4">
+          <BrandIcon name="pnr" label="PNR status" size={72} className="shrink-0 sm:!h-20 sm:!w-20" eager />
+          <div className="min-w-0 space-y-2">
+            <Badge variant="secondary" className="rounded-full">Prototype tracking</Badge>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">PNR status</h1>
+            <p className="max-w-2xl text-[13px] text-muted-foreground">
+              Search by PNR, service number or passenger name. All journeys, charts and platforms shown here are
+              fictional demonstration data.
+            </p>
+          </div>
         </header>
 
         <Card className="glass-card rounded-3xl border-border/60 p-5">

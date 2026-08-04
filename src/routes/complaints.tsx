@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { motion } from "framer-motion";
 import { ArrowBigUp, MessageSquareWarning, Plus, Search, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -102,10 +103,13 @@ function ComplaintsPage() {
         className="space-y-6"
       >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-          <div className="min-w-0">
-            <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Community</p>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Complaint Portal</h1>
-            <p className="text-[13px] text-muted-foreground">Browse, upvote and raise travel complaints.</p>
+          <div className="flex min-w-0 items-center gap-4">
+            <BrandIcon name="complaint" label="Complaints" size={72} className="sm:!h-20 sm:!w-20" eager />
+            <div className="min-w-0">
+              <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Community</p>
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Complaint Portal</h1>
+              <p className="text-[13px] text-muted-foreground">Browse, upvote and raise travel complaints.</p>
+            </div>
           </div>
           <RaiseComplaintDialog open={open} onOpenChange={setOpen} onSubmit={submit} />
         </div>

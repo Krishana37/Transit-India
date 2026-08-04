@@ -91,7 +91,7 @@ function Home() {
                 onClick={() => go(m.id)}
                 className="group flex items-start gap-3 rounded-2xl border border-border/70 bg-card/70 p-4 text-left backdrop-blur transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
               >
-                <BrandIcon name={m.id} label={m.label} size={44} />
+                <BrandIcon name={m.id} label={m.label} size={64} />
                 <div className="min-w-0">
                   <div className="text-sm font-semibold">{m.label}</div>
                   <div className="text-[12px] leading-relaxed text-muted-foreground">{m.blurb}</div>

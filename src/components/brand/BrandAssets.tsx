@@ -9,6 +9,13 @@ import cabberAsset from "@/assets/brand/cabber.png.asset.json";
 import homeAsset from "@/assets/brand/home.png.asset.json";
 import languageAsset from "@/assets/brand/language.png.asset.json";
 import accessibilityAsset from "@/assets/brand/accessibility.png.asset.json";
+import complaintAsset from "@/assets/brand/complaint.png.asset.json";
+import aboutAsset from "@/assets/brand/about.png.asset.json";
+import tripsAsset from "@/assets/brand/trips.png.asset.json";
+import pnrAsset from "@/assets/brand/pnr.png.asset.json";
+import walletAsset from "@/assets/brand/wallet.png.asset.json";
+import coinsAsset from "@/assets/brand/coins.png.asset.json";
+import pretatkalAsset from "@/assets/brand/pretatkal.png.asset.json";
 import { cn } from "@/lib/utils";
 
 export const brandLogoUrl = logoAsset.url;
@@ -25,6 +32,13 @@ export const brandIcons = {
   home: homeAsset.url,
   language: languageAsset.url,
   accessibility: accessibilityAsset.url,
+  complaint: complaintAsset.url,
+  about: aboutAsset.url,
+  trips: tripsAsset.url,
+  pnr: pnrAsset.url,
+  wallet: walletAsset.url,
+  coins: coinsAsset.url,
+  pretatkal: pretatkalAsset.url,
 } as const;
 
 export type BrandIconName = keyof typeof brandIcons;
@@ -35,7 +49,7 @@ export type BrandIconName = keyof typeof brandIcons;
  */
 export function BrandLogo({
   className,
-  size = 36,
+  size = 44,
   rounded = "rounded-full",
 }: {
   className?: string;
@@ -54,11 +68,13 @@ export function BrandLogo({
       <img
         src={brandLogoUrl}
         alt="Transit India logo"
-        width={size}
-        height={size}
-        className="h-full w-full object-contain p-[6%]"
+        width={size * 2}
+        height={size * 2}
+        className="h-full w-full object-contain p-[5%] [image-rendering:auto]"
         loading="eager"
-        decoding="async"
+        decoding="sync"
+        fetchPriority="high"
+        draggable={false}
       />
     </span>
   );
@@ -71,10 +87,11 @@ export function BrandLogo({
 export function BrandIcon({
   name,
   label,
-  size = 40,
+  size = 48,
   className,
   rounded = "rounded-full",
   plain,
+  eager,
 }: {
   name: BrandIconName;
   label?: string;
@@ -82,18 +99,22 @@ export function BrandIcon({
   className?: string;
   rounded?: string;
   plain?: boolean;
+  eager?: boolean;
 }) {
   const img = (
     <img
       src={brandIcons[name]}
       alt={label ?? `${name} icon`}
-      width={size}
-      height={size}
-      className="h-full w-full object-contain"
-      loading="lazy"
+      width={size * 2}
+      height={size * 2}
+      className="block object-contain"
+      style={{ width: "100%", height: "100%", maxWidth: "100%", maxHeight: "100%" }}
+      loading={eager ? "eager" : "lazy"}
       decoding="async"
+      draggable={false}
     />
   );
+
 
   if (plain) {
     return (
@@ -106,7 +127,7 @@ export function BrandIcon({
   return (
     <span
       className={cn(
-        "inline-grid shrink-0 place-items-center overflow-hidden bg-white p-[8%] ring-1 ring-black/5 shadow-sm",
+        "inline-grid shrink-0 place-items-center overflow-hidden bg-white p-[6%] ring-1 ring-black/5 shadow-sm",
         rounded,
         className,
       )}
@@ -116,3 +137,4 @@ export function BrandIcon({
     </span>
   );
 }
+

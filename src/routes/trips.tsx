@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { BrandIcon } from "@/components/brand/BrandAssets";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bus, Car, CheckCircle2, Clock, MapPin, Plane, Ship, Ticket, Train, TrainFront, Users, XCircle,
@@ -71,10 +72,13 @@ function TripsPage() {
         transition={{ duration: 0.4 }}
         className="space-y-6"
       >
-        <div>
-          <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Bookings</p>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My Trips</h1>
-          <p className="text-[13px] text-muted-foreground">Track journeys, manage cancellations and request refunds.</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <BrandIcon name="trips" label="My Trips" size={72} className="sm:!h-20 sm:!w-20" eager />
+          <div className="min-w-0">
+            <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Bookings</p>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My Trips</h1>
+            <p className="text-[13px] text-muted-foreground">Track journeys, manage cancellations and request refunds.</p>
+          </div>
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as Phase)}>
