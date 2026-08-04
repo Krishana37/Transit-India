@@ -101,6 +101,7 @@ export function BrandIcon({
   plain?: boolean;
   eager?: boolean;
 }) {
+  const inner = Math.round(size * 0.9);
   const img = (
     <img
       src={brandIcons[name]}
@@ -108,17 +109,19 @@ export function BrandIcon({
       width={size * 2}
       height={size * 2}
       className="block object-contain"
-      style={{ width: "100%", height: "100%", maxWidth: "100%", maxHeight: "100%" }}
+      style={{ width: inner, height: inner }}
       loading={eager ? "eager" : "lazy"}
       decoding="async"
       draggable={false}
     />
   );
 
-
   if (plain) {
     return (
-      <span className={cn("inline-grid shrink-0 place-items-center", className)} style={{ width: size, height: size }}>
+      <span
+        className={cn("inline-flex shrink-0 items-center justify-center", className)}
+        style={{ width: size, height: size }}
+      >
         {img}
       </span>
     );
@@ -127,7 +130,7 @@ export function BrandIcon({
   return (
     <span
       className={cn(
-        "inline-grid shrink-0 place-items-center overflow-hidden bg-white p-[6%] ring-1 ring-black/5 shadow-sm",
+        "inline-flex shrink-0 items-center justify-center overflow-hidden bg-white ring-1 ring-black/5 shadow-sm",
         rounded,
         className,
       )}
@@ -137,4 +140,5 @@ export function BrandIcon({
     </span>
   );
 }
+
 
