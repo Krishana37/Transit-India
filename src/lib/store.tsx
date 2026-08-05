@@ -439,7 +439,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     cancelBooking: (id, reason) =>
       setState((s) => {
         const b = s.bookings.find((x) => x.id === id);
-        if (!b || b.status === "cancelled" || b.status === "refunded") return s;
+        if (!b || !canCancelBooking(b)) return s;
         const next = {
           ...s,
           bookings: s.bookings.map((x) =>
