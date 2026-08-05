@@ -18,7 +18,7 @@ export type Complaint = {
 
 export const transportTypes = ["Train", "Bus", "Flight", "Ferry", "Metro", "Hotel", "Cab"];
 export const categories: ComplaintCategory[] = [
-  "Cleanliness", "Delay", "Staff behaviour", "Ticketing", "Safety", "Food quality", "Accessibility",
+  "Cleanliness", "Delay", "Staff behaviour", "Ticketing", "Safety", "Food quality", "Accessibility", "Others",
 ];
 export const statuses: ComplaintStatus[] = ["Open", "Under review", "Action taken", "Resolved"];
 
