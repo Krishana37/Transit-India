@@ -66,17 +66,21 @@ function WalletPage() {
   const { walletBalance, walletTxns, coins, points, addMoney, paymentMethods, addPaymentMethod, removePaymentMethod } = useStore();
   const { formatCurrency } = useI18n();
   const [customAmount, setCustomAmount] = useState("");
+  const [amountError, setAmountError] = useState<string | null>(null);
   const tier = tierFor(points);
 
   const handleAdd = (amount: number) => {
-    if (!amount || amount <= 0) {
-      toast.error("Enter a valid amount.");
+    const res = addMoney(amount, "Money added via prototype top-up");
+    if (!res.ok) {
+      setAmountError(res.error ?? "Enter a valid amount.");
+      toast.error(res.error ?? "Enter a valid amount.");
       return;
     }
-    addMoney(amount, "Money added via prototype top-up");
+    setAmountError(null);
     toast.success(`${formatCurrency(amount)} added to your wallet.`);
     setCustomAmount("");
   };
+
 
   return (
     <AppShell>
