@@ -19,7 +19,10 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TicketCard } from "@/components/booking/TicketCard";
 import { useI18n } from "@/lib/i18n";
-import { journeyPhase, refundEligibility, useStore, type Booking } from "@/lib/store";
+import { canCancelBooking, journeyPhase, refundEligibility, useStore, type Booking } from "@/lib/store";
+import { ServicePreview } from "@/components/media/ServicePreview";
+import { RateDialog } from "@/components/common/RateDialog";
+import { serviceRatingKey } from "@/lib/ratings";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/trips")({
@@ -128,13 +131,22 @@ function TripCard({ booking, phase }: { booking: Booking; phase: Phase }) {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const Icon = modeIcons[booking.mode] ?? Ticket;
+  const cancellable = canCancelBooking(booking);
   const first = booking.passengers[0];
   const more = booking.passengers.length - 1;
 
   return (
     <Card className="glass-card rounded-2xl p-5">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-        <div className="min-w-0">
+        <div className="flex min-w-0 gap-3">
+          <ServicePreview
+            mode={booking.mode}
+            seed={booking.serviceCode}
+            alt={`${booking.serviceName} preview`}
+            className="hidden w-28 shrink-0 sm:block"
+            ratio="aspect-[4/3]"
+          />
+          <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <Icon className="h-4 w-4 shrink-0 text-primary" />
             <span className="truncate text-[15px] font-semibold">{booking.serviceName}</span>
@@ -159,6 +171,7 @@ function TripCard({ booking, phase }: { booking: Booking; phase: Phase }) {
           <p className="mt-1 flex items-center gap-1 text-[12px] text-muted-foreground">
             <Users className="h-3 w-3" /> {first?.fullName ?? "Guest"}{more > 0 ? ` +${more} more` : ""}
           </p>
+          </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <Badge className={cn("rounded-full border-none capitalize", statusStyles[booking.status])}>{booking.status}</Badge>
@@ -172,15 +185,21 @@ function TripCard({ booking, phase }: { booking: Booking; phase: Phase }) {
       {phase === "upcoming" && (
         <>
           <Separator className="my-4" />
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="rounded-full text-[color:var(--destructive)] hover:text-[color:var(--destructive)]"
-              onClick={() => setCancelOpen(true)}
-            >
-              Cancel booking
-            </Button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {cancellable ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-full text-[color:var(--destructive)] hover:text-[color:var(--destructive)]"
+                onClick={() => setCancelOpen(true)}
+              >
+                Cancel booking
+              </Button>
+            ) : (
+              <span className="text-[12px] text-muted-foreground">
+                Departure window has closed — this booking can no longer be cancelled.
+              </span>
+            )}
           </div>
         </>
       )}
@@ -192,9 +211,17 @@ function TripCard({ booking, phase }: { booking: Booking; phase: Phase }) {
             <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
               <CheckCircle2 className="h-4 w-4 text-[color:var(--success)]" /> Journey completed
             </span>
-            <Button asChild size="sm" variant="outline" className="rounded-full">
-              <Link to="/book/$mode" params={{ mode: booking.mode as "train" }}>Book again</Link>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <RateDialog
+                ratingKey={serviceRatingKey(booking.mode, booking.serviceCode)}
+                title={booking.serviceName}
+                subtitle="How was this journey? Your rating helps other travellers choose."
+                compact
+              />
+              <Button asChild size="sm" variant="outline" className="rounded-full">
+                <Link to="/book/$mode" params={{ mode: booking.mode as "train" }}>Book again</Link>
+              </Button>
+            </div>
           </div>
         </>
       )}

@@ -18,6 +18,9 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { StarRating } from "@/components/common/StarRating";
+import { RateDialog } from "@/components/common/RateDialog";
+import { communityRating, serviceRatingKey } from "@/lib/ratings";
 
 export const Route = createFileRoute("/cabber/")({
   head: () => ({
@@ -213,6 +216,11 @@ function CabberPage() {
                       <div className="text-[13px] font-semibold">{v.type}</div>
                       <div className="text-[10px] text-muted-foreground">{v.capacity}</div>
                       <div className="text-[10px] text-muted-foreground">₹{v.perKm}/km</div>
+                      <StarRating
+                        stars={communityRating(serviceRatingKey("cab", v.type)).stars}
+                        size={11}
+                        showValue={false}
+                      />
                     </button>
                   );
                 })}
@@ -231,9 +239,17 @@ function CabberPage() {
                     <div className="text-lg font-semibold">{formatCurrency(fare)}</div>
                     <div className="text-[11px] text-muted-foreground">{km} km · ETA {eta} min</div>
                   </div>
-                  <Button onClick={bookRide} disabled={!dest || stage !== "plan"} className="h-11 rounded-full px-6 text-white brand-gradient">
-                    Book ride
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <RateDialog
+                      ratingKey={serviceRatingKey("cab", vehicle)}
+                      title={`${vehicle} rides`}
+                      subtitle="Rate this ride category so other riders know what to expect."
+                      compact
+                    />
+                    <Button onClick={bookRide} disabled={!dest || stage !== "plan"} className="h-11 rounded-full px-6 text-white brand-gradient">
+                      Book ride
+                    </Button>
+                  </div>
                 </motion.div>
               </AnimatePresence>
             </Card>

@@ -16,6 +16,7 @@ import pnrAsset from "@/assets/brand/pnr.png.asset.json";
 import walletAsset from "@/assets/brand/wallet.png.asset.json";
 import coinsAsset from "@/assets/brand/coins.png.asset.json";
 import pretatkalAsset from "@/assets/brand/pretatkal.png.asset.json";
+import bellAsset from "@/assets/brand/bell.png.asset.json";
 import { cn } from "@/lib/utils";
 
 export const brandLogoUrl = logoAsset.url;
@@ -39,6 +40,7 @@ export const brandIcons = {
   wallet: walletAsset.url,
   coins: coinsAsset.url,
   pretatkal: pretatkalAsset.url,
+  bell: bellAsset.url,
 } as const;
 
 export type BrandIconName = keyof typeof brandIcons;
