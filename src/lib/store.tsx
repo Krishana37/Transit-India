@@ -486,7 +486,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((s) => ({ ...s, recentSearches: [q, ...s.recentSearches.filter((r) => r !== q)].slice(0, 6) })),
     setDark: (b) => setState((s) => ({ ...s, dark: b })),
     setAccessibility: (m) => setState((s) => ({ ...s, accessibility: m })),
-    addMoney: (amount, label) =>
+    addMoney: (amount, label) => {
+      if (!Number.isFinite(amount) || Math.floor(amount) !== amount)
+        return { ok: false, error: "Enter a whole rupee amount." };
+      if (amount < WALLET_MIN_TOPUP)
+        return { ok: false, error: `Minimum add money amount is ₹${WALLET_MIN_TOPUP}.` };
+      if (amount > WALLET_MAX_TOPUP)
+        return { ok: false, error: `Maximum ₹${WALLET_MAX_TOPUP.toLocaleString("en-IN")} can be added per transaction.` };
       setState((s) => {
         const next: State = {
           ...s,
@@ -494,7 +500,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           walletTxns: [{ id: uid(), type: "credit", amount, label: label ?? "Money added", at: new Date().toISOString() }, ...s.walletTxns],
         };
         return pushNotification(next, { kind: "wallet", title: "Wallet credited", body: `₹${amount} added to your Transit Wallet.` });
-      }),
+      });
+      return { ok: true };
+    },
     payFromWallet: (amount, label) => {
       let out: { ok: boolean; error?: string } = { ok: true };
       setState((s) => {
