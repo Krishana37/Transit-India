@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "7213aa19-312a-4ecd-89c6-063aa17b0e92",
-  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "url": "/__l5e/assets-v1/7213aa19-312a-4ecd-89c6-063aa17b0e92/pretatkal.png",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/7213aa19-312a-4ecd-89c6-063aa17b0e92/pretatkal.png",
-  "original_filename": "pretatkal.png",
-  "size": 1128221,
   "content_type": "image/png",
-  "created_at": "2026-08-04T10:19:46Z"
+  "created_at": "2026-08-04T10:19:46Z",
+  "original_filename": "pretatkal.png",
+  "project_id": "e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5",
+  "r2_key": "a/v1/e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5/7213aa19-312a-4ecd-89c6-063aa17b0e92/pretatkal.png",
+  "size": 1128221,
+  "url": "/__l5e/assets-v1/7213aa19-312a-4ecd-89c6-063aa17b0e92/pretatkal.png",
+  "version": 1
 }

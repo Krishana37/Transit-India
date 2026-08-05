@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "bdff6a82-49d3-41cc-9933-8f323683773e",
-  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "url": "/__l5e/assets-v1/bdff6a82-49d3-41cc-9933-8f323683773e/flight.png",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/bdff6a82-49d3-41cc-9933-8f323683773e/flight.png",
-  "original_filename": "flight.png",
-  "size": 399625,
   "content_type": "image/png",
-  "created_at": "2026-08-03T10:29:24Z"
+  "created_at": "2026-08-03T10:29:24Z",
+  "original_filename": "flight.png",
+  "project_id": "e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5",
+  "r2_key": "a/v1/e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5/bdff6a82-49d3-41cc-9933-8f323683773e/flight.png",
+  "size": 399625,
+  "url": "/__l5e/assets-v1/bdff6a82-49d3-41cc-9933-8f323683773e/flight.png",
+  "version": 1
 }

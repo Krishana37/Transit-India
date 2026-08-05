@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "8048309d-f82a-4470-b1d9-42dd7708b6c2",
-  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "url": "/__l5e/assets-v1/8048309d-f82a-4470-b1d9-42dd7708b6c2/hotel-preview.webp",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/8048309d-f82a-4470-b1d9-42dd7708b6c2/hotel-preview.webp",
-  "original_filename": "hotel-preview.webp",
-  "size": 154300,
   "content_type": "image/webp",
-  "created_at": "2026-08-05T09:23:55Z"
+  "created_at": "2026-08-05T09:23:55Z",
+  "original_filename": "hotel-preview.webp",
+  "project_id": "e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5",
+  "r2_key": "a/v1/e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5/8048309d-f82a-4470-b1d9-42dd7708b6c2/hotel-preview.webp",
+  "size": 154300,
+  "url": "/__l5e/assets-v1/8048309d-f82a-4470-b1d9-42dd7708b6c2/hotel-preview.webp",
+  "version": 1
 }

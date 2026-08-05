@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "80f81462-220e-412b-a22e-0f0b3a5e9399",
-  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "url": "/__l5e/assets-v1/80f81462-220e-412b-a22e-0f0b3a5e9399/cabber.png",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/80f81462-220e-412b-a22e-0f0b3a5e9399/cabber.png",
-  "original_filename": "cabber.png",
-  "size": 527253,
   "content_type": "image/png",
-  "created_at": "2026-08-03T10:29:44Z"
+  "created_at": "2026-08-03T10:29:44Z",
+  "original_filename": "cabber.png",
+  "project_id": "e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5",
+  "r2_key": "a/v1/e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5/80f81462-220e-412b-a22e-0f0b3a5e9399/cabber.png",
+  "size": 527253,
+  "url": "/__l5e/assets-v1/80f81462-220e-412b-a22e-0f0b3a5e9399/cabber.png",
+  "version": 1
 }

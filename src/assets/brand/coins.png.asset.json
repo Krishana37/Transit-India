@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "d92d00bf-e347-4748-87c4-6f03690c2dae",
-  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "url": "/__l5e/assets-v1/d92d00bf-e347-4748-87c4-6f03690c2dae/coins.jpeg",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/d92d00bf-e347-4748-87c4-6f03690c2dae/coins.jpeg",
-  "original_filename": "coins.jpeg",
-  "size": 509454,
   "content_type": "image/png",
-  "created_at": "2026-08-04T10:19:46Z"
+  "created_at": "2026-08-04T10:19:46Z",
+  "original_filename": "coins.jpeg",
+  "project_id": "e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5",
+  "r2_key": "a/v1/e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5/d92d00bf-e347-4748-87c4-6f03690c2dae/coins.jpeg",
+  "size": 509454,
+  "url": "/__l5e/assets-v1/d92d00bf-e347-4748-87c4-6f03690c2dae/coins.jpeg",
+  "version": 1
 }

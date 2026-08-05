@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "af0717ae-ff30-4ea8-9903-f2b457f9b4e4",
-  "project_id": "15b94302-24a5-48a3-9674-78c1474387aa",
-  "url": "/__l5e/assets-v1/af0717ae-ff30-4ea8-9903-f2b457f9b4e4/trips.jpeg",
-  "r2_key": "a/v1/15b94302-24a5-48a3-9674-78c1474387aa/af0717ae-ff30-4ea8-9903-f2b457f9b4e4/trips.jpeg",
-  "original_filename": "trips.jpeg",
-  "size": 493200,
   "content_type": "image/png",
-  "created_at": "2026-08-04T10:18:13Z"
+  "created_at": "2026-08-04T10:18:13Z",
+  "original_filename": "trips.jpeg",
+  "project_id": "e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5",
+  "r2_key": "a/v1/e380ff9a-c8d8-44fd-ad5a-f9e50ed134e5/af0717ae-ff30-4ea8-9903-f2b457f9b4e4/trips.jpeg",
+  "size": 493200,
+  "url": "/__l5e/assets-v1/af0717ae-ff30-4ea8-9903-f2b457f9b4e4/trips.jpeg",
+  "version": 1
 }
