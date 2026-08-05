@@ -114,6 +114,9 @@ function WalletPage() {
               <p className="mt-1 flex items-center gap-1.5 text-2xl font-semibold">
                 <Star className="h-5 w-5" /> {points}
               </p>
+              <p className="text-[11px] text-white/80">
+                1 point = {formatCurrency(POINT_VALUE)} · worth {formatCurrency(Math.floor(points * POINT_VALUE))}
+              </p>
             </div>
           </div>
         </Card>
