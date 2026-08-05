@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CoinRedeemCard } from "@/components/booking/CoinRedeemCard";
+import { PointsRedeemCard } from "@/components/booking/PointsRedeemCard";
 import { FareSidebar, type FareLine } from "@/components/booking/FareSidebar";
 import { MealPicker } from "@/components/booking/MealPicker";
 import { PassengerPicker } from "@/components/booking/PassengerPicker";
@@ -23,10 +24,10 @@ import { RoutePreview } from "@/components/booking/RoutePreview";
 import { TicketCard } from "@/components/booking/TicketCard";
 import { useI18n } from "@/lib/i18n";
 import {
-  computeFare, demandIndex, distanceKm, generateResults, meals, seatState, serviceDisruption,
+  allocateSeats, computeFare, demandIndex, distanceKm, generateResults, meals, seatState, serviceDisruption,
   transportModes, type Segment, type TransportMode,
 } from "@/lib/inventory";
-import { useStore, type Booking, type PreTatkalDraft, type SavedPassenger } from "@/lib/store";
+import { POINT_VALUE, useStore, type Booking, type PreTatkalDraft, type SavedPassenger } from "@/lib/store";
 
 type Search = { from?: string; to?: string; date?: string; slot?: string; q?: string };
 
@@ -69,8 +70,8 @@ function BookPage() {
   const navigate = useNavigate();
   const { t, formatCurrency, formatDate } = useI18n();
   const {
-    account, hydrated, passengers, addBooking, walletBalance, coins, spendCoins,
-    reward, notify, paymentMethods, removeTatkalDraft,
+    account, hydrated, passengers, addBooking, walletBalance, coins, points, spendCoins, spendPoints,
+    payFromWallet, reward, notify, paymentMethods, removeTatkalDraft,
   } = useStore();
 
   const m = (transportModes.some((x) => x.id === mode) ? mode : "train") as TransportMode;
@@ -98,6 +99,9 @@ function BookPage() {
   const [isTatkalFlow, setIsTatkalFlow] = useState(false);
   const [activeTatkalDraftId, setActiveTatkalDraftId] = useState<string | null>(null);
   const [appliedCoins, setAppliedCoins] = useState(0);
+  const [appliedPoints, setAppliedPoints] = useState(0);
+  // Refreshed on every search so fares stay realistic without repeating.
+  const [searchNonce, setSearchNonce] = useState(() => uid());
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -106,8 +110,8 @@ function BookPage() {
   }, []);
 
   const results = useMemo(
-    () => generateResults(m, state.from, state.to, state.date, state.slot, 6),
-    [m, state.from, state.to, state.date, state.slot],
+    () => generateResults(m, state.from, state.to, state.date, state.slot, 6, searchNonce),
+    [m, state.from, state.to, state.date, state.slot, searchNonce],
   );
 
   const aiInterpretation = useMemo(() => {
@@ -136,6 +140,7 @@ function BookPage() {
   const demand = demandIndex(state.from, state.to, state.date);
 
   const submitSearch = () => {
+    setSearchNonce(uid());
     navigate({
       to: "/book/$mode",
       params: { mode: m },
@@ -146,7 +151,10 @@ function BookPage() {
     });
   };
 
-  const seatFor = (seg: Segment, code: string, availableBase: number) => seatState(`${seg.id}-${code}`, availableBase, tick);
+  // RAC / Waiting List apply to trains only, and never to 1st AC.
+  const racWlFor = (code: string) => m === "train" && !code.startsWith("1A") && code !== "GEN";
+  const seatFor = (seg: Segment, code: string, availableBase: number) =>
+    seatState(`${seg.id}-${code}`, availableBase, tick, { racWl: racWlFor(code) });
 
   const pickOption = (seg: Segment, code: string) => {
     const option = seg.options.find((o) => o.code === code)!;
@@ -176,7 +184,8 @@ function BookPage() {
   }, 0);
   const preCoinTotal = base + surge + gst + convenience + mealsTotal;
   const coinDiscount = Math.round(appliedCoins * 0.25);
-  const total = Math.max(0, preCoinTotal - coinDiscount);
+  const pointDiscount = Math.min(Math.floor(appliedPoints * POINT_VALUE), Math.max(0, preCoinTotal - coinDiscount));
+  const total = Math.max(0, preCoinTotal - coinDiscount - pointDiscount);
 
   const fareLines: FareLine[] = [
     { label: `Base fare × ${Math.max(1, chosenPassengers.length)}`, amount: base },
@@ -186,6 +195,7 @@ function BookPage() {
   ];
   if (mealsTotal > 0) fareLines.push({ label: "Meals", amount: mealsTotal });
   if (coinDiscount > 0) fareLines.push({ label: "Transit Coins discount", amount: -coinDiscount });
+  if (pointDiscount > 0) fareLines.push({ label: "Transit Points discount", amount: -pointDiscount });
 
   const showMeals = m !== "hotel" && m !== "metro";
 
@@ -218,7 +228,7 @@ function BookPage() {
       total,
       status: statusOverride ?? "confirmed",
       coach: m === "train" || m === "bus" ? `${classCode}${1 + (Math.abs(pnr.charCodeAt(0)) % 9)}` : undefined,
-      seats: [`${10 + (Number(pnr.slice(-2)) % 60)}`],
+      seats: allocateSeats(pnr, m, classCode, (chosenPassengers.length ? chosenPassengers : passengers.slice(0, 1)).length),
       tatkal: isTatkalFlow || statusOverride === "queued",
       coinsUsed: appliedCoins,
     });
@@ -227,8 +237,16 @@ function BookPage() {
   };
 
   const onPaymentSuccess = (paidWith: string) => {
-    if (paidWith === "Transit Wallet") reward("wallet");
+    if (paidWith === "Transit Wallet") {
+      const res = payFromWallet(total, `Booking · ${segment?.name ?? "Transit India"}`);
+      if (!res.ok) {
+        notify({ kind: "wallet", title: "Payment failed", body: res.error ?? "Insufficient wallet balance." });
+        return;
+      }
+      reward("wallet");
+    }
     if (appliedCoins > 0) spendCoins(appliedCoins);
+    if (appliedPoints > 0) spendPoints(appliedPoints, `Points redeemed · ${segment?.name ?? "booking"}`);
     const statusLabel = currentSeatState && (currentSeatState.tone === "rac" || currentSeatState.tone === "wl") ? currentSeatState.label : undefined;
     const created = finalizeBooking("confirmed", statusLabel);
     if (created) {
@@ -504,7 +522,11 @@ function BookPage() {
               <Card className="rounded-2xl p-5">
                 <div className="text-sm font-semibold">Add meals (optional)</div>
                 <div className="mt-4">
-                  <MealPicker quantities={mealQty} onChange={(id, qty) => setMealQty((m2) => ({ ...m2, [id]: qty }))} />
+                  <MealPicker
+                    quantities={mealQty}
+                    passengerCount={Math.max(1, chosenPassengers.length)}
+                    onChange={(id, qty) => setMealQty((m2) => ({ ...m2, [id]: qty }))}
+                  />
                 </div>
                 <Button onClick={goPayment} className="mt-5 w-full rounded-full brand-gradient text-white">Continue to payment</Button>
               </Card>
@@ -518,7 +540,15 @@ function BookPage() {
             {!isTatkalFlow && <BackButton onClick={() => setStep(showMeals ? "meals" : "passengers")} />}
             <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-[1fr_280px]">
               <PaymentFlow total={total} walletBalance={walletBalance} paymentMethods={paymentMethods} onSuccess={onPaymentSuccess} />
-              <CoinRedeemCard coins={coins} total={preCoinTotal} applied={appliedCoins} onApply={setAppliedCoins} />
+              <div className="space-y-4">
+                <CoinRedeemCard coins={coins} total={preCoinTotal} applied={appliedCoins} onApply={setAppliedCoins} />
+                <PointsRedeemCard
+                  points={points}
+                  total={Math.max(0, preCoinTotal - coinDiscount)}
+                  applied={appliedPoints}
+                  onApply={setAppliedPoints}
+                />
+              </div>
             </div>
           </motion.section>
         )}

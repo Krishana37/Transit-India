@@ -24,6 +24,7 @@ const navItems = [
   { to: "/pnr", key: "nav.pnr", label: "PNR", icon: TrainFront, brand: "pnr" },
   { to: "/cabber", key: "nav.cabber", label: "Cabber", icon: Bus, brand: "cabber" },
   { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet, brand: "wallet" },
+  { to: "/rewards", key: "nav.rewards", label: "Rewards", icon: Wallet, brand: "coins" },
   { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning, brand: "complaint" },
   { to: "/about", key: "nav.about", label: "About", icon: Ship, brand: "about" },
 ] as const;

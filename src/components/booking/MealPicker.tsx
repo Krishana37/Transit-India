@@ -7,12 +7,16 @@ import { useI18n } from "@/lib/i18n";
 import { meals, mealCategories, type MealCategory } from "@/lib/inventory";
 import { cn } from "@/lib/utils";
 
+/** Passengers may order at most 3 meals each. */
+export const MEALS_PER_PASSENGER = 3;
+
 export function MealPicker({
-  quantities, onChange,
-}: { quantities: Record<string, number>; onChange: (id: string, qty: number) => void }) {
+  quantities, onChange, passengerCount = 1,
+}: { quantities: Record<string, number>; onChange: (id: string, qty: number) => void; passengerCount?: number }) {
   const { formatCurrency } = useI18n();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<MealCategory | "All">("All");
+  const [limitHit, setLimitHit] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -34,6 +38,20 @@ export function MealPicker({
     const meal = meals.find((m) => m.id === id);
     return sum + (meal ? meal.price * qty : 0);
   }, 0);
+
+  const pax = Math.max(1, passengerCount);
+  const maxMeals = pax * MEALS_PER_PASSENGER;
+  const ordered = Object.values(quantities).reduce((a, b) => a + b, 0);
+  const atLimit = ordered >= maxMeals;
+
+  const increase = (id: string, qty: number) => {
+    if (atLimit) {
+      setLimitHit(true);
+      return;
+    }
+    setLimitHit(false);
+    onChange(id, qty + 1);
+  };
 
   return (
     <div className="space-y-4">
@@ -72,6 +90,19 @@ export function MealPicker({
           </button>
         ))}
       </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/60 px-3 py-2">
+        <span className="text-[12px] text-muted-foreground">
+          Up to {MEALS_PER_PASSENGER} meals per passenger · {pax} passenger{pax > 1 ? "s" : ""}
+        </span>
+        <Badge variant="outline" className="rounded-full text-[10px]">{ordered} / {maxMeals} selected</Badge>
+      </div>
+
+      {limitHit && (
+        <p className="text-[12px] text-destructive">
+          Meal limit reached — a maximum of {maxMeals} meals can be ordered for {pax} passenger{pax > 1 ? "s" : ""}.
+        </p>
+      )}
 
       {subtotal > 0 && (
         <div className="flex items-center justify-between rounded-xl bg-muted px-3 py-2">
@@ -121,8 +152,9 @@ export function MealPicker({
                       <button
                         type="button"
                         aria-label={`Increase ${m.name}`}
-                        onClick={() => onChange(m.id, qty + 1)}
-                        className="grid h-7 w-7 place-items-center rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
+                        onClick={() => increase(m.id, qty)}
+                        disabled={atLimit}
+                        className="grid h-7 w-7 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary/40 hover:text-primary disabled:opacity-40"
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>

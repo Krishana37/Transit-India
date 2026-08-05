@@ -101,6 +101,15 @@ export type AppNotification = {
   read?: boolean;
 };
 
+export type RewardEntry = {
+  id: string;
+  label: string;
+  points: number;
+  coins: number;
+  at: string;
+  kind: "earned" | "redeemed";
+};
+
 export type AccessibilityMode = "default" | "large" | "senior" | "simple";
 
 export type PreTatkalDraft = {
@@ -134,6 +143,7 @@ type State = {
   paymentMethods: PaymentMethod[];
   notifications: AppNotification[];
   tatkalDrafts: PreTatkalDraft[];
+  rewardLog: RewardEntry[];
   lastDailyBonus?: string;
 };
 
@@ -167,16 +177,30 @@ const initialState: State = {
   paymentMethods: seedPaymentMethods,
   notifications: [],
   tatkalDrafts: [],
+  rewardLog: [],
 };
 
 /** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
 export const COIN_VALUE = 0.25;
 export const COIN_MAX_SHARE = 0.15;
 
+/** 1 Transit Point = ₹0.50 when redeemed at checkout. */
+export const POINT_VALUE = 0.5;
+
+/** Add Money limits per attempt. */
+export const WALLET_MIN_TOPUP = 1;
+export const WALLET_MAX_TOPUP = 100000;
+
 export function maxCoinDiscount(total: number, coins: number) {
   const cap = Math.floor(total * COIN_MAX_SHARE);
   return Math.max(0, Math.min(cap, Math.floor(coins * COIN_VALUE)));
 }
+
+/** Points can cover the whole remaining fare, but never more than you own. */
+export function maxPointDiscount(total: number, points: number) {
+  return Math.max(0, Math.min(Math.floor(total), Math.floor(points * POINT_VALUE)));
+}
+
 
 export const POINT_EVENTS: Record<string, { points: number; coins: number; label: string }> = {
   search: { points: 2, coins: 1, label: "Searched a route" },
@@ -220,11 +244,12 @@ type StoreValue = State & {
   pushRecentSearch: (q: string) => void;
   setDark: (b: boolean) => void;
   setAccessibility: (m: AccessibilityMode) => void;
-  addMoney: (amount: number, label?: string) => void;
+  addMoney: (amount: number, label?: string) => { ok: boolean; error?: string };
   payFromWallet: (amount: number, label: string) => { ok: boolean; error?: string };
   addPaymentMethod: (m: Omit<PaymentMethod, "id">) => void;
   removePaymentMethod: (id: string) => void;
   spendCoins: (coins: number) => void;
+  spendPoints: (points: number, label?: string) => void;
   reward: (event: keyof typeof POINT_EVENTS | string) => void;
   notify: (n: Omit<AppNotification, "id" | "at" | "read">) => void;
   markAllRead: () => void;
@@ -245,6 +270,18 @@ export function journeyPhase(b: Booking): "upcoming" | "completed" | "cancelled"
   end.setHours(h || 23, m || 59, 0, 0);
   if (b.arrive < b.depart) end.setDate(end.getDate() + 1);
   return end.getTime() < Date.now() ? "completed" : "upcoming";
+}
+
+/**
+ * Cancellation is only offered while the journey is still upcoming and the
+ * scheduled departure has not passed. Completed journeys can never be cancelled.
+ */
+export function canCancelBooking(b: Booking): boolean {
+  if (b.status === "cancelled" || b.status === "refunded" || b.status === "completed") return false;
+  if (journeyPhase(b) !== "upcoming") return false;
+  const departAt = new Date(`${b.date}T${b.depart && b.depart !== "—" ? b.depart : "00:00"}`).getTime();
+  if (Number.isNaN(departAt)) return true;
+  return departAt > Date.now();
 }
 
 /** Refunds only for upcoming, non-cancelled, not-already-refunded bookings. */
@@ -402,7 +439,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     cancelBooking: (id, reason) =>
       setState((s) => {
         const b = s.bookings.find((x) => x.id === id);
-        if (!b || b.status === "cancelled" || b.status === "refunded") return s;
+        if (!b || !canCancelBooking(b)) return s;
         const next = {
           ...s,
           bookings: s.bookings.map((x) =>
@@ -449,7 +486,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((s) => ({ ...s, recentSearches: [q, ...s.recentSearches.filter((r) => r !== q)].slice(0, 6) })),
     setDark: (b) => setState((s) => ({ ...s, dark: b })),
     setAccessibility: (m) => setState((s) => ({ ...s, accessibility: m })),
-    addMoney: (amount, label) =>
+    addMoney: (amount, label) => {
+      if (!Number.isFinite(amount) || Math.floor(amount) !== amount)
+        return { ok: false, error: "Enter a whole rupee amount." };
+      if (amount < WALLET_MIN_TOPUP)
+        return { ok: false, error: `Minimum add money amount is ₹${WALLET_MIN_TOPUP}.` };
+      if (amount > WALLET_MAX_TOPUP)
+        return { ok: false, error: `Maximum ₹${WALLET_MAX_TOPUP.toLocaleString("en-IN")} can be added per transaction.` };
       setState((s) => {
         const next: State = {
           ...s,
@@ -457,7 +500,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           walletTxns: [{ id: uid(), type: "credit", amount, label: label ?? "Money added", at: new Date().toISOString() }, ...s.walletTxns],
         };
         return pushNotification(next, { kind: "wallet", title: "Wallet credited", body: `₹${amount} added to your Transit Wallet.` });
-      }),
+      });
+      return { ok: true };
+    },
     payFromWallet: (amount, label) => {
       let out: { ok: boolean; error?: string } = { ok: true };
       setState((s) => {
@@ -472,7 +517,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     addPaymentMethod: (m) => setState((s) => ({ ...s, paymentMethods: [...s.paymentMethods, { ...m, id: uid() }] })),
     removePaymentMethod: (id) => setState((s) => ({ ...s, paymentMethods: s.paymentMethods.filter((m) => m.id !== id) })),
-    spendCoins: (coins) => setState((s) => ({ ...s, coins: Math.max(0, s.coins - coins) })),
+    spendCoins: (coins) =>
+      setState((s) => ({
+        ...s,
+        coins: Math.max(0, s.coins - coins),
+        rewardLog: coins > 0
+          ? [{ id: uid(), label: "Coins redeemed at checkout", points: 0, coins: -coins, at: new Date().toISOString(), kind: "redeemed" as const }, ...s.rewardLog].slice(0, 60)
+          : s.rewardLog,
+      })),
+    spendPoints: (points, label) =>
+      setState((s) => {
+        const used = Math.max(0, Math.min(points, s.points));
+        if (used === 0) return s;
+        return {
+          ...s,
+          points: s.points - used,
+          rewardLog: [
+            { id: uid(), label: label ?? "Points redeemed at checkout", points: -used, coins: 0, at: new Date().toISOString(), kind: "redeemed" as const },
+            ...s.rewardLog,
+          ].slice(0, 60),
+        };
+      }),
     reward: (event) =>
       setState((s) => {
         const e = POINT_EVENTS[event];
@@ -483,6 +548,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           coins: s.coins + e.coins,
           points: s.points + e.points,
           lastDailyBonus: event === "daily" ? new Date().toDateString() : s.lastDailyBonus,
+          rewardLog: [
+            { id: uid(), label: e.label, points: e.points, coins: e.coins, at: new Date().toISOString(), kind: "earned" as const },
+            ...s.rewardLog,
+          ].slice(0, 60),
         };
         return e.coins >= 10
           ? pushNotification(next, { kind: "coins", title: "Transit Coins earned", body: `+${e.coins} coins · ${e.label}` })
