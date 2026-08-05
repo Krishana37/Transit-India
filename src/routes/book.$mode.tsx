@@ -443,11 +443,20 @@ function BookPage() {
                             const st = seatFor(seg, o.code, o.available);
                             const toneClass = st.tone === "sold" ? "text-destructive" : st.tone === "wl" ? "text-destructive" : st.tone === "rac" ? "text-[color:var(--accent-orange)]" : st.tone === "low" ? "text-[color:var(--accent-orange)]" : "text-[color:var(--success)]";
                             return (
-                              <button
+                              <div
                                 key={o.code}
-                                onClick={() => pickOption(seg, o.code)}
-                                disabled={st.tone === "sold"}
-                                className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:border-primary/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                                role="button"
+                                tabIndex={st.tone === "sold" ? -1 : 0}
+                                aria-disabled={st.tone === "sold"}
+                                onClick={() => st.tone !== "sold" && pickOption(seg, o.code)}
+                                onKeyDown={(e) => {
+                                  if (st.tone === "sold") return;
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    pickOption(seg, o.code);
+                                  }
+                                }}
+                                className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:border-primary/40 hover:-translate-y-0.5 ${st.tone === "sold" ? "pointer-events-none opacity-50" : ""}`}
                               >
                                 <div>
                                   <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{o.label}</div>
@@ -458,7 +467,8 @@ function BookPage() {
                                 <Button size="sm" className="rounded-full brand-gradient text-white" disabled={st.tone === "sold"}>
                                   {st.tone === "sold" ? "Sold Out" : "Book"}
                                 </Button>
-                              </button>
+                              </div>
+
                             );
                           })}
                         </div>
