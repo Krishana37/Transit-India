@@ -517,7 +517,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     addPaymentMethod: (m) => setState((s) => ({ ...s, paymentMethods: [...s.paymentMethods, { ...m, id: uid() }] })),
     removePaymentMethod: (id) => setState((s) => ({ ...s, paymentMethods: s.paymentMethods.filter((m) => m.id !== id) })),
-    spendCoins: (coins) => setState((s) => ({ ...s, coins: Math.max(0, s.coins - coins) })),
+    spendCoins: (coins) =>
+      setState((s) => ({
+        ...s,
+        coins: Math.max(0, s.coins - coins),
+        rewardLog: coins > 0
+          ? [{ id: uid(), label: "Coins redeemed at checkout", points: 0, coins: -coins, at: new Date().toISOString(), kind: "redeemed" as const }, ...s.rewardLog].slice(0, 60)
+          : s.rewardLog,
+      })),
+    spendPoints: (points, label) =>
+      setState((s) => {
+        const used = Math.max(0, Math.min(points, s.points));
+        if (used === 0) return s;
+        return {
+          ...s,
+          points: s.points - used,
+          rewardLog: [
+            { id: uid(), label: label ?? "Points redeemed at checkout", points: -used, coins: 0, at: new Date().toISOString(), kind: "redeemed" as const },
+            ...s.rewardLog,
+          ].slice(0, 60),
+        };
+      }),
     reward: (event) =>
       setState((s) => {
         const e = POINT_EVENTS[event];
@@ -528,6 +548,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           coins: s.coins + e.coins,
           points: s.points + e.points,
           lastDailyBonus: event === "daily" ? new Date().toDateString() : s.lastDailyBonus,
+          rewardLog: [
+            { id: uid(), label: e.label, points: e.points, coins: e.coins, at: new Date().toISOString(), kind: "earned" as const },
+            ...s.rewardLog,
+          ].slice(0, 60),
         };
         return e.coins >= 10
           ? pushNotification(next, { kind: "coins", title: "Transit Coins earned", body: `+${e.coins} coins · ${e.label}` })
