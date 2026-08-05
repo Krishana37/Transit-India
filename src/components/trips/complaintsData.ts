@@ -1,6 +1,6 @@
 export type ComplaintStatus = "Open" | "Under review" | "Action taken" | "Resolved";
 export type ComplaintCategory =
-  | "Cleanliness" | "Delay" | "Staff behaviour" | "Ticketing" | "Safety" | "Food quality" | "Accessibility";
+  | "Cleanliness" | "Delay" | "Staff behaviour" | "Ticketing" | "Safety" | "Food quality" | "Accessibility" | "Others";
 
 export type Complaint = {
   id: string;
