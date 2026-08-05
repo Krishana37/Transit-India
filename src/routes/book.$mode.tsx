@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle, ArrowLeft, Bus, CheckCircle2, Clock, Plane, Ship, Sparkles, Ticket, Train, TrainFront, TrendingUp,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/transit/AppShell";
 import { SmartSearch, stationByCode, type SearchState } from "@/components/transit/SmartSearch";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,10 @@ import { PaymentFlow } from "@/components/booking/PaymentFlow";
 import { PreTatkalCard } from "@/components/booking/PreTatkalCard";
 import { ProbabilityBar, RouteLine } from "@/components/booking/ProbabilityBar";
 import { RoutePreview } from "@/components/booking/RoutePreview";
+import { ServicePreview } from "@/components/media/ServicePreview";
+import { RateDialog } from "@/components/common/RateDialog";
+import { StarRating } from "@/components/common/StarRating";
+import { blendRating, communityRating, serviceRatingKey } from "@/lib/ratings";
 import { TicketCard } from "@/components/booking/TicketCard";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -52,6 +56,8 @@ const modeIcons: Record<TransportMode, typeof Train> = {
   train: Train, bus: Bus, flight: Plane, hotel: Ticket, metro: TrainFront, ferry: Ship,
 };
 
+type SortKey = "recommended" | "price" | "duration" | "rating";
+
 type Step = "results" | "passengers" | "meals" | "waitlist" | "payment" | "ticket";
 
 function uid() {
@@ -71,7 +77,7 @@ function BookPage() {
   const { t, formatCurrency, formatDate } = useI18n();
   const {
     account, hydrated, passengers, addBooking, walletBalance, coins, points, spendCoins, spendPoints,
-    payFromWallet, reward, notify, paymentMethods, removeTatkalDraft,
+    payFromWallet, reward, notify, paymentMethods, removeTatkalDraft, ratings,
   } = useStore();
 
   const m = (transportModes.some((x) => x.id === mode) ? mode : "train") as TransportMode;
@@ -103,6 +109,7 @@ function BookPage() {
   // Refreshed on every search so fares stay realistic without repeating.
   const [searchNonce, setSearchNonce] = useState(() => uid());
   const [tick, setTick] = useState(0);
+  const [sortBy, setSortBy] = useState<SortKey>("recommended");
 
   useEffect(() => {
     const id = setInterval(() => setTick((x) => x + 1), 12000);
@@ -123,18 +130,37 @@ function BookPage() {
     return null;
   }, [state.query]);
 
+  const scoreOf = useCallback(
+    (seg: Segment) => blendRating(communityRating(serviceRatingKey(m, seg.code)), ratings[serviceRatingKey(m, seg.code)]?.stars).stars,
+    [m, ratings],
+  );
+
   const sortedResults = useMemo(() => {
     let list = [...results];
     const q = state.query.toLowerCase();
-    if (q.includes("cheapest") || q.includes("budget")) {
-      list.sort((a, b) => Math.min(...a.options.map((o) => o.fare)) - Math.min(...b.options.map((o) => o.fare)));
-    } else if (q.includes("fastest")) {
-      list.sort((a, b) => a.durationMins - b.durationMins);
-    } else if (q.includes("ac")) {
+    if (q.includes("ac")) {
       list = list.filter((s) => s.options.some((o) => /A|AC|CC|EC|3A|2A|1A|VOLVO|DELUXE|SUITE/.test(o.code)));
     }
+    const effective =
+      sortBy !== "recommended"
+        ? sortBy
+        : q.includes("cheapest") || q.includes("budget")
+          ? "price"
+          : q.includes("fastest")
+            ? "duration"
+            : q.includes("best") || q.includes("rated")
+              ? "rating"
+              : "recommended";
+
+    if (effective === "price") {
+      list.sort((a, b) => Math.min(...a.options.map((o) => o.fare)) - Math.min(...b.options.map((o) => o.fare)));
+    } else if (effective === "duration") {
+      list.sort((a, b) => a.durationMins - b.durationMins);
+    } else if (effective === "rating") {
+      list.sort((a, b) => scoreOf(b) - scoreOf(a));
+    }
     return list;
-  }, [results, state.query]);
+  }, [results, state.query, sortBy, scoreOf]);
 
   const km = distanceKm(state.from, state.to);
   const demand = demandIndex(state.from, state.to, state.date);
@@ -312,9 +338,33 @@ function BookPage() {
                     <Sparkles className="mr-1.5 h-3 w-3" /> AI applied: {aiInterpretation}
                   </Badge>
                 )}
-                <p className="text-[12px] text-muted-foreground">
-                  Fares update live with distance ({km} km), class and demand (×{demand}).
-                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-[12px] text-muted-foreground">
+                    Fares update live with distance ({km} km), class and demand (×{demand}).
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5" data-a11y="optional">
+                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Sort</span>
+                    {([
+                      { id: "recommended", label: "Recommended" },
+                      { id: "rating", label: "Top rated" },
+                      { id: "price", label: "Cheapest" },
+                      { id: "duration", label: "Fastest" },
+                    ] as { id: SortKey; label: string }[]).map((o) => (
+                      <button
+                        key={o.id}
+                        onClick={() => setSortBy(o.id)}
+                        aria-pressed={sortBy === o.id}
+                        className={`rounded-full border px-2.5 py-1 text-[12px] transition ${
+                          sortBy === o.id
+                            ? "border-primary bg-[color:var(--brand-soft)] text-primary"
+                            : "border-border text-muted-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 {sortedResults.map((seg, segIdx) => {
                   const disruption = serviceDisruption(seg.id);
@@ -322,9 +372,26 @@ function BookPage() {
                   return (
                     <Card key={seg.id} className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur">
                       <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-semibold">{seg.name}</div>
-                          <div className="text-[12px] text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <ServicePreview
+                            mode={m}
+                            seed={seg.code}
+                            alt={`${seg.name} preview`}
+                            className="w-24 shrink-0 sm:w-32"
+                            ratio="aspect-[4/3]"
+                          />
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold">{seg.name}</div>
+                            <div className="text-[12px] text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
+                            <div className="mt-1.5">
+                              <RateDialog
+                                ratingKey={serviceRatingKey(m, seg.code)}
+                                title={seg.name}
+                                subtitle="Rate this service so other travellers can pick the best option on this route."
+                                compact
+                              />
+                            </div>
+                          </div>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {disruption.cancelled && (
@@ -376,11 +443,20 @@ function BookPage() {
                             const st = seatFor(seg, o.code, o.available);
                             const toneClass = st.tone === "sold" ? "text-destructive" : st.tone === "wl" ? "text-destructive" : st.tone === "rac" ? "text-[color:var(--accent-orange)]" : st.tone === "low" ? "text-[color:var(--accent-orange)]" : "text-[color:var(--success)]";
                             return (
-                              <button
+                              <div
                                 key={o.code}
-                                onClick={() => pickOption(seg, o.code)}
-                                disabled={st.tone === "sold"}
-                                className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:border-primary/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                                role="button"
+                                tabIndex={st.tone === "sold" ? -1 : 0}
+                                aria-disabled={st.tone === "sold"}
+                                onClick={() => st.tone !== "sold" && pickOption(seg, o.code)}
+                                onKeyDown={(e) => {
+                                  if (st.tone === "sold") return;
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    pickOption(seg, o.code);
+                                  }
+                                }}
+                                className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:border-primary/40 hover:-translate-y-0.5 ${st.tone === "sold" ? "pointer-events-none opacity-50" : ""}`}
                               >
                                 <div>
                                   <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{o.label}</div>
@@ -391,7 +467,8 @@ function BookPage() {
                                 <Button size="sm" className="rounded-full brand-gradient text-white" disabled={st.tone === "sold"}>
                                   {st.tone === "sold" ? "Sold Out" : "Book"}
                                 </Button>
-                              </button>
+                              </div>
+
                             );
                           })}
                         </div>

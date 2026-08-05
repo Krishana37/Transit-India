@@ -145,7 +145,12 @@ type State = {
   tatkalDrafts: PreTatkalDraft[];
   rewardLog: RewardEntry[];
   lastDailyBonus?: string;
+  /** Traveller's own ratings, keyed by `mode:code` or a feature key like `app`. */
+  ratings: Record<string, ServiceRating>;
 };
+
+/** A rating left by the traveller on a service, journey or the app itself. */
+export type ServiceRating = { stars: number; note?: string; at: string };
 
 const STORAGE_KEY = "transit-india-state-v2";
 
@@ -178,6 +183,7 @@ const initialState: State = {
   notifications: [],
   tatkalDrafts: [],
   rewardLog: [],
+  ratings: {},
 };
 
 /** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
@@ -255,6 +261,7 @@ type StoreValue = State & {
   markAllRead: () => void;
   clearNotifications: () => void;
   saveTatkalDraft: (d: Omit<PreTatkalDraft, "id" | "createdAt">) => PreTatkalDraft;
+  rateService: (key: string, stars: number, note?: string) => void;
   removeTatkalDraft: (id: string) => void;
 };
 
@@ -310,7 +317,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setState({ ...initialState, ...(JSON.parse(raw) as State) });
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<State>;
+        setState({ ...initialState, ...saved, ratings: { ...initialState.ratings, ...(saved.ratings ?? {}) } });
+      }
     } catch {
       /* ignore corrupted state */
     }
@@ -560,6 +570,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     notify: (n) => setState((s) => pushNotification(s, n)),
     markAllRead: () => setState((s) => ({ ...s, notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
     clearNotifications: () => setState((s) => ({ ...s, notifications: [] })),
+    rateService: (key, stars, note) =>
+      setState((s) => ({
+        ...s,
+        ratings: { ...s.ratings, [key]: { stars, note, at: new Date().toISOString() } },
+      })),
     saveTatkalDraft: (d) => {
       const created: PreTatkalDraft = { ...d, id: uid(), createdAt: new Date().toISOString() };
       setState((s) => pushNotification({ ...s, tatkalDrafts: [created, ...s.tatkalDrafts] }, {

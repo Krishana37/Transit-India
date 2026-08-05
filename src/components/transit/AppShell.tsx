@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Bell, Bot, Bus, Coins, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
+  Bot, Bus, Coins, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
   Ticket, Train as TrainIcon, TrainFront, User, Menu, Wallet,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -99,11 +99,11 @@ export function SiteHeader() {
           <Link
             to="/notifications"
             aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`}
-            className="relative grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:bg-accent hover:text-foreground"
+            className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-accent"
           >
-            <Bell className="h-4 w-4" />
+            <BrandIcon name="bell" label="Notifications" size={30} rounded="rounded-full" eager />
             {unreadCount > 0 && (
-              <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}

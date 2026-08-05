@@ -9,6 +9,13 @@ import { SmartSearch, stationByCode, type SearchState } from "@/components/trans
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { useStore } from "@/lib/store";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { RateDialog } from "@/components/common/RateDialog";
+import { StarRating } from "@/components/common/StarRating";
+import { blendRating, communityRating, ratingTone } from "@/lib/ratings";
+import { Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { transportModes, type TransportMode } from "@/lib/inventory";
 
 export const Route = createFileRoute("/")({
@@ -27,7 +34,7 @@ export const Route = createFileRoute("/")({
 
 
 function Home() {
-  const { account, hydrated, reward } = useStore();
+  const { account, hydrated, reward, dark, setDark, ratings } = useStore();
   const navigate = useNavigate();
   
   const [search, setSearch] = useState<SearchState>(() => ({
@@ -60,12 +67,33 @@ function Home() {
       },
     });
 
+  const appScore = blendRating(communityRating("app"), ratings["app"]?.stars);
+
   if (!hydrated || !account) return null;
 
   return (
     <>
       <AppShell>
         <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-5xl pt-2">
+          <div className="mb-4 flex items-center justify-end">
+            <div
+              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 backdrop-blur"
+              data-a11y="optional"
+            >
+              <Sun className={`h-3.5 w-3.5 ${dark ? "text-muted-foreground" : "text-[color:var(--accent-orange)]"}`} />
+              <Switch
+                id="home-theme"
+                checked={dark}
+                onCheckedChange={setDark}
+                aria-label="Toggle dark mode"
+              />
+              <Moon className={`h-3.5 w-3.5 ${dark ? "text-primary" : "text-muted-foreground"}`} />
+              <Label htmlFor="home-theme" className="cursor-pointer text-[12px] text-muted-foreground">
+                {dark ? "Dark" : "Light"} mode
+              </Label>
+            </div>
+          </div>
+
           <div className="mb-6 flex justify-center">
             <Badge variant="outline" className="rounded-full border-border/70 bg-background/60 px-3 py-1 text-[11px] font-medium backdrop-blur">
               <Sparkles className="mr-1.5 h-3 w-3 text-[color:var(--accent-orange)]" />
@@ -108,6 +136,29 @@ function Home() {
           </div>
 
           <Card className="glass-card mt-10 flex flex-col items-start justify-between gap-4 rounded-3xl p-6 md:flex-row md:items-center">
+            <div>
+              <div className="text-sm font-semibold">Enjoying Transit India?</div>
+              <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
+                Rate the app and help us shape what gets built next.
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <StarRating stars={appScore.stars} count={appScore.count} />
+                <span className="text-[12px] text-muted-foreground">{ratingTone(appScore.stars)}</span>
+              </div>
+            </div>
+            <RateDialog
+              ratingKey="app"
+              title="Transit India"
+              subtitle="Tell us how the whole experience feels — search, booking, wallet and everything in between."
+              trigger={
+                <Button className="rounded-full brand-gradient text-white">
+                  {ratings["app"] ? "Update your rating" : "Rate this app"}
+                </Button>
+              }
+            />
+          </Card>
+
+          <Card className="glass-card mt-6 flex flex-col items-start justify-between gap-4 rounded-3xl p-6 md:flex-row md:items-center">
             <div>
               <div className="text-sm font-semibold">Built for a hackathon, designed like a product</div>
               <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
