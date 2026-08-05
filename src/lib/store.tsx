@@ -101,6 +101,15 @@ export type AppNotification = {
   read?: boolean;
 };
 
+export type RewardEntry = {
+  id: string;
+  label: string;
+  points: number;
+  coins: number;
+  at: string;
+  kind: "earned" | "redeemed";
+};
+
 export type AccessibilityMode = "default" | "large" | "senior" | "simple";
 
 export type PreTatkalDraft = {
@@ -134,6 +143,7 @@ type State = {
   paymentMethods: PaymentMethod[];
   notifications: AppNotification[];
   tatkalDrafts: PreTatkalDraft[];
+  rewardLog: RewardEntry[];
   lastDailyBonus?: string;
 };
 
@@ -167,16 +177,30 @@ const initialState: State = {
   paymentMethods: seedPaymentMethods,
   notifications: [],
   tatkalDrafts: [],
+  rewardLog: [],
 };
 
 /** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
 export const COIN_VALUE = 0.25;
 export const COIN_MAX_SHARE = 0.15;
 
+/** 1 Transit Point = ₹0.50 when redeemed at checkout. */
+export const POINT_VALUE = 0.5;
+
+/** Add Money limits per attempt. */
+export const WALLET_MIN_TOPUP = 1;
+export const WALLET_MAX_TOPUP = 100000;
+
 export function maxCoinDiscount(total: number, coins: number) {
   const cap = Math.floor(total * COIN_MAX_SHARE);
   return Math.max(0, Math.min(cap, Math.floor(coins * COIN_VALUE)));
 }
+
+/** Points can cover the whole remaining fare, but never more than you own. */
+export function maxPointDiscount(total: number, points: number) {
+  return Math.max(0, Math.min(Math.floor(total), Math.floor(points * POINT_VALUE)));
+}
+
 
 export const POINT_EVENTS: Record<string, { points: number; coins: number; label: string }> = {
   search: { points: 2, coins: 1, label: "Searched a route" },
@@ -220,11 +244,12 @@ type StoreValue = State & {
   pushRecentSearch: (q: string) => void;
   setDark: (b: boolean) => void;
   setAccessibility: (m: AccessibilityMode) => void;
-  addMoney: (amount: number, label?: string) => void;
+  addMoney: (amount: number, label?: string) => { ok: boolean; error?: string };
   payFromWallet: (amount: number, label: string) => { ok: boolean; error?: string };
   addPaymentMethod: (m: Omit<PaymentMethod, "id">) => void;
   removePaymentMethod: (id: string) => void;
   spendCoins: (coins: number) => void;
+  spendPoints: (points: number, label?: string) => void;
   reward: (event: keyof typeof POINT_EVENTS | string) => void;
   notify: (n: Omit<AppNotification, "id" | "at" | "read">) => void;
   markAllRead: () => void;
@@ -245,6 +270,18 @@ export function journeyPhase(b: Booking): "upcoming" | "completed" | "cancelled"
   end.setHours(h || 23, m || 59, 0, 0);
   if (b.arrive < b.depart) end.setDate(end.getDate() + 1);
   return end.getTime() < Date.now() ? "completed" : "upcoming";
+}
+
+/**
+ * Cancellation is only offered while the journey is still upcoming and the
+ * scheduled departure has not passed. Completed journeys can never be cancelled.
+ */
+export function canCancelBooking(b: Booking): boolean {
+  if (b.status === "cancelled" || b.status === "refunded" || b.status === "completed") return false;
+  if (journeyPhase(b) !== "upcoming") return false;
+  const departAt = new Date(`${b.date}T${b.depart && b.depart !== "—" ? b.depart : "00:00"}`).getTime();
+  if (Number.isNaN(departAt)) return true;
+  return departAt > Date.now();
 }
 
 /** Refunds only for upcoming, non-cancelled, not-already-refunded bookings. */

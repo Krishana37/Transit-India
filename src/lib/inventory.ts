@@ -48,20 +48,56 @@ export function demandIndex(from: Station, to: Station, date: Date) {
 }
 
 export const classMultiplier: Record<string, number> = {
-  SL: 1, "3A": 2.6, "2A": 3.7, "1A": 6.2, CC: 3.1, EC: 5.6,
-  SEATER: 0.9, SLEEPER: 1.3, VOLVO: 1.8,
-  ECONOMY: 9, BUSINESS: 22,
-  STANDARD: 1, DELUXE: 1.6, SUITE: 2.8,
+  // train
+  GEN: 0.45, SL: 1, "3A": 2.6, "2A": 3.7, "1A": 6.2, CC: 3.1, EC: 5.6,
+  // bus
+  ORDINARY: 0.75, SEATER: 0.9, DELUXE_BUS: 1.25, AC: 1.5, SLEEPER: 1.6, LUXURY: 2.3, VOLVO: 1.8,
+  // flight
+  ECONOMY: 9, PREMIUM_ECONOMY: 13, BUSINESS: 22,
+  // hotel
+  BUDGET: 0.7, STANDARD: 1, DELUXE: 1.6, PREMIUM: 2.1, SUITE: 2.8, LUXURY_STAY: 3.4,
+  // metro / ferry / cab
   TOKEN: 1, DAYPASS: 1.4,
   DECK: 1, CABIN: 2.2,
+  MINI: 0.85, SEDAN: 1.1, SUV: 1.5, CAB_PREMIUM: 1.9,
 };
 
-/** Dynamic fare: distance × class × demand, rounded to a believable figure. */
-export function computeFare(km: number, classCode: string, demand: number, base = 0.62) {
+/** Festival windows (fictional demo calendar) that push fares up. */
+export function festivalBoost(date: Date) {
+  const md = `${date.getMonth() + 1}-${date.getDate()}`;
+  const windows = ["3-", "8-", "10-", "11-", "12-"];
+  const festive = windows.some((w) => md.startsWith(w)) && date.getDate() % 7 < 3;
+  return festive ? 1.16 : 1;
+}
+
+/**
+ * Realistic demand-side multipliers: peak hours, weekends, festival season,
+ * how full the service is and how close to departure the booking is made.
+ */
+export function priceFactors(opts: {
+  date: Date;
+  departHour?: number;
+  seatShare?: number; // 0..1 remaining seats
+  seed: string;
+}) {
+  const { date, departHour = 9, seatShare = 0.6, seed } = opts;
+  const day = date.getDay();
+  const weekend = day === 0 || day === 5 || day === 6 ? 1.08 : 1;
+  const peak = (departHour >= 7 && departHour <= 10) || (departHour >= 17 && departHour <= 21)
+    ? 1.12
+    : departHour <= 5 ? 0.9 : 1;
+  const scarcity = 1 + (1 - Math.max(0, Math.min(1, seatShare))) * 0.18;
+  const jitter = 0.95 + rand(seed, 0, 0.12);
+  return Number((weekend * peak * festivalBoost(date) * scarcity * jitter).toFixed(3));
+}
+
+/** Dynamic fare: distance × class × demand × market factors. */
+export function computeFare(km: number, classCode: string, demand: number, base = 0.62, factor = 1) {
   const mult = classMultiplier[classCode] ?? 1;
-  const raw = (60 + km * base) * mult * demand;
+  const raw = (60 + km * base) * mult * demand * factor;
   return Math.round(raw / 5) * 5;
 }
+
 
 /* ---------- fictional operator vocabulary ---------- */
 
@@ -102,6 +138,56 @@ function addMinutes(hhmm: string, mins: number) {
 
 const slotStart: Record<string, number> = { early: 2, morning: 6, afternoon: 13, night: 19 };
 
+/** Budget → premium ladders per transport mode. */
+export const classLadder: Record<string, { code: string; label: string }[]> = {
+  train: [
+    { code: "GEN", label: "General (Unreserved)" },
+    { code: "SL", label: "Sleeper" },
+    { code: "3A", label: "AC 3-Tier" },
+    { code: "2A", label: "AC 2-Tier" },
+    { code: "1A", label: "AC First" },
+  ],
+  bus: [
+    { code: "ORDINARY", label: "Ordinary" },
+    { code: "DELUXE_BUS", label: "Deluxe" },
+    { code: "AC", label: "AC Seater" },
+    { code: "SLEEPER", label: "AC Sleeper" },
+    { code: "LUXURY", label: "Luxury Coach" },
+  ],
+  flight: [
+    { code: "ECONOMY", label: "Economy" },
+    { code: "PREMIUM_ECONOMY", label: "Premium Economy" },
+    { code: "BUSINESS", label: "Business" },
+  ],
+  hotel: [
+    { code: "BUDGET", label: "Budget" },
+    { code: "STANDARD", label: "Standard" },
+    { code: "PREMIUM", label: "Premium" },
+    { code: "LUXURY_STAY", label: "Luxury" },
+  ],
+  metro: [
+    { code: "TOKEN", label: "Single token" },
+    { code: "DAYPASS", label: "Day pass" },
+  ],
+  ferry: [
+    { code: "DECK", label: "Deck seat" },
+    { code: "CABIN", label: "Cabin" },
+  ],
+  cab: [
+    { code: "MINI", label: "Mini" },
+    { code: "SEDAN", label: "Sedan" },
+    { code: "SUV", label: "SUV" },
+    { code: "CAB_PREMIUM", label: "Premium" },
+  ],
+};
+
+/** Classes that may be sold as RAC / Waiting List (trains only, never 1st AC). */
+export const racWlClasses = ["GEN", "SL", "3A", "2A"];
+
+export function supportsRacWl(mode: string, classCode: string) {
+  return mode === "train" && racWlClasses.includes(classCode.split(" ")[0]);
+}
+
 export function generateResults(
   mode: TransportMode,
   from: Station,
@@ -109,6 +195,7 @@ export function generateResults(
   date: Date,
   slot = "morning",
   count = 5,
+  nonce = "",
 ): Segment[] {
   const km = distanceKm(from, to);
   const demand = demandIndex(from, to, date);
@@ -116,8 +203,34 @@ export function generateResults(
   const startHour = slotStart[slot] ?? 6;
 
   return Array.from({ length: count }).map((_, i) => {
-    const seed = `${mode}-${from.code}-${to.code}-${dayKey}-${i}`;
+    const seed = `${mode}-${from.code}-${to.code}-${dayKey}-${i}${nonce ? `-${nonce}` : ""}`;
     const depart = `${String((startHour + i * 2) % 24).padStart(2, "0")}:${pick(seed + "min", ["05", "10", "25", "40", "55"])}`;
+    const departHour = Number(depart.slice(0, 2));
+
+    const ladder = classLadder[mode] ?? classLadder.train;
+    const buildOptions = (opts: {
+      fareKm: number;
+      base: number;
+      capacity: (code: string) => number;
+      probability: (code: string, available: number) => number;
+    }) =>
+      ladder.map(({ code, label }) => {
+        const available = opts.capacity(code);
+        const cap = Math.max(available, 1);
+        const factor = priceFactors({
+          date,
+          departHour,
+          seatShare: Math.min(1, available / (cap + 20)),
+          seed: seed + code,
+        });
+        return {
+          code,
+          label,
+          fare: computeFare(opts.fareKm, code, demand, opts.base, factor),
+          available,
+          probability: opts.probability(code, available),
+        };
+      });
 
     if (mode === "flight") {
       const mins = Math.round(km / 12 + 45);
@@ -134,13 +247,12 @@ export function generateResults(
         duration: fmtDuration(mins),
         distanceKm: km,
         tags: pick(seed + "t", [["Non-stop"], ["Non-stop", "Cabin bag only"], ["1 stop"]]),
-        options: (["ECONOMY", "BUSINESS"] as const).map((c) => ({
-          code: c,
-          label: c === "ECONOMY" ? "Economy" : "Business",
-          fare: computeFare(km, c, demand, 0.42),
-          available: 2 + (hash(seed + c) % 40),
-          probability: 90 + (hash(seed + c) % 10),
-        })),
+        options: buildOptions({
+          fareKm: km,
+          base: 0.42,
+          capacity: (c) => 2 + (hash(seed + c) % (c === "BUSINESS" ? 12 : 40)),
+          probability: (c) => 90 + (hash(seed + c) % 10),
+        }),
       };
     }
 
@@ -158,13 +270,12 @@ export function generateResults(
         duration: "1 night",
         distanceKm: 1 + (hash(seed) % 9),
         tags: pick(seed + "t", [["Breakfast included"], ["Free cancellation"], ["Near station", "Wi-Fi"]]),
-        options: (["STANDARD", "DELUXE", "SUITE"] as const).map((c) => ({
-          code: c,
-          label: c.charAt(0) + c.slice(1).toLowerCase(),
-          fare: computeFare(60, c, demand, 12),
-          available: 1 + (hash(seed + c) % 12),
-          probability: 92 + (hash(seed + c) % 8),
-        })),
+        options: buildOptions({
+          fareKm: 60,
+          base: 12,
+          capacity: (c) => 1 + (hash(seed + c) % 12),
+          probability: (c) => 92 + (hash(seed + c) % 8),
+        }),
       };
     }
 
@@ -182,13 +293,12 @@ export function generateResults(
         duration: fmtDuration(mins),
         distanceKm: 4 + (hash(seed) % 30),
         tags: ["Every 5 min", "Air-conditioned"],
-        options: (["TOKEN", "DAYPASS"] as const).map((c) => ({
-          code: c,
-          label: c === "TOKEN" ? "Single token" : "Day pass",
-          fare: computeFare(20, c, demand, 1.4),
-          available: 400,
-          probability: 100,
-        })),
+        options: buildOptions({
+          fareKm: 20,
+          base: 1.4,
+          capacity: () => 400,
+          probability: () => 100,
+        }),
       };
     }
 
@@ -207,13 +317,12 @@ export function generateResults(
         duration: fmtDuration(mins),
         distanceKm: Math.round(km / 6),
         tags: ["Sea route", "Snacks onboard"],
-        options: (["DECK", "CABIN"] as const).map((c) => ({
-          code: c,
-          label: c === "DECK" ? "Deck seat" : "Cabin",
-          fare: computeFare(Math.round(km / 6), c, demand, 1.1),
-          available: 10 + (hash(seed + c) % 90),
-          probability: 88 + (hash(seed + c) % 12),
-        })),
+        options: buildOptions({
+          fareKm: Math.round(km / 6),
+          base: 1.1,
+          capacity: (c) => 10 + (hash(seed + c) % 90),
+          probability: (c) => 88 + (hash(seed + c) % 12),
+        }),
       };
     }
 
@@ -232,13 +341,12 @@ export function generateResults(
         duration: fmtDuration(mins),
         distanceKm: km,
         tags: pick(seed + "t", [["A/C Sleeper"], ["Volvo Multi-Axle"], ["Live tracking", "Charging point"]]),
-        options: (["SEATER", "SLEEPER", "VOLVO"] as const).map((c) => ({
-          code: c,
-          label: c.charAt(0) + c.slice(1).toLowerCase(),
-          fare: computeFare(km, c, demand, 0.5),
-          available: hash(seed + c) % 32,
-          probability: 60 + (hash(seed + c) % 40),
-        })),
+        options: buildOptions({
+          fareKm: km,
+          base: 0.5,
+          capacity: (c) => 4 + (hash(seed + c) % 32),
+          probability: (c, a) => Math.min(99, 55 + a),
+        }),
       };
     }
 
@@ -256,16 +364,16 @@ export function generateResults(
       duration: fmtDuration(mins),
       distanceKm: km,
       tags: pick(seed + "t", [["Pantry car"], ["Fastest on route"], ["Bio-toilets", "Charging point"], ["Tatkal available"]]),
-      options: berthClasses.map((c) => ({
-        code: c,
-        label: { SL: "Sleeper", "3A": "AC 3-Tier", "2A": "AC 2-Tier", "1A": "AC First" }[c] ?? c,
-        fare: computeFare(km, c, demand),
-        available: hash(seed + c) % 46,
-        probability: 30 + (hash(seed + c) % 70),
-      })),
+      options: buildOptions({
+        fareKm: km,
+        base: 0.62,
+        capacity: (c) => (c === "GEN" ? 60 + (hash(seed + c) % 120) : c === "1A" ? 4 + (hash(seed + c) % 14) : hash(seed + c) % 46),
+        probability: (c, a) => Math.min(99, 30 + a + (hash(seed + c) % 20)),
+      }),
     };
   });
 }
+
 
 export function findStation(code: string): Station {
   return stations.find((s) => s.code === code) ?? stations[0];
@@ -431,6 +539,39 @@ function pickMany(seed: string, arr: string[], n: number) {
   return out;
 }
 
+/**
+ * Terminal naming is strictly mode-specific: metro rides start and end at metro
+ * stations, flights at airports, ferries at terminals, buses at bus terminals.
+ */
+export function terminalName(mode: RouteMode, city: string, role: "origin" | "destination" = "origin") {
+  switch (mode) {
+    case "metro":
+      return `${city} Central Metro Station`;
+    case "flight":
+      return `${city} International Airport`;
+    case "ferry":
+      return `${city} Ferry Terminal`;
+    case "bus":
+      return role === "origin" ? `${city} ISBT` : `${city} Central Bus Terminal`;
+    case "hotel":
+      return role === "origin" ? `${city} Arrival Point` : `${city} Hotel District`;
+    case "cab":
+      return role === "origin" ? "Your pickup point" : `${city} drop point`;
+    default:
+      return `${city} Junction`;
+  }
+}
+
+export const routeStyle: Record<RouteMode, { kind: string; stopWord: string }> = {
+  train: { kind: "Rail corridor", stopWord: "halts" },
+  bus: { kind: "Highway road route", stopWord: "stops" },
+  flight: { kind: "Air corridor", stopWord: "waypoints" },
+  metro: { kind: "Urban metro line", stopWord: "stations" },
+  ferry: { kind: "Sea lane", stopWord: "jetties" },
+  cab: { kind: "Road route", stopWord: "checkpoints" },
+  hotel: { kind: "Access route", stopWord: "points" },
+};
+
 export function buildRoutePreview(
   mode: RouteMode,
   origin: string,
@@ -444,9 +585,11 @@ export function buildRoutePreview(
   const count = Math.max(1, 1 + (hash(seed + mode) % maxStops));
   const mids = pickMany(seed + mode, net.nodes, count);
   const startMins = 0;
+  const start = terminalName(mode, origin, "origin");
+  const end = terminalName(mode, destination, "destination");
 
   const stops: RouteStop[] = [
-    { name: origin, at: "00:00", km: 0, halt: "Source" },
+    { name: start, at: "00:00", km: 0, halt: "Source" },
     ...mids.map((name, i) => {
       const frac = (i + 1) / (mids.length + 1);
       const m = Math.round(startMins + totalMins * frac);
@@ -458,7 +601,7 @@ export function buildRoutePreview(
       };
     }),
     {
-      name: destination,
+      name: end,
       at: `${String(Math.floor(totalMins / 60)).padStart(2, "0")}:${String(totalMins % 60).padStart(2, "0")}`,
       km,
       halt: "Destination",
@@ -467,9 +610,9 @@ export function buildRoutePreview(
 
   return {
     networkName: net.network,
-    label: `${origin} → ${destination}`,
-    origin,
-    destination,
+    label: `${start} → ${end}`,
+    origin: start,
+    destination: end,
     stops,
     distanceKm: km,
     duration: fmtDuration(totalMins),
@@ -477,21 +620,55 @@ export function buildRoutePreview(
   };
 }
 
+/** One seat per passenger, kept adjacent where the class allows it. */
+export function allocateSeats(seed: string, mode: string, classCode: string, passengers: number): string[] {
+  const n = Math.max(1, passengers);
+  const cls = classCode.split(" ")[0];
+  if (mode === "hotel") return Array.from({ length: n }, (_, i) => `Room ${101 + ((hash(seed) + i) % 40)}`);
+  if (mode === "metro") return Array.from({ length: n }, (_, i) => `Pass ${i + 1}`);
+  if (cls === "GEN") return Array.from({ length: n }, () => "Unreserved");
+
+  const berths = ["LB", "MB", "UB", "SL", "SU"];
+  const start = 1 + (hash(seed + cls) % 56);
+  return Array.from({ length: n }, (_, i) => {
+    const num = ((start + i - 1) % 72) + 1;
+    return mode === "train"
+      ? `${num} ${berths[(hash(seed + num) + i) % berths.length]}`
+      : String(num);
+  });
+}
+
+
 /* ---------- live-ish seat availability & service disruptions ---------- */
 
 export type SeatState = { available: number; label: string; tone: "ok" | "low" | "rac" | "wl" | "sold" };
 
-/** Seats drain over time using a deterministic curve so the demo feels alive. */
-export function seatState(seed: string, base: number, tick = 0): SeatState {
-  const drift = (hash(seed) % 7) + 3;
-  const left = Math.max(0, base - Math.floor(tick * drift));
-  if (left > 60) return { available: left, label: `${left} Available`, tone: "ok" };
+/**
+ * Seats drain gradually — at most 3 seats per elapsed minute — so availability
+ * looks realistic instead of flickering. `minutes` is the minutes since the
+ * results were generated. RAC / WL are only ever quoted where they apply.
+ */
+export function seatState(
+  seed: string,
+  base: number,
+  minutes = 0,
+  opts: { racWl?: boolean } = {},
+): SeatState {
+  const perMinute = 1 + (hash(seed) % 3); // 1–3 seats a minute
+  const left = Math.max(0, base - Math.floor(minutes) * perMinute);
   if (left > 12) return { available: left, label: `${left} Available`, tone: "ok" };
   if (left > 4) return { available: left, label: `${left} Available`, tone: "low" };
+
+  if (!opts.racWl) {
+    if (left > 0) return { available: left, label: `${left} Available`, tone: "low" };
+    return { available: 0, label: "Sold Out", tone: "sold" };
+  }
+
   if (left > 0) return { available: left, label: `RAC ${left}`, tone: "rac" };
   const wl = 1 + (hash(seed + "wl") % 48);
   return wl > 40 ? { available: 0, label: "Sold Out", tone: "sold" } : { available: 0, label: `WL ${wl}`, tone: "wl" };
 }
+
 
 export const cancellationReasons = [
   "Track maintenance block",
