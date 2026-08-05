@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
-import { useStore, tierFor, type PaymentMethodKind, type WalletTxn } from "@/lib/store";
+import {
+  useStore, tierFor, WALLET_MIN_TOPUP, WALLET_MAX_TOPUP, POINT_VALUE,
+  type PaymentMethodKind, type WalletTxn,
+} from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/wallet")({
@@ -117,6 +120,9 @@ function WalletPage() {
 
         <Card className="rounded-3xl border-border/60 p-5">
           <h2 className="text-sm font-semibold">Add Money</h2>
+          <p className="text-[12px] text-muted-foreground">
+            Between {formatCurrency(WALLET_MIN_TOPUP)} and {formatCurrency(WALLET_MAX_TOPUP)} per transaction.
+          </p>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {quickAmounts.map((amt) => (
               <Button key={amt} variant="outline" className="rounded-full" onClick={() => handleAdd(amt)}>
@@ -128,16 +134,36 @@ function WalletPage() {
             <Input
               type="number"
               inputMode="numeric"
+              min={WALLET_MIN_TOPUP}
+              max={WALLET_MAX_TOPUP}
+              step={1}
+              aria-invalid={!!amountError}
               placeholder="Enter custom amount"
               value={customAmount}
-              onChange={(e) => setCustomAmount(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setCustomAmount(v);
+                const n = Number(v);
+                setAmountError(
+                  v === "" ? null
+                    : !Number.isFinite(n) || n < WALLET_MIN_TOPUP ? `Minimum ${formatCurrency(WALLET_MIN_TOPUP)}.`
+                    : n > WALLET_MAX_TOPUP ? `Maximum ${formatCurrency(WALLET_MAX_TOPUP)} per transaction.`
+                    : null,
+                );
+              }}
               className="rounded-full"
             />
-            <Button className="shrink-0 rounded-full brand-gradient text-white" onClick={() => handleAdd(Number(customAmount))}>
+            <Button
+              className="shrink-0 rounded-full brand-gradient text-white"
+              disabled={!!amountError || customAmount === ""}
+              onClick={() => handleAdd(Math.floor(Number(customAmount)))}
+            >
               <Plus className="mr-1.5 h-4 w-4" /> Add money
             </Button>
           </div>
+          {amountError && <p className="mt-2 text-[12px] text-destructive">{amountError}</p>}
         </Card>
+
 
         <TxnHistory txns={walletTxns} />
 
