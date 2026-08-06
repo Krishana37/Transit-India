@@ -72,7 +72,7 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 text-[13px] lg:flex">
+        <nav className="hidden min-w-0 shrink items-center gap-0.5 overflow-x-auto text-[13px] xl:flex">
           {navItems.map((n) => (
             <Link
               key={n.key}
@@ -176,7 +176,7 @@ export function SiteHeader() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpenMobile((o) => !o)} aria-label="Menu">
+          <Button variant="ghost" size="icon" className="xl:hidden" onClick={() => setOpenMobile((o) => !o)} aria-label="Menu">
             <Menu className="h-4 w-4" />
           </Button>
         </div>
