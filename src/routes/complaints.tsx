@@ -16,8 +16,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  categories, seedComplaints, statuses, transportTypes, type Complaint, type ComplaintCategory, type ComplaintStatus,
+  categories, seedComplaints, statuses, TECH_CATEGORY, technicalIssues, transportTypes,
+  type Complaint, type ComplaintCategory, type ComplaintStatus,
 } from "@/components/trips/complaintsData";
+import { ImageUploadField } from "@/components/common/ImageUploadField";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -35,8 +37,10 @@ export const Route = createFileRoute("/complaints")({
 });
 
 const statusStyles: Record<ComplaintStatus, string> = {
+  Submitted: "bg-primary/10 text-primary",
   Open: "bg-[color:var(--accent-orange)]/15 text-[color:var(--accent-orange)]",
   "Under review": "bg-primary/10 text-primary",
+  "In progress": "bg-[color:var(--accent-orange)]/15 text-[color:var(--accent-orange)]",
   "Action taken": "bg-[color:var(--success)]/15 text-[color:var(--success)]",
   Resolved: "bg-muted text-muted-foreground",
 };
@@ -63,6 +67,8 @@ function ComplaintsPage() {
       const q = query.trim().toLowerCase();
       if (
         !c.body.toLowerCase().includes(q) &&
+        !(c.subject ?? "").toLowerCase().includes(q) &&
+        !(c.technicalIssue ?? "").toLowerCase().includes(q) &&
         !c.route.toLowerCase().includes(q) &&
         !c.station.toLowerCase().includes(q) &&
         !c.id.toLowerCase().includes(q)
@@ -74,7 +80,7 @@ function ComplaintsPage() {
 
   const upvote = (id: string) => setVotes((v) => ({ ...v, [id]: (v[id] ?? 0) + 1 }));
 
-  const submit = (data: { mode: string; route: string; station: string; category: ComplaintCategory; body: string }) => {
+  const submit = (data: NewComplaint) => {
     const id = `TIC-${Math.floor(10000 + Math.random() * 89999)}`;
     const created: Complaint = {
       id,
@@ -83,14 +89,18 @@ function ComplaintsPage() {
       station: data.station,
       route: data.route,
       category: data.category,
+      subject: data.subject,
+      technicalIssue: data.technicalIssue,
+      attachment: data.attachment,
       body: data.body,
       upvotes: 0,
-      status: "Under review",
+      status: "Submitted",
       date: new Date().toISOString().slice(0, 10),
+      time: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false }),
     };
     setComplaints((c) => [created, ...c]);
-    notify({ kind: "platform", title: "Complaint submitted", body: `${id} logged and is now under review (demo).` });
-    toast.success(`Complaint ${id} submitted for review.`);
+    notify({ kind: "platform", title: "Complaint submitted", body: `${id} logged with status “Submitted” (demo).` });
+    toast.success(`Complaint ${id} submitted.`, { description: "You can track its status right here in the portal." });
     setOpen(false);
   };
 
@@ -182,11 +192,25 @@ function ComplaintCard({ complaint, extraVotes, onUpvote }: { complaint: Complai
             <span>·</span>
             <span>{complaint.handle}</span>
             <span>·</span>
-            <span>{complaint.date}</span>
+            <span>{complaint.date}{complaint.time ? ` · ${complaint.time}` : ""}</span>
           </div>
-          <p className="mt-1 truncate text-[13px] font-medium">{complaint.mode} · {complaint.route}</p>
-          <p className="text-[12px] text-muted-foreground">{complaint.station} · {complaint.category}</p>
-          <p className="mt-2 text-[13px] text-foreground/90">{complaint.body}</p>
+          {complaint.subject && (
+            <p className="mt-1 break-words text-[14px] font-semibold leading-snug">{complaint.subject}</p>
+          )}
+          <p className="mt-1 break-words text-[13px] font-medium">{complaint.mode} · {complaint.route}</p>
+          <p className="break-words text-[12px] text-muted-foreground">
+            {complaint.station} · {complaint.category}
+            {complaint.technicalIssue ? ` · ${complaint.technicalIssue}` : ""}
+          </p>
+          <p className="mt-2 break-words text-[13px] text-foreground/90">{complaint.body}</p>
+          {complaint.attachment && (
+            <img
+              src={complaint.attachment}
+              alt={`Evidence attached to complaint ${complaint.id}`}
+              loading="lazy"
+              className="mt-3 max-h-56 w-full rounded-xl border border-border/60 object-contain"
+            />
+          )}
           {complaint.status === "Resolved" && complaint.moderation && (
             <div className="mt-3 flex items-start gap-2 rounded-xl bg-muted/50 p-2.5 text-[12px] text-muted-foreground" data-a11y="optional">
               <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[color:var(--success)]" />
@@ -214,25 +238,53 @@ function ComplaintCard({ complaint, extraVotes, onUpvote }: { complaint: Complai
   );
 }
 
+export type NewComplaint = {
+  mode: string;
+  route: string;
+  station: string;
+  category: ComplaintCategory;
+  subject: string;
+  technicalIssue?: string;
+  attachment?: string;
+  body: string;
+};
+
 function RaiseComplaintDialog({
   open, onOpenChange, onSubmit,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onSubmit: (data: { mode: string; route: string; station: string; category: ComplaintCategory; body: string }) => void;
+  onSubmit: (data: NewComplaint) => void;
 }) {
   const [mode, setMode] = useState(transportTypes[0]);
   const [station, setStation] = useState("");
   const [route, setRoute] = useState("");
   const [category, setCategory] = useState<ComplaintCategory>(categories[0]);
+  const [technicalIssue, setTechnicalIssue] = useState<string>(technicalIssues[0]);
+  const [subject, setSubject] = useState("");
+  const [attachment, setAttachment] = useState<string | undefined>();
   const [body, setBody] = useState("");
+
+  const isTechnical = category === TECH_CATEGORY;
 
   const reset = () => {
     setMode(transportTypes[0]);
     setStation("");
     setRoute("");
     setCategory(categories[0]);
+    setTechnicalIssue(technicalIssues[0]);
+    setSubject("");
+    setAttachment(undefined);
     setBody("");
+  };
+
+  const pickCategory = (v: string) => {
+    const next = v as ComplaintCategory;
+    setCategory(next);
+    if (next === TECH_CATEGORY) {
+      setMode("Website / App");
+      setStation((s) => s || "Transit India app");
+    }
   };
 
   return (
@@ -247,37 +299,82 @@ function RaiseComplaintDialog({
           <DialogTitle>Raise a complaint</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Complaint category</Label>
+            <Select value={category} onValueChange={pickCategory}>
+              <SelectTrigger className="h-auto rounded-2xl py-2 text-left">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-w-[min(92vw,26rem)]">
+                {categories.map((c) => (
+                  <SelectItem key={c} value={c} className="whitespace-normal">{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {isTechnical && (
+            <div className="space-y-1.5">
+              <Label>What went wrong?</Label>
+              <Select value={technicalIssue} onValueChange={setTechnicalIssue}>
+                <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {technicalIssues.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label>Transport type</Label>
+            <Select value={mode} onValueChange={setMode}>
+              <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {transportTypes.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="complaint-subject">Subject</Label>
+            <Input
+              id="complaint-subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              maxLength={90}
+              placeholder={isTechnical ? "e.g. Wallet balance not refreshing" : "e.g. Coach S4 washroom not cleaned"}
+            />
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Transport type</Label>
-              <Select value={mode} onValueChange={setMode}>
-                <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {transportTypes.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="complaint-station">{isTechnical ? "Screen / page" : "Station / property"}</Label>
+              <Input
+                id="complaint-station"
+                value={station}
+                onChange={(e) => setStation(e.target.value)}
+                placeholder={isTechnical ? "e.g. Wallet page" : "e.g. New Delhi"}
+              />
             </div>
             <div className="space-y-1.5">
-              <Label>Category</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as ComplaintCategory)}>
-                <SelectTrigger className="rounded-full"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="complaint-route">{isTechnical ? "Flow / journey" : "Route"}</Label>
+              <Input
+                id="complaint-route"
+                value={route}
+                onChange={(e) => setRoute(e.target.value)}
+                placeholder={isTechnical ? "e.g. Booking → Payment" : "e.g. New Delhi → Mumbai Central"}
+              />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="complaint-station">Station / property</Label>
-            <Input id="complaint-station" value={station} onChange={(e) => setStation(e.target.value)} placeholder="e.g. New Delhi" />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="complaint-route">Route</Label>
-            <Input id="complaint-route" value={route} onChange={(e) => setRoute(e.target.value)} placeholder="e.g. New Delhi → Mumbai Central" />
-          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="complaint-body">Description</Label>
             <Textarea id="complaint-body" value={body} onChange={(e) => setBody(e.target.value)} rows={4} placeholder="Describe what happened..." />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Evidence (optional)</Label>
+            <ImageUploadField value={attachment} onChange={setAttachment} />
           </div>
         </div>
         <DialogFooter>
@@ -285,11 +382,20 @@ function RaiseComplaintDialog({
           <Button
             className="rounded-full brand-gradient text-white"
             onClick={() => {
-              if (!station.trim() || !route.trim() || !body.trim()) {
-                toast.error("Please fill in station, route and description.");
+              if (!subject.trim() || !station.trim() || !route.trim() || !body.trim()) {
+                toast.error("Please fill in subject, location, route and description.");
                 return;
               }
-              onSubmit({ mode, route: route.trim(), station: station.trim(), category, body: body.trim() });
+              onSubmit({
+                mode,
+                route: route.trim(),
+                station: station.trim(),
+                category,
+                subject: subject.trim(),
+                technicalIssue: isTechnical ? technicalIssue : undefined,
+                attachment,
+                body: body.trim(),
+              });
               reset();
             }}
           >
@@ -300,3 +406,4 @@ function RaiseComplaintDialog({
     </Dialog>
   );
 }
+

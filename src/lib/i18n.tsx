@@ -65,6 +65,7 @@ export const dictionary: Record<string, Partial<Record<LangCode, string>>> = {
   "nav.complaints": { en: "Complaints", hi: "शिकायतें", ar: "الشكاوى", es: "Quejas" },
   "nav.rewards": { en: "Rewards", hi: "रिवॉर्ड्स", ar: "المكافآت", es: "Recompensas" },
   "nav.notifications": { en: "Notifications", hi: "सूचनाएँ", ar: "الإشعارات", es: "Notificaciones" },
+  "nav.feedback": { en: "Feedback", hi: "प्रतिक्रिया", ar: "ملاحظات", es: "Comentarios", fr: "Retour", de: "Feedback" },
   "nav.about": { en: "About", hi: "परिचय", ar: "حول", es: "Acerca de" },
 
   "auth.welcome": { en: "Welcome back", hi: "वापसी पर स्वागत है", ar: "مرحبًا بعودتك", es: "Bienvenido de nuevo" },

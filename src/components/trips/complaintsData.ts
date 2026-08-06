@@ -1,6 +1,28 @@
-export type ComplaintStatus = "Open" | "Under review" | "Action taken" | "Resolved";
+export type ComplaintStatus =
+  | "Submitted" | "Open" | "Under review" | "In progress" | "Action taken" | "Resolved";
+
+/** Category reserved for in-app / website technical faults. */
+export const TECH_CATEGORY = "Website Feature Not Working / Technical Error" as const;
+
 export type ComplaintCategory =
-  | "Cleanliness" | "Delay" | "Staff behaviour" | "Ticketing" | "Safety" | "Food quality" | "Accessibility" | "Others";
+  | "Cleanliness" | "Delay" | "Staff behaviour" | "Ticketing" | "Safety" | "Food quality" | "Accessibility"
+  | typeof TECH_CATEGORY | "Others";
+
+/** Sub-issues shown when the traveller picks the technical category. */
+export const technicalIssues = [
+  "Feature not working",
+  "Button not responding",
+  "Payment issue",
+  "Wallet issue",
+  "Refund issue",
+  "Login issue",
+  "Search issue",
+  "Translation issue",
+  "UI / Layout issue",
+  "Performance / Lag issue",
+  "Other technical bug",
+] as const;
+export type TechnicalIssue = (typeof technicalIssues)[number];
 
 export type Complaint = {
   id: string;
@@ -9,20 +31,50 @@ export type Complaint = {
   route: string;
   station: string;
   category: ComplaintCategory;
+  /** Short headline for the complaint. */
+  subject?: string;
+  /** Only set when category is the technical one. */
+  technicalIssue?: TechnicalIssue | string;
+  /** Data-URL screenshot attached by the traveller (prototype only). */
+  attachment?: string;
   body: string;
   upvotes: number;
   status: ComplaintStatus;
   date: string;
+  /** HH:MM local time the complaint was logged. */
+  time?: string;
   moderation?: string;
 };
 
-export const transportTypes = ["Train", "Bus", "Flight", "Ferry", "Metro", "Hotel", "Cab"];
+export const transportTypes = ["Train", "Bus", "Flight", "Ferry", "Metro", "Hotel", "Cab", "Website / App"];
 export const categories: ComplaintCategory[] = [
-  "Cleanliness", "Delay", "Staff behaviour", "Ticketing", "Safety", "Food quality", "Accessibility", "Others",
+  "Cleanliness", "Delay", "Staff behaviour", "Ticketing", "Safety", "Food quality", "Accessibility",
+  TECH_CATEGORY, "Others",
 ];
-export const statuses: ComplaintStatus[] = ["Open", "Under review", "Action taken", "Resolved"];
+export const statuses: ComplaintStatus[] = [
+  "Submitted", "Open", "Under review", "In progress", "Action taken", "Resolved",
+];
 
 export const seedComplaints: Complaint[] = [
+  {
+    id: "TIC-11204", handle: "app_user_441", mode: "Website / App", station: "Transit India app", route: "Wallet → Refund",
+    category: TECH_CATEGORY, technicalIssue: "Refund issue", subject: "Refund not showing in wallet history",
+    body: "Cancelled a Rajdhani booking; the refund toast appeared but the wallet history took a while to list the entry.",
+    upvotes: 46, status: "In progress", date: "2024-05-14", time: "10:24",
+  },
+  {
+    id: "TIC-11188", handle: "hindi_first", mode: "Website / App", station: "Transit India app", route: "Language switcher",
+    category: TECH_CATEGORY, technicalIssue: "Translation issue", subject: "Some screens stay in English",
+    body: "After switching to Hindi, a few labels on the booking screen still render in English.",
+    upvotes: 61, status: "Under review", date: "2024-05-13", time: "18:02",
+  },
+  {
+    id: "TIC-11150", handle: "mobile_ux_ria", mode: "Website / App", station: "Transit India app", route: "My Trips",
+    category: TECH_CATEGORY, technicalIssue: "UI / Layout issue", subject: "Long station names overlap on mobile",
+    body: "On a small phone the station name pushes past the card edge in the trip list.",
+    upvotes: 23, status: "Resolved", date: "2024-05-09", time: "09:41",
+    moderation: "Card layout switched to a wrapping grid; fix shipped in the latest prototype build (demo).",
+  },
   {
     id: "TIC-10482", handle: "traveller_9x", mode: "Train", station: "New Delhi", route: "New Delhi → Mumbai Central",
     category: "Cleanliness", body: "Coach S4 washrooms were unclean for most of the journey, no refill of water either.",

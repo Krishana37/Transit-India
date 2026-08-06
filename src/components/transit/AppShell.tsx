@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Bot, Bus, Coins, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
+  Bot, Bus, Coins, LogOut, MessageSquareHeart, MessageSquareWarning, Moon, Plane, Ship, Sun,
   Ticket, Train as TrainIcon, TrainFront, User, Menu, Wallet,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -26,6 +26,7 @@ const navItems = [
   { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet, brand: "wallet" },
   { to: "/rewards", key: "nav.rewards", label: "Rewards", icon: Wallet, brand: "coins" },
   { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning, brand: "complaint" },
+  { to: "/feedback", key: "nav.feedback", label: "Feedback", icon: MessageSquareHeart, brand: "feedback" },
   { to: "/about", key: "nav.about", label: "About", icon: Ship, brand: "about" },
 ] as const;
 
