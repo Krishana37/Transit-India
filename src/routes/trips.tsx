@@ -330,7 +330,10 @@ function RefundPanel({ booking }: { booking: Booking }) {
           className="rounded-full brand-gradient text-white"
           onClick={() => {
             const res = requestRefund(booking.id);
-            if (res.ok) toast.success(`${label} requested — credited to your Transit Wallet.`);
+            if (res.ok)
+              toast.success("Refund Successfully Credited to Your Transit India Wallet.", {
+                description: `${label} for ${booking.serviceName} · wallet balance updated instantly.`,
+              });
             else toast.error(res.error ?? "Could not process refund.");
           }}
         >

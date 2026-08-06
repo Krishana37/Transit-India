@@ -167,6 +167,7 @@ function WalletPage() {
           {amountError && <p className="mt-2 text-[12px] text-destructive">{amountError}</p>}
         </Card>
 
+        <TransferMoney />
 
         <TxnHistory txns={walletTxns} />
 
@@ -175,6 +176,151 @@ function WalletPage() {
     </AppShell>
   );
 }
+
+/** Prototype payout: move wallet money to a bank account, UPI ID or saved method. */
+function TransferMoney() {
+  const { walletBalance, paymentMethods, transferMoney, addPaymentMethod } = useStore();
+  const { formatCurrency } = useI18n();
+  const [target, setTarget] = useState<string>(paymentMethods[0]?.id ?? "new-upi");
+  const [newUpi, setNewUpi] = useState("");
+  const [newBank, setNewBank] = useState("");
+  const [amount, setAmount] = useState("");
+  const [done, setDone] = useState<{ amount: number; destination: string } | null>(null);
+
+  const numeric = Math.floor(Number(amount));
+  const invalid =
+    amount === "" ? null
+      : !Number.isFinite(numeric) || numeric <= 0 ? "Enter an amount greater than zero."
+      : numeric > walletBalance ? "Amount exceeds your available wallet balance."
+      : null;
+
+  const destinationLabel = () => {
+    if (target === "new-upi") return newUpi.trim();
+    if (target === "new-bank") return `Bank A/C ${newBank.trim()}`;
+    const m = paymentMethods.find((p) => p.id === target);
+    return m ? `${m.label} · ${m.detail}` : "";
+  };
+
+  const send = () => {
+    const destination = destinationLabel();
+    if (!destination) {
+      toast.error("Add a UPI ID or bank account number first.");
+      return;
+    }
+    if (invalid || amount === "") {
+      toast.error(invalid ?? "Enter a transfer amount.");
+      return;
+    }
+    const res = transferMoney({ amount: numeric, destination });
+    if (!res.ok) {
+      toast.error(res.error ?? "Transfer failed.");
+      return;
+    }
+    if (target === "new-upi") addPaymentMethod({ kind: "upi", label: "Payout UPI", detail: newUpi.trim() });
+    if (target === "new-bank") addPaymentMethod({ kind: "bank", label: "Payout bank", detail: `A/C ${newBank.trim()}` });
+    setDone({ amount: numeric, destination });
+    toast.success(`${formatCurrency(numeric)} transferred to ${destination}.`);
+    setAmount("");
+    setNewUpi("");
+    setNewBank("");
+  };
+
+  return (
+    <Card className="rounded-3xl border-border/60 p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">Transfer money out</h2>
+        <span className="text-[12px] text-muted-foreground">
+          Available: <span className="font-semibold text-foreground">{formatCurrency(walletBalance)}</span>
+        </span>
+      </div>
+      <p className="mt-1 text-[12px] text-muted-foreground">
+        Send your Transit Wallet balance to your own bank account, UPI ID or a saved payment method.
+      </p>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label>Transfer to</Label>
+          <Select value={target} onValueChange={setTarget}>
+            <SelectTrigger className="rounded-full"><SelectValue placeholder="Choose a destination" /></SelectTrigger>
+            <SelectContent>
+              {paymentMethods.map((m) => (
+                <SelectItem key={m.id} value={m.id}>{m.label} · {m.detail}</SelectItem>
+              ))}
+              <SelectItem value="new-upi">Add a new UPI ID</SelectItem>
+              <SelectItem value="new-bank">Add a new bank account</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="transfer-amount">Amount</Label>
+          <Input
+            id="transfer-amount"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            step={1}
+            value={amount}
+            aria-invalid={!!invalid}
+            onChange={(e) => { setAmount(e.target.value); setDone(null); }}
+            placeholder="Enter amount"
+            className="rounded-full"
+          />
+        </div>
+      </div>
+
+      {target === "new-upi" && (
+        <div className="mt-3 space-y-1.5">
+          <Label htmlFor="transfer-upi">UPI ID</Label>
+          <Input id="transfer-upi" value={newUpi} onChange={(e) => setNewUpi(e.target.value)} placeholder="yourname@upi" className="rounded-full" />
+        </div>
+      )}
+      {target === "new-bank" && (
+        <div className="mt-3 space-y-1.5">
+          <Label htmlFor="transfer-bank">Account number</Label>
+          <Input id="transfer-bank" value={newBank} onChange={(e) => setNewBank(e.target.value)} placeholder="Account number" className="rounded-full" />
+        </div>
+      )}
+
+      {invalid && <p className="mt-2 text-[12px] text-destructive">{invalid}</p>}
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {[500, 1000, 2000].filter((q) => q <= walletBalance).map((q) => (
+          <Button key={q} variant="outline" size="sm" className="rounded-full" onClick={() => setAmount(String(q))}>
+            <IndianRupee className="mr-1 h-3 w-3" />{q}
+          </Button>
+        ))}
+        {walletBalance > 0 && (
+          <Button variant="outline" size="sm" className="rounded-full" onClick={() => setAmount(String(Math.floor(walletBalance)))}>
+            All
+          </Button>
+        )}
+      </div>
+
+      <Button
+        className="mt-3 w-full rounded-full brand-gradient text-white"
+        disabled={!!invalid || amount === "" || walletBalance <= 0}
+        onClick={send}
+      >
+        <ArrowUpRight className="mr-1.5 h-4 w-4" /> Confirm transfer
+      </Button>
+
+      {done && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 240, damping: 18 }}
+          className="mt-3 flex items-start gap-2 rounded-2xl bg-[color:var(--success)]/12 p-3 text-[13px] text-[color:var(--success)]"
+        >
+          <Banknote className="mt-0.5 h-4 w-4 shrink-0" />
+          <span className="break-words">
+            {formatCurrency(done.amount)} transferred to {done.destination}. Expect it in 2–3 working days (demo).
+          </span>
+        </motion.div>
+      )}
+    </Card>
+  );
+}
+
 
 function TxnHistory({ txns }: { txns: WalletTxn[] }) {
   const { formatCurrency } = useI18n();

@@ -110,6 +110,21 @@ export type RewardEntry = {
   kind: "earned" | "redeemed";
 };
 
+export type FeedbackTopic =
+  | "Overall experience" | "UI / UX" | "Features" | "Performance" | "Accessibility"
+  | "Suggestion" | "Bug" | "Other";
+
+export type FeedbackEntry = {
+  id: string;
+  topic: FeedbackTopic;
+  stars: number;
+  message: string;
+  suggestion?: string;
+  screenshot?: string;
+  handle: string;
+  at: string;
+};
+
 export type AccessibilityMode = "default" | "large" | "senior" | "simple";
 
 export type PreTatkalDraft = {
@@ -147,6 +162,8 @@ type State = {
   lastDailyBonus?: string;
   /** Traveller's own ratings, keyed by `mode:code` or a feature key like `app`. */
   ratings: Record<string, ServiceRating>;
+  /** Community feedback wall — visible to everyone in the prototype. */
+  feedback: FeedbackEntry[];
 };
 
 /** A rating left by the traveller on a service, journey or the app itself. */
@@ -163,6 +180,14 @@ const seedPassengers: SavedPassenger[] = [
 const seedPaymentMethods: PaymentMethod[] = [
   { id: "pm1", kind: "upi", label: "Primary UPI", detail: "aarav@transitpay", primary: true },
   { id: "pm2", kind: "credit", label: "Transit Card", detail: "•••• 4412 · 09/29" },
+];
+
+const seedFeedback: FeedbackEntry[] = [
+  { id: "f1", topic: "Overall experience", stars: 5, message: "Booking a train, a cab and a hotel in one flow is genuinely useful. Very smooth.", handle: "traveller_9x", at: "2024-05-12T09:12:00.000Z" },
+  { id: "f2", topic: "UI / UX", stars: 4, message: "Love the glass cards and the 3D icons. Dark mode looks great on my phone.", suggestion: "A compact list view for search results would help on small screens.", handle: "designer_nk", at: "2024-05-11T16:40:00.000Z" },
+  { id: "f3", topic: "Accessibility", stars: 5, message: "Senior citizen mode made it readable for my father without any help.", handle: "caretaker_ambi", at: "2024-05-10T07:55:00.000Z" },
+  { id: "f4", topic: "Features", stars: 4, message: "Pre-Tatkal drafts saved me a lot of typing during the rush window.", suggestion: "Allow two drafts to be armed at once.", handle: "railfan_desi", at: "2024-05-08T12:20:00.000Z" },
+  { id: "f5", topic: "Performance", stars: 4, message: "Route search feels quick even with a long list of results.", handle: "commuter_r2", at: "2024-05-06T19:05:00.000Z" },
 ];
 
 const initialState: State = {
@@ -184,6 +209,7 @@ const initialState: State = {
   tatkalDrafts: [],
   rewardLog: [],
   ratings: {},
+  feedback: seedFeedback,
 };
 
 /** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
@@ -262,6 +288,8 @@ type StoreValue = State & {
   clearNotifications: () => void;
   saveTatkalDraft: (d: Omit<PreTatkalDraft, "id" | "createdAt">) => PreTatkalDraft;
   rateService: (key: string, stars: number, note?: string) => void;
+  submitFeedback: (f: Omit<FeedbackEntry, "id" | "at" | "handle"> & { handle?: string }) => FeedbackEntry;
+  transferMoney: (data: { amount: number; destination: string }) => { ok: boolean; error?: string };
   removeTatkalDraft: (id: string) => void;
 };
 
@@ -319,7 +347,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const saved = JSON.parse(raw) as Partial<State>;
-        setState({ ...initialState, ...saved, ratings: { ...initialState.ratings, ...(saved.ratings ?? {}) } });
+        setState({
+          ...initialState,
+          ...saved,
+          ratings: { ...initialState.ratings, ...(saved.ratings ?? {}) },
+          feedback: saved.feedback?.length ? saved.feedback : initialState.feedback,
+        });
       }
     } catch {
       /* ignore corrupted state */
@@ -575,6 +608,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ...s,
         ratings: { ...s.ratings, [key]: { stars, note, at: new Date().toISOString() } },
       })),
+    submitFeedback: (f) => {
+      const created: FeedbackEntry = {
+        ...f,
+        handle: f.handle || state.account?.username || "guest_traveller",
+        id: uid(),
+        at: new Date().toISOString(),
+      };
+      setState((s) => pushNotification({ ...s, feedback: [created, ...s.feedback].slice(0, 60) }, {
+        kind: "platform",
+        title: "Feedback received",
+        body: `Thanks for the ${created.stars}★ feedback on ${created.topic}.`,
+      }));
+      return created;
+    },
+    transferMoney: ({ amount, destination }) => {
+      let out: { ok: boolean; error?: string } = { ok: true };
+      if (!Number.isFinite(amount) || amount <= 0 || Math.floor(amount) !== amount) {
+        return { ok: false, error: "Enter a valid whole rupee amount greater than zero." };
+      }
+      setState((s) => {
+        if (amount > s.walletBalance) {
+          out = { ok: false, error: "Amount exceeds your available wallet balance." };
+          return s;
+        }
+        const next: State = {
+          ...s,
+          walletBalance: s.walletBalance - amount,
+          walletTxns: [
+            { id: uid(), type: "debit", amount, label: `Transferred to ${destination}`, at: new Date().toISOString() },
+            ...s.walletTxns,
+          ],
+        };
+        return pushNotification(next, {
+          kind: "wallet",
+          title: "Transfer successful",
+          body: `₹${amount.toLocaleString("en-IN")} sent to ${destination} from your Transit Wallet.`,
+        });
+      });
+      return out;
+    },
     saveTatkalDraft: (d) => {
       const created: PreTatkalDraft = { ...d, id: uid(), createdAt: new Date().toISOString() };
       setState((s) => pushNotification({ ...s, tatkalDrafts: [created, ...s.tatkalDrafts] }, {

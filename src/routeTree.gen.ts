@@ -14,6 +14,7 @@ import { Route as TripsRouteImport } from './routes/trips'
 import { Route as RewardsRouteImport } from './routes/rewards'
 import { Route as PnrRouteImport } from './routes/pnr'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -47,6 +48,11 @@ const PnrRoute = PnrRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
+  '/feedback': typeof FeedbackRoute
   '/notifications': typeof NotificationsRoute
   '/pnr': typeof PnrRoute
   '/rewards': typeof RewardsRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
+  '/feedback': typeof FeedbackRoute
   '/notifications': typeof NotificationsRoute
   '/pnr': typeof PnrRoute
   '/rewards': typeof RewardsRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/complaints': typeof ComplaintsRoute
   '/dashboard': typeof DashboardRoute
+  '/feedback': typeof FeedbackRoute
   '/notifications': typeof NotificationsRoute
   '/pnr': typeof PnrRoute
   '/rewards': typeof RewardsRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/complaints'
     | '/dashboard'
+    | '/feedback'
     | '/notifications'
     | '/pnr'
     | '/rewards'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/complaints'
     | '/dashboard'
+    | '/feedback'
     | '/notifications'
     | '/pnr'
     | '/rewards'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/complaints'
     | '/dashboard'
+    | '/feedback'
     | '/notifications'
     | '/pnr'
     | '/rewards'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ComplaintsRoute: typeof ComplaintsRoute
   DashboardRoute: typeof DashboardRoute
+  FeedbackRoute: typeof FeedbackRoute
   NotificationsRoute: typeof NotificationsRoute
   PnrRoute: typeof PnrRoute
   RewardsRoute: typeof RewardsRoute
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ComplaintsRoute: ComplaintsRoute,
   DashboardRoute: DashboardRoute,
+  FeedbackRoute: FeedbackRoute,
   NotificationsRoute: NotificationsRoute,
   PnrRoute: PnrRoute,
   RewardsRoute: RewardsRoute,

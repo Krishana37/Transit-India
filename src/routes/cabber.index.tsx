@@ -10,6 +10,7 @@ import {
   cityList, destinationsFor, driverFor, etaFor, fareFor, lastMileDistance, savedAddresses, vehicleCatalog,
   type DestKind, type VehicleType,
 } from "@/components/cabber/data";
+import { cabVehicleImage, ServicePreview } from "@/components/media/ServicePreview";
 import { AppShell } from "@/components/transit/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -294,8 +295,22 @@ function CabberPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="rounded-xl bg-muted/50 px-3 py-2 text-[12px] text-muted-foreground">
-                      {driver.model} · <span className="font-medium text-foreground">{driver.plate}</span>
+                    <div className="grid grid-cols-[104px_minmax(0,1fr)] items-center gap-3 rounded-xl bg-muted/50 p-2.5">
+                      <ServicePreview
+                        mode="cab"
+                        seed={driver.plate}
+                        src={cabVehicleImage(vehicle)}
+                        alt={`${vehicle} · ${driver.model}`}
+                        ratio="aspect-[4/3]"
+                        className="w-full"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Your {vehicle.toLowerCase()}</p>
+                        <p className="break-words text-[13px] font-medium">{driver.model}</p>
+                        <p className="break-words text-[12px] text-muted-foreground">
+                          Plate <span className="font-semibold text-foreground">{driver.plate}</span>
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
                       <MapPin className="h-3.5 w-3.5" /> Picking you up from <span className="truncate font-medium text-foreground">{pickup.split(" — ")[0]}</span>

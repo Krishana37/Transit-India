@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  Bot, Bus, Coins, LogOut, MessageSquareWarning, Moon, Plane, Ship, Sun,
+  Bot, Bus, Coins, LogOut, MessageSquareHeart, MessageSquareWarning, Moon, Plane, Ship, Sun,
   Ticket, Train as TrainIcon, TrainFront, User, Menu, Wallet,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -26,6 +26,7 @@ const navItems = [
   { to: "/wallet", key: "nav.wallet", label: "Wallet", icon: Wallet, brand: "wallet" },
   { to: "/rewards", key: "nav.rewards", label: "Rewards", icon: Wallet, brand: "coins" },
   { to: "/complaints", key: "nav.complaints", label: "Complaints", icon: MessageSquareWarning, brand: "complaint" },
+  { to: "/feedback", key: "nav.feedback", label: "Feedback", icon: MessageSquareHeart, brand: "feedback" },
   { to: "/about", key: "nav.about", label: "About", icon: Ship, brand: "about" },
 ] as const;
 
@@ -71,7 +72,7 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 text-[13px] lg:flex">
+        <nav className="hidden min-w-0 shrink items-center gap-0.5 overflow-x-auto text-[13px] xl:flex">
           {navItems.map((n) => (
             <Link
               key={n.key}
@@ -175,14 +176,14 @@ export function SiteHeader() {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpenMobile((o) => !o)} aria-label="Menu">
+          <Button variant="ghost" size="icon" className="xl:hidden" onClick={() => setOpenMobile((o) => !o)} aria-label="Menu">
             <Menu className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {openMobile && (
-        <div className="border-t border-border/60 bg-background/95 px-4 py-2 lg:hidden">
+        <div className="border-t border-border/60 bg-background/95 px-4 py-2 xl:hidden">
           {navItems.map((n) => (
             <Link
               key={n.key}

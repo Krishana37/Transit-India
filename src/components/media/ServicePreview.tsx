@@ -1,9 +1,18 @@
 import trainPreview from "@/assets/preview/train.png.asset.json";
+import trainPreview2 from "@/assets/preview/train-2.jpg";
 import busPreview from "@/assets/preview/bus.jpg.asset.json";
+import busPreview2 from "@/assets/preview/bus-2.jpg";
 import flightPreview from "@/assets/preview/flight.png.asset.json";
+import flightPreview2 from "@/assets/preview/flight-2.jpg";
 import metroPreview from "@/assets/preview/metro.webp.asset.json";
+import metroPreview2 from "@/assets/preview/metro-2.jpg";
 import ferryPreview from "@/assets/preview/ferry.webp.asset.json";
+import ferryPreview2 from "@/assets/preview/ferry-2.jpg";
 import cabPreview from "@/assets/preview/cab.webp.asset.json";
+import cabSedan from "@/assets/preview/cab-sedan.jpg";
+import cabSuv from "@/assets/preview/cab-suv.jpg";
+import cabAuto from "@/assets/preview/cab-auto.jpg";
+import cabBike from "@/assets/preview/cab-bike.jpg";
 import hotelPreview from "@/assets/preview/hotel.webp.asset.json";
 import hotelPreview1 from "@/assets/preview/hotel-1.webp.asset.json";
 import hotelPreview2 from "@/assets/preview/hotel-2.webp.asset.json";
@@ -15,14 +24,26 @@ import { cn } from "@/lib/utils";
 
 /** Photo sets used for vehicle / stay previews in search results and tickets. */
 const gallery: Record<string, string[]> = {
-  train: [trainPreview.url],
-  bus: [busPreview.url],
-  flight: [flightPreview.url],
-  metro: [metroPreview.url],
-  ferry: [ferryPreview.url],
-  cab: [cabPreview.url],
+  train: [trainPreview.url, trainPreview2],
+  bus: [busPreview.url, busPreview2],
+  flight: [flightPreview.url, flightPreview2],
+  metro: [metroPreview.url, metroPreview2],
+  ferry: [ferryPreview.url, ferryPreview2],
+  cab: [cabPreview.url, cabSedan, cabSuv, cabAuto],
   hotel: [stayA.url, stayB.url, stayC.url, stayD.url, hotelPreview.url, hotelPreview1.url, hotelPreview2.url],
 };
+
+/** Exact photo for a cab vehicle class, used on the assigned-driver card. */
+export const cabVehicleImages: Record<string, string> = {
+  Bike: cabBike,
+  Auto: cabAuto,
+  Sedan: cabSedan,
+  SUV: cabSuv,
+};
+
+export function cabVehicleImage(vehicleType: string) {
+  return cabVehicleImages[vehicleType] ?? cabSedan;
+}
 
 function hash(str: string) {
   let h = 2166136261;
@@ -43,19 +64,22 @@ export function ServicePreview({
   mode,
   seed,
   alt,
+  src,
   className,
   ratio = "aspect-[16/10]",
 }: {
   mode: string;
   seed: string;
   alt: string;
+  /** Override the auto-picked photo (e.g. exact cab vehicle class). */
+  src?: string;
   className?: string;
   ratio?: string;
 }) {
   return (
     <div className={cn("overflow-hidden rounded-xl bg-muted ring-1 ring-border/60", ratio, className)}>
       <img
-        src={previewImage(mode, seed)}
+        src={src ?? previewImage(mode, seed)}
         alt={alt}
         loading="lazy"
         decoding="async"
