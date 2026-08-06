@@ -183,7 +183,7 @@ export function SiteHeader() {
       </div>
 
       {openMobile && (
-        <div className="border-t border-border/60 bg-background/95 px-4 py-2 lg:hidden">
+        <div className="border-t border-border/60 bg-background/95 px-4 py-2 xl:hidden">
           {navItems.map((n) => (
             <Link
               key={n.key}
