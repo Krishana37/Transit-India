@@ -10,6 +10,7 @@ import {
   cityList, destinationsFor, driverFor, etaFor, fareFor, lastMileDistance, savedAddresses, vehicleCatalog,
   type DestKind, type VehicleType,
 } from "@/components/cabber/data";
+import { cabVehicleImage, ServicePreview } from "@/components/media/ServicePreview";
 import { AppShell } from "@/components/transit/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
