@@ -66,11 +66,24 @@ function txnIcon(type: WalletTxn["type"]) {
 }
 
 function WalletPage() {
-  const { walletBalance, walletTxns, coins, points, addMoney, paymentMethods, addPaymentMethod, removePaymentMethod } = useStore();
+  const {
+    walletBalance, walletTxns, coins, points, addMoney, paymentMethods, addPaymentMethod, removePaymentMethod,
+  } = useStore();
   const { formatCurrency } = useI18n();
   const [customAmount, setCustomAmount] = useState("");
   const [amountError, setAmountError] = useState<string | null>(null);
   const tier = tierFor(points);
+
+  const totals = useMemo(() => {
+    let added = 0, spent = 0, refunded = 0, earned = 0;
+    for (const t of walletTxns) {
+      if (t.type === "credit") added += t.amount;
+      else if (t.type === "debit") spent += t.amount;
+      else if (t.type === "refund") refunded += t.amount;
+      else if (t.type === "earning") earned += t.amount;
+    }
+    return { added, spent, refunded, earned };
+  }, [walletTxns]);
 
   const handleAdd = (amount: number) => {
     const res = addMoney(amount, "Money added via prototype top-up");
@@ -83,6 +96,8 @@ function WalletPage() {
     toast.success(`${formatCurrency(amount)} added to your wallet.`);
     setCustomAmount("");
   };
+
+
 
 
   return (
