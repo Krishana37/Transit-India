@@ -190,19 +190,16 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 function DriverDashboard() {
-  const { driver, updateDriver, addBooking } = useStore();
+  const { driver, updateDriver, driverEarnings, driverWithdrawn, addDriverEarning, withdrawEarnings } = useStore();
   const { formatCurrency } = useI18n();
   if (!driver) return null;
 
   const [requests, setRequests] = useState<RideRequest[]>(() => generateRequests(driver.vehicleType, driver.phone));
   const [onTrip, setOnTrip] = useState<RideRequest | null>(null);
-  const [completedFares, setCompletedFares] = useState<number[]>([]);
   const [history, setHistory] = useState(() => generateHistory(driver.vehicleType, driver.name));
 
   const series = useMemo(() => earningsSeries(driver.name), [driver.name]);
-  const todayEarnings = series[series.length - 1]?.earnings ?? 0;
-  const weekEarnings = series.reduce((a, b) => a + b.earnings, 0);
-  const totalEarnings = weekEarnings * 6 + completedFares.reduce((a, b) => a + b, 0);
+  const summary = driverEarningsSummary(driverEarnings, driverWithdrawn);
 
   const accept = (r: RideRequest) => {
     setRequests((rs) => rs.filter((x) => x.id !== r.id));
@@ -216,33 +213,31 @@ function DriverDashboard() {
 
   const completeTrip = () => {
     if (!onTrip) return;
-    setCompletedFares((f) => [...f, onTrip.fare]);
     setHistory((h) => [
       { id: onTrip.id, date: new Date().toISOString().slice(0, 10), rider: onTrip.rider, route: `${onTrip.pickup} → ${onTrip.destination}`, fare: onTrip.fare, rating: 4.6 },
       ...h,
     ]);
-    addBooking({
-      mode: "cab",
-      pnr: `CB${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`,
-      serviceName: `${driver.vehicleModel} · ${driver.name}`,
-      serviceCode: driver.vehicleNumber,
-      fromCode: "PICKUP",
-      fromCity: onTrip.pickup,
-      toCode: onTrip.destination,
-      toCity: onTrip.destination,
-      date: new Date().toISOString().slice(0, 10),
-      depart: new Date().toTimeString().slice(0, 5),
-      arrive: new Date(Date.now() + onTrip.eta * 60000).toTimeString().slice(0, 5),
-      classCode: driver.vehicleType,
-      passengers: [],
-      meals: [],
-      total: onTrip.fare,
-      status: "confirmed",
+    addDriverEarning({
+      amount: onTrip.fare,
+      label: `Cabber Ride Completed — ${onTrip.rider}`,
+      route: `${onTrip.pickup} → ${onTrip.destination}`,
     });
-    toast.success("Ride completed", { description: `Earned ${formatCurrency(onTrip.fare)}.` });
+    toast.success(`Cabber Ride Completed +${formatCurrency(onTrip.fare)}`, {
+      description: "Added to your Cabber driver earnings.",
+    });
     setOnTrip(null);
     setRequests((rs) => (rs.length ? rs : generateRequests(driver.vehicleType, driver.phone + Date.now())));
   };
+
+  const withdraw = () => {
+    const res = withdrawEarnings(summary.withdrawable);
+    if (!res.ok) {
+      toast.error(res.error ?? "Nothing to withdraw yet.");
+      return;
+    }
+    toast.success(`${formatCurrency(summary.withdrawable)} moved to your Transit Wallet.`);
+  };
+
 
   const Icon = vehicleIcons[driver.vehicleType];
 
