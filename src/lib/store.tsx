@@ -254,7 +254,7 @@ const initialState: State = {
   accessibility: "default",
   walletBalance: 2500,
   walletTxns: [
-    { id: "w0", type: "credit", amount: 2500, label: "Welcome prototype balance", at: new Date().toISOString() },
+    { id: "w0", type: "credit", amount: 2500, label: "Welcome prototype balance", at: new Date().toISOString(), status: "success", category: "Top-up" },
   ],
   coins: 480,
   points: 120,
@@ -264,6 +264,10 @@ const initialState: State = {
   rewardLog: [],
   ratings: {},
   feedback: seedFeedback,
+  driverEarnings: [],
+  driverWithdrawn: 0,
+  redeemedRewards: [],
+
 };
 
 /** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
