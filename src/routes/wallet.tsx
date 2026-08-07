@@ -19,7 +19,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import {
-  useStore, tierFor, WALLET_MIN_TOPUP, WALLET_MAX_TOPUP, POINT_VALUE,
+  useStore, tierFor, driverEarningsSummary, WALLET_MIN_TOPUP, WALLET_MAX_TOPUP, POINT_VALUE,
   type PaymentMethodKind, type WalletTxn,
 } from "@/lib/store";
 import { cn } from "@/lib/utils";
