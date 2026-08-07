@@ -142,9 +142,11 @@ function RewardsPage() {
           </div>
         </Card>
 
+        <RedeemRewards />
+
         <Card className="rounded-3xl border-border/60 p-5">
-          <h2 className="text-sm font-semibold">Rewards catalogue</h2>
-          <p className="text-[12px] text-muted-foreground">Fictional prototype rewards — unlock as your points grow.</p>
+          <h2 className="text-sm font-semibold">Tier perks catalogue</h2>
+          <p className="text-[12px] text-muted-foreground">Fictional prototype perks — unlock as your points grow.</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             {catalogue.map((item) => {
               const unlocked = points >= item.cost;
@@ -152,7 +154,7 @@ function RewardsPage() {
                 <div
                   key={item.id}
                   className={cn(
-                    "rounded-2xl border p-4",
+                    "min-w-0 rounded-2xl border p-4",
                     unlocked ? "border-primary/40 bg-[color:var(--brand-soft)]/40" : "border-border/60 opacity-80",
                   )}
                 >
@@ -162,8 +164,8 @@ function RewardsPage() {
                     </span>
                     {unlocked ? <Unlock className="h-4 w-4 text-[color:var(--success)]" /> : <Lock className="h-4 w-4 text-muted-foreground" />}
                   </div>
-                  <p className="mt-2 text-[13px] font-medium">{item.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+                  <p className="mt-2 break-words text-[13px] font-medium">{item.name}</p>
+                  <p className="break-words text-[11px] text-muted-foreground">{item.desc}</p>
                   <p className="mt-2 text-[11px] uppercase tracking-widest text-muted-foreground">{item.cost} pts</p>
                 </div>
               );
@@ -174,3 +176,143 @@ function RewardsPage() {
     </AppShell>
   );
 }
+
+const badgeTone: Record<RedeemedRewardStatus, string> = {
+  redeemed: "bg-[color:var(--brand-soft)] text-primary",
+  applied: "bg-[color:var(--warning)]/15 text-[color:var(--warning)]",
+  used: "bg-muted text-muted-foreground",
+  expired: "bg-destructive/10 text-destructive",
+};
+
+/** Redeem Transit Points for one-trip rewards and track their lifecycle. */
+function RedeemRewards() {
+  const { points, redeemedRewards, redeemReward, applyRewardToBooking, bookings } = useStore();
+  const [confirm, setConfirm] = useState<string | null>(null);
+  const pending = redeemedRewards.filter((r) => rewardBadge(r) === "redeemed" || rewardBadge(r) === "applied");
+  const closed = redeemedRewards.filter((r) => rewardBadge(r) === "used" || rewardBadge(r) === "expired");
+  const eligibleBookings = bookings.filter((b) => journeyPhase(b) === "upcoming");
+
+  const item = REWARD_CATALOG.find((r) => r.id === confirm);
+
+  const doRedeem = () => {
+    if (!item) return;
+    const res = redeemReward(item.id);
+    setConfirm(null);
+    if (!res.ok) {
+      toast.error(res.error ?? "Could not redeem this reward.");
+      return;
+    }
+    toast.success(`${item.name} redeemed`, { description: `${item.cost} Transit Points used · valid for 1 trip.` });
+  };
+
+  return (
+    <Card className="rounded-3xl border-border/60 p-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold">Redeem Rewards</h2>
+          <p className="text-[12px] text-muted-foreground">
+            Every reward is valid for <span className="font-semibold text-foreground">ONE TRIP ONLY</span> · Prototype / Demo Data
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-[color:var(--brand-soft)] px-3 py-1 text-[12px] font-semibold text-primary">
+          {points} pts
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {REWARD_CATALOG.map((r) => {
+          const affordable = points >= r.cost;
+          const activeCount = redeemedRewards.filter((x) => x.rewardId === r.id && (rewardBadge(x) === "redeemed" || rewardBadge(x) === "applied")).length;
+          return (
+            <div key={r.id} className={cn("flex min-w-0 flex-col rounded-2xl border p-4", affordable ? "border-primary/40" : "border-border/60 opacity-70")}>
+              <p className="break-words text-[13px] font-semibold">{r.name}</p>
+              <p className="mt-1 break-words text-[11px] leading-relaxed text-muted-foreground">{r.desc}</p>
+              <p className="mt-2 text-[11px] uppercase tracking-widest text-muted-foreground">{r.cost} pts · 1 trip</p>
+              <Button
+                size="sm"
+                className="mt-3 w-full rounded-full brand-gradient text-white disabled:opacity-50"
+                disabled={!affordable || activeCount > 0}
+                onClick={() => setConfirm(r.id)}
+              >
+                {activeCount > 0 ? "Redeemed" : affordable ? "Redeem" : "Not enough points"}
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+
+      {pending.length > 0 && (
+        <div className="mt-5 space-y-2">
+          <h3 className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">Active rewards</h3>
+          {pending.map((r) => (
+            <div key={r.id} className="grid gap-2 rounded-2xl border border-border/60 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="break-words text-[13px] font-medium">{r.name}</p>
+                  <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", badgeTone[rewardBadge(r)])}>
+                    {rewardBadge(r)}
+                  </span>
+                </div>
+                <p className="break-words text-[11px] text-muted-foreground">
+                  Valid for: 1 trip · Use before {new Date(r.expiresAt).toLocaleDateString()}
+                  {r.bookingLabel ? ` · Applied to: ${r.bookingLabel}` : ""}
+                </p>
+              </div>
+              {r.status === "redeemed" && (
+                <div className="min-w-0 sm:w-64">
+                  <Select onValueChange={(v) => {
+                    const b = eligibleBookings.find((x) => x.id === v);
+                    if (!b) return;
+                    applyRewardToBooking(r.id, b.id, `${b.serviceName} · ${b.date}`);
+                    toast.success("Reward applied", { description: `${r.name} is locked to this one trip.` });
+                  }}>
+                    <SelectTrigger className="rounded-full text-[12px]">
+                      <SelectValue placeholder={eligibleBookings.length ? "Apply to a booking" : "No upcoming trips"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {eligibleBookings.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>{b.serviceName} · {b.date}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {closed.length > 0 && (
+        <div className="mt-5 space-y-2">
+          <h3 className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">Reward history</h3>
+          {closed.map((r) => (
+            <div key={r.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border/60 p-3 opacity-80">
+              <p className="min-w-0 break-words text-[13px]">{r.name}{r.bookingLabel ? ` · ${r.bookingLabel}` : ""}</p>
+              <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase", badgeTone[rewardBadge(r)])}>
+                {rewardBadge(r)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Dialog open={!!item} onOpenChange={(o) => !o && setConfirm(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">Confirm redemption</DialogTitle>
+          </DialogHeader>
+          {item && (
+            <p className="text-[13px] text-muted-foreground">
+              Use {item.cost} Transit Points for a {item.name}? The reward is valid for one trip only and expires in {REWARD_VALID_DAYS} days.
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" className="rounded-full" onClick={() => setConfirm(null)}>Cancel</Button>
+            <Button className="rounded-full brand-gradient text-white" onClick={doRedeem}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
+}
+
