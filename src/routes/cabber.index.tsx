@@ -46,7 +46,7 @@ const vehicleIcons: Record<VehicleType, typeof Bike> = { Bike, Auto: Rocket, Sed
 type Stage = "plan" | "matching" | "assigned";
 
 function CabberPage() {
-  const { account, hydrated, addBooking } = useStore();
+  const { account, hydrated, addBooking, walletBalance, payFromWallet, creditWallet, reward } = useStore();
   const { formatCurrency } = useI18n();
   const navigate = useNavigate();
 
@@ -74,9 +74,29 @@ function CabberPage() {
 
   const [stage, setStage] = useState<Stage>("plan");
   const [driver, setDriver] = useState<ReturnType<typeof driverFor> | null>(null);
+  const [payMode, setPayMode] = useState<"wallet" | "cash">("wallet");
+  const [paidAmount, setPaidAmount] = useState(0);
+
+  const routeLabel = `${pickup.split(" — ")[0]} → ${dest?.label ?? "destination"}`;
 
   const bookRide = () => {
     if (!dest) return;
+    if (payMode === "wallet") {
+      const res = payFromWallet(fare, `Cabber Ride — ${routeLabel}`, { category: "Cabber ride", ref: dest.id });
+      if (!res.ok) {
+        toast.error(res.error ?? "Insufficient wallet balance.", {
+          description: "Add money to your Transit Wallet or pay by cash.",
+        });
+        return;
+      }
+      setPaidAmount(fare);
+      toast.success(`${formatCurrency(fare)} paid from your Transit Wallet.`, {
+        description: `New balance ${formatCurrency(walletBalance - fare)}.`,
+      });
+      reward("wallet");
+    } else {
+      setPaidAmount(0);
+    }
     setStage("matching");
     setTimeout(() => {
       const d = driverFor(`${pickup}-${dest.id}-${vehicle}-${Date.now()}`, vehicle);
@@ -86,9 +106,20 @@ function CabberPage() {
   };
 
   const cancelRide = () => {
+    if (paidAmount > 0) {
+      creditWallet(paidAmount, `Cabber Ride Cancelled — ${routeLabel}`, {
+        type: "refund",
+        category: "Cabber refund",
+      });
+      toast.success(`${formatCurrency(paidAmount)} refunded to your Transit Wallet.`, {
+        description: "Refunded instantly — see it in your wallet history.",
+      });
+    } else {
+      toast("Ride cancelled", { description: "Your Cabber ride was cancelled." });
+    }
+    setPaidAmount(0);
     setStage("plan");
     setDriver(null);
-    toast("Ride cancelled", { description: "Your Cabber ride was cancelled." });
   };
 
   const completeRide = () => {
@@ -113,11 +144,15 @@ function CabberPage() {
       meals: [],
       total: fare,
       status: "confirmed",
+      paidWith: payMode === "wallet" ? "Transit Wallet" : "Cash to driver",
     });
+    reward("cabber");
     toast.success("Ride completed", { description: "Added to My Bookings." });
+    setPaidAmount(0);
     setStage("plan");
     setDriver(null);
   };
+
 
   if (!account) return null;
 
@@ -227,6 +262,39 @@ function CabberPage() {
                 })}
               </div>
 
+              <div className="rounded-2xl border border-border/60 p-3">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                  <div className="min-w-0 text-[10px] uppercase tracking-widest text-muted-foreground">Payment</div>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    Wallet: <span className="font-semibold text-foreground">{formatCurrency(walletBalance)}</span>
+                  </span>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {([
+                    { id: "wallet" as const, label: "Pay from Transit Wallet", hint: "Deducted instantly" },
+                    { id: "cash" as const, label: "Pay cash to driver", hint: "Settle at drop-off" },
+                  ]).map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setPayMode(opt.id)}
+                      disabled={stage !== "plan"}
+                      className={cn(
+                        "min-w-0 rounded-2xl border border-border p-3 text-left transition hover:border-primary/40 disabled:opacity-60",
+                        payMode === opt.id && "border-primary bg-[color:var(--brand-soft)]",
+                      )}
+                    >
+                      <div className="text-[12px] font-semibold leading-tight">{opt.label}</div>
+                      <div className="text-[11px] text-muted-foreground">{opt.hint}</div>
+                    </button>
+                  ))}
+                </div>
+                {payMode === "wallet" && walletBalance < fare && (
+                  <p className="mt-2 text-[11px] text-destructive">
+                    Insufficient wallet balance — add money or switch to cash.
+                  </p>
+                )}
+              </div>
+
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${vehicle}-${km}`}
@@ -234,13 +302,13 @@ function CabberPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.2 }}
-                  className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3"
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-muted/50 px-4 py-3"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-lg font-semibold">{formatCurrency(fare)}</div>
                     <div className="text-[11px] text-muted-foreground">{km} km · ETA {eta} min</div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <RateDialog
                       ratingKey={serviceRatingKey("cab", vehicle)}
                       title={`${vehicle} rides`}
@@ -253,6 +321,7 @@ function CabberPage() {
                   </div>
                 </motion.div>
               </AnimatePresence>
+
             </Card>
           </div>
 

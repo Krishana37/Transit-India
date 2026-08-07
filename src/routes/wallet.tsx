@@ -19,7 +19,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import {
-  useStore, tierFor, WALLET_MIN_TOPUP, WALLET_MAX_TOPUP, POINT_VALUE,
+  useStore, tierFor, driverEarningsSummary, WALLET_MIN_TOPUP, WALLET_MAX_TOPUP, POINT_VALUE,
   type PaymentMethodKind, type WalletTxn,
 } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -66,11 +66,24 @@ function txnIcon(type: WalletTxn["type"]) {
 }
 
 function WalletPage() {
-  const { walletBalance, walletTxns, coins, points, addMoney, paymentMethods, addPaymentMethod, removePaymentMethod } = useStore();
+  const {
+    walletBalance, walletTxns, coins, points, addMoney, paymentMethods, addPaymentMethod, removePaymentMethod,
+  } = useStore();
   const { formatCurrency } = useI18n();
   const [customAmount, setCustomAmount] = useState("");
   const [amountError, setAmountError] = useState<string | null>(null);
   const tier = tierFor(points);
+
+  const totals = useMemo(() => {
+    let added = 0, spent = 0, refunded = 0, earned = 0;
+    for (const t of walletTxns) {
+      if (t.type === "credit") added += t.amount;
+      else if (t.type === "debit") spent += t.amount;
+      else if (t.type === "refund") refunded += t.amount;
+      else if (t.type === "earning") earned += t.amount;
+    }
+    return { added, spent, refunded, earned };
+  }, [walletTxns]);
 
   const handleAdd = (amount: number) => {
     const res = addMoney(amount, "Money added via prototype top-up");
@@ -83,6 +96,8 @@ function WalletPage() {
     toast.success(`${formatCurrency(amount)} added to your wallet.`);
     setCustomAmount("");
   };
+
+
 
 
   return (
@@ -121,7 +136,17 @@ function WalletPage() {
           </div>
         </Card>
 
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <SummaryTile label="Money added" value={formatCurrency(totals.added)} tone="up" icon={ArrowDownLeft} />
+          <SummaryTile label="Money spent" value={formatCurrency(totals.spent)} tone="down" icon={ArrowUpRight} />
+          <SummaryTile label="Refunds received" value={formatCurrency(totals.refunded)} tone="up" icon={RotateCcw} />
+          <SummaryTile label="Driver earnings in wallet" value={formatCurrency(totals.earned)} tone="up" icon={Banknote} />
+        </div>
+
+        <CabberEarnings />
+
         <Card className="rounded-3xl border-border/60 p-5">
+
           <h2 className="text-sm font-semibold">Add Money</h2>
           <p className="text-[12px] text-muted-foreground">
             Between {formatCurrency(WALLET_MIN_TOPUP)} and {formatCurrency(WALLET_MAX_TOPUP)} per transaction.
@@ -176,6 +201,72 @@ function WalletPage() {
     </AppShell>
   );
 }
+
+function SummaryTile({
+  label, value, tone, icon: Icon,
+}: { label: string; value: string; tone: "up" | "down"; icon: typeof ArrowDownLeft }) {
+  return (
+    <Card className="min-w-0 rounded-2xl border-border/60 p-4">
+      <span
+        className={cn(
+          "grid h-8 w-8 place-items-center rounded-full",
+          tone === "up" ? "bg-[color:var(--success)]/15 text-[color:var(--success)]" : "bg-destructive/15 text-destructive",
+        )}
+      >
+        <Icon className="h-4 w-4" />
+      </span>
+      <p className="mt-2 break-words text-[11px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="break-words text-lg font-semibold">{value}</p>
+    </Card>
+  );
+}
+
+/** Driver-only earnings panel — never shown to customers who aren't registered drivers. */
+function CabberEarnings() {
+  const { driver, driverEarnings, driverWithdrawn, withdrawEarnings } = useStore();
+  const { formatCurrency } = useI18n();
+  if (!driver) return null;
+  const summary = driverEarningsSummary(driverEarnings, driverWithdrawn);
+
+  const withdraw = () => {
+    const res = withdrawEarnings(summary.withdrawable);
+    if (!res.ok) {
+      toast.error(res.error ?? "Nothing to withdraw yet.");
+      return;
+    }
+    toast.success(`${formatCurrency(summary.withdrawable)} moved to your Transit Wallet.`);
+  };
+
+  return (
+    <Card className="rounded-3xl border-border/60 p-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold">Cabber driver earnings</h2>
+          <p className="break-words text-[12px] text-muted-foreground">
+            {driver.name} · {driver.vehicleNumber} — kept separate from your customer wallet.
+          </p>
+        </div>
+        <Button
+          className="shrink-0 rounded-full brand-gradient text-white"
+          disabled={summary.withdrawable <= 0}
+          onClick={withdraw}
+        >
+          Withdraw
+        </Button>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <SummaryTile label="Today" value={formatCurrency(summary.today)} tone="up" icon={Banknote} />
+        <SummaryTile label="This week" value={formatCurrency(summary.week)} tone="up" icon={Banknote} />
+        <SummaryTile label="Total earned" value={formatCurrency(summary.total)} tone="up" icon={Banknote} />
+        <SummaryTile label="Completed rides" value={String(summary.rides)} tone="up" icon={Receipt} />
+        <SummaryTile label="Pending" value={formatCurrency(summary.pending)} tone="down" icon={RotateCcw} />
+        <SummaryTile label="Withdrawable" value={formatCurrency(summary.withdrawable)} tone="up" icon={ArrowDownLeft} />
+      </div>
+    </Card>
+  );
+}
+
+
 
 /** Prototype payout: move wallet money to a bank account, UPI ID or saved method. */
 function TransferMoney() {
@@ -354,7 +445,12 @@ function TxnHistory({ txns }: { txns: WalletTxn[] }) {
               </span>
               <div className="min-w-0">
                 <p className="truncate text-[13px] font-medium">{t.label}</p>
-                <p className="text-[11px] text-muted-foreground">{relTime(t.at)}</p>
+                <p className="break-words text-[11px] text-muted-foreground">
+                  {new Date(t.at).toLocaleString()} · {relTime(t.at)}
+                  {t.category ? ` · ${t.category}` : ""}
+                  {t.ref ? ` · Ref ${t.ref}` : ""}
+                  {` · ${t.status ?? "success"}`}
+                </p>
               </div>
               <span
                 className={cn(

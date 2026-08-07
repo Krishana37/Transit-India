@@ -72,13 +72,60 @@ export type DriverProfile = {
   registeredAt: string;
 };
 
+export type WalletTxnStatus = "success" | "pending" | "failed";
+
 export type WalletTxn = {
   id: string;
-  type: "credit" | "debit" | "refund";
+  type: "credit" | "debit" | "refund" | "earning";
   amount: number;
   label: string;
   at: string;
+  status?: WalletTxnStatus;
+  /** Human category shown as a chip, e.g. "Cabber ride", "Top-up". */
+  category?: string;
+  /** Related booking id / PNR / payout reference. */
+  ref?: string;
 };
+
+/** A single completed Cabber ride payout for the signed-in driver. */
+export type DriverEarning = {
+  id: string;
+  amount: number;
+  label: string;
+  route?: string;
+  at: string;
+  /** Pending payouts settle into the withdrawable balance in the prototype. */
+  status: "settled" | "pending";
+};
+
+/** Reward that can be bought with Transit Points. Valid for ONE trip only. */
+export type RewardCatalogItem = {
+  id: string;
+  name: string;
+  cost: number;
+  desc: string;
+  benefit: string;
+  /** Flat rupee benefit applied at checkout, if any. */
+  discount: number;
+};
+
+export type RedeemedRewardStatus = "redeemed" | "applied" | "used" | "expired";
+
+export type RedeemedReward = {
+  id: string;
+  rewardId: string;
+  name: string;
+  cost: number;
+  benefit: string;
+  discount: number;
+  status: RedeemedRewardStatus;
+  bookingId?: string;
+  bookingLabel?: string;
+  redeemedAt: string;
+  expiresAt: string;
+  closedAt?: string;
+};
+
 
 export type PaymentMethodKind = "upi" | "bank" | "debit" | "credit" | "wallet";
 
@@ -164,6 +211,13 @@ type State = {
   ratings: Record<string, ServiceRating>;
   /** Community feedback wall — visible to everyone in the prototype. */
   feedback: FeedbackEntry[];
+  /** Cabber driver payouts — only relevant when `driver` is registered. */
+  driverEarnings: DriverEarning[];
+  /** Total already withdrawn from driver earnings into the Transit Wallet. */
+  driverWithdrawn: number;
+  /** One-trip rewards bought with Transit Points. */
+  redeemedRewards: RedeemedReward[];
+
 };
 
 /** A rating left by the traveller on a service, journey or the app itself. */
@@ -200,7 +254,7 @@ const initialState: State = {
   accessibility: "default",
   walletBalance: 2500,
   walletTxns: [
-    { id: "w0", type: "credit", amount: 2500, label: "Welcome prototype balance", at: new Date().toISOString() },
+    { id: "w0", type: "credit", amount: 2500, label: "Welcome prototype balance", at: new Date().toISOString(), status: "success", category: "Top-up" },
   ],
   coins: 480,
   points: 120,
@@ -210,6 +264,10 @@ const initialState: State = {
   rewardLog: [],
   ratings: {},
   feedback: seedFeedback,
+  driverEarnings: [],
+  driverWithdrawn: 0,
+  redeemedRewards: [],
+
 };
 
 /** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
@@ -256,9 +314,51 @@ export function tierFor(points: number) {
   return [...TIERS].reverse().find((t) => points >= t.min) ?? TIERS[0];
 }
 
+/** Rewards that can be bought with Transit Points. Each is valid for ONE trip. */
+export const REWARD_CATALOG: RewardCatalogItem[] = [
+  { id: "meal-upgrade", name: "Free Meal Upgrade", cost: 300, desc: "Upgrade one onboard meal to the premium thali.", benefit: "Premium meal on one journey", discount: 149 },
+  { id: "seat-upgrade", name: "Seat Upgrade", cost: 500, desc: "Move one booking up to the next available class.", benefit: "Next-class seat on one journey", discount: 250 },
+  { id: "baggage", name: "Extra Baggage Benefit", cost: 350, desc: "Carry 10 kg extra on a single flight or bus trip.", benefit: "+10 kg baggage on one trip", discount: 180 },
+  { id: "priority", name: "Priority Queue", cost: 200, desc: "Skip the boarding queue once at any Transit terminal.", benefit: "Priority boarding on one trip", discount: 99 },
+  { id: "fare-discount", name: "Small Fare Discount", cost: 250, desc: "Flat ₹125 off a single booking at checkout.", benefit: "₹125 off one booking", discount: 125 },
+  { id: "lounge", name: "Lounge / Travel Perk", cost: 750, desc: "One complimentary lounge visit before departure.", benefit: "Lounge access on one trip", discount: 400 },
+];
+
+export const REWARD_VALID_DAYS = 30;
+
+export type DriverEarningsSummary = {
+  today: number; week: number; total: number; rides: number; pending: number; withdrawable: number;
+};
+
+/** Derive the driver dashboard figures from the payout log. */
+export function driverEarningsSummary(earnings: DriverEarning[], withdrawn: number): DriverEarningsSummary {
+  const now = Date.now();
+  const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+  const weekAgo = now - 7 * 86400000;
+  let today = 0, week = 0, total = 0, pending = 0;
+  for (const e of earnings) {
+    const at = new Date(e.at).getTime();
+    total += e.amount;
+    if (e.status === "pending") pending += e.amount;
+    if (at >= startOfDay.getTime()) today += e.amount;
+    if (at >= weekAgo) week += e.amount;
+  }
+  return { today, week, total, rides: earnings.length, pending, withdrawable: Math.max(0, total - pending - withdrawn) };
+}
+
+/** Rewards past their expiry date are treated as expired without extra state. */
+export function isRewardExpired(r: RedeemedReward) {
+  return (r.status === "redeemed" || r.status === "applied") && new Date(r.expiresAt).getTime() < Date.now();
+}
+
+export function rewardBadge(r: RedeemedReward): RedeemedRewardStatus {
+  return isRewardExpired(r) ? "expired" : r.status;
+}
+
 type StoreValue = State & {
   hydrated: boolean;
   unreadCount: number;
+
   signUp: (data: { email: string; username: string; password: string; photo?: string; fullName?: string; language?: string; location?: string; remember?: boolean }) => { ok: boolean; error?: string };
   login: (data: { email: string; password: string; remember?: boolean }) => { ok: boolean; error?: string };
   resetPassword: (data: { email: string; password: string }) => { ok: boolean; error?: string };
@@ -277,7 +377,18 @@ type StoreValue = State & {
   setDark: (b: boolean) => void;
   setAccessibility: (m: AccessibilityMode) => void;
   addMoney: (amount: number, label?: string) => { ok: boolean; error?: string };
-  payFromWallet: (amount: number, label: string) => { ok: boolean; error?: string };
+  payFromWallet: (amount: number, label: string, meta?: { category?: string; ref?: string }) => { ok: boolean; error?: string };
+  /** Credit the customer wallet instantly (refunds, payouts, promos). */
+  creditWallet: (amount: number, label: string, meta?: { category?: string; ref?: string; type?: WalletTxn["type"] }) => void;
+  /** Cabber driver payouts. */
+  addDriverEarning: (data: { amount: number; label: string; route?: string; status?: DriverEarning["status"] }) => void;
+  settlePendingEarnings: () => void;
+  withdrawEarnings: (amount: number) => { ok: boolean; error?: string };
+  /** One-trip rewards. */
+  redeemReward: (rewardId: string) => { ok: boolean; error?: string };
+  applyRewardToBooking: (redeemedId: string, bookingId: string, bookingLabel: string) => void;
+  closeRewardsForBooking: (bookingId: string, outcome: "used" | "expired") => void;
+
   addPaymentMethod: (m: Omit<PaymentMethod, "id">) => void;
   removePaymentMethod: (id: string) => void;
   spendCoins: (coins: number) => void;
@@ -483,17 +594,48 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((s) => {
         const b = s.bookings.find((x) => x.id === id);
         if (!b || !canCancelBooking(b)) return s;
-        const next = {
+        const elig = refundEligibility(b);
+        const now = new Date().toISOString();
+        // Instant prototype refund: eligible amounts always land in the Transit Wallet.
+        let next: State = {
           ...s,
+          walletBalance: s.walletBalance + elig.amount,
+          walletTxns: elig.amount > 0
+            ? [{
+                id: uid(), type: "refund" as const, amount: elig.amount,
+                label: `Refund · ${b.serviceName}`, at: now, status: "success" as const,
+                category: "Cancellation refund", ref: b.pnr,
+              }, ...s.walletTxns]
+            : s.walletTxns,
           bookings: s.bookings.map((x) =>
-            x.id === id ? { ...x, status: "cancelled" as BookingStatus, cancelReason: reason ?? "Cancelled by passenger" } : x,
+            x.id === id
+              ? {
+                  ...x,
+                  status: (elig.amount > 0 ? "refunded" : "cancelled") as BookingStatus,
+                  cancelReason: reason ?? "Cancelled by passenger",
+                  refundStatus: (elig.amount > 0 ? "credited" : "none") as RefundStatus,
+                  refundAmount: elig.amount,
+                  refundedAt: elig.amount > 0 ? now : undefined,
+                }
+              : x,
+          ),
+          // A one-trip reward attached to a cancelled booking is burnt.
+          redeemedRewards: s.redeemedRewards.map((r) =>
+            r.bookingId === id && r.status === "applied" ? { ...r, status: "expired" as const, closedAt: now } : r,
           ),
         };
-        return pushNotification(next, {
+        next = pushNotification(next, {
           kind: "cancelled",
           title: "Booking cancelled",
-          body: `${b.serviceName} · request a refund from My Trips if eligible.`,
+          body: `${b.serviceName} · ${elig.amount > 0 ? `₹${elig.amount} refunded instantly.` : elig.reason}`,
         });
+        return elig.amount > 0
+          ? pushNotification(next, {
+              kind: "refund",
+              title: "Refund credited",
+              body: `₹${elig.amount} added to your Transit Wallet for ${b.serviceName}.`,
+            })
+          : next;
       }),
     requestRefund: (id) => {
       let out: { ok: boolean; error?: string } = { ok: true };
@@ -506,7 +648,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ...s,
           walletBalance: s.walletBalance + elig.amount,
           walletTxns: [
-            { id: uid(), type: "refund", amount: elig.amount, label: `Refund · ${b.serviceName}`, at: new Date().toISOString() },
+            { id: uid(), type: "refund", amount: elig.amount, label: `Refund · ${b.serviceName}`, at: new Date().toISOString(), status: "success", category: "Booking refund", ref: b.pnr },
             ...s.walletTxns,
           ],
           bookings: s.bookings.map((x) =>
@@ -540,24 +682,108 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const next: State = {
           ...s,
           walletBalance: s.walletBalance + amount,
-          walletTxns: [{ id: uid(), type: "credit", amount, label: label ?? "Money added", at: new Date().toISOString() }, ...s.walletTxns],
+          walletTxns: [{ id: uid(), type: "credit", amount, label: label ?? "Money added", at: new Date().toISOString(), status: "success", category: "Wallet top-up" }, ...s.walletTxns],
         };
         return pushNotification(next, { kind: "wallet", title: "Wallet credited", body: `₹${amount} added to your Transit Wallet.` });
       });
       return { ok: true };
     },
-    payFromWallet: (amount, label) => {
+    payFromWallet: (amount, label, meta) => {
       let out: { ok: boolean; error?: string } = { ok: true };
       setState((s) => {
         if (s.walletBalance < amount) { out = { ok: false, error: "Insufficient wallet balance." }; return s; }
         return {
           ...s,
           walletBalance: s.walletBalance - amount,
-          walletTxns: [{ id: uid(), type: "debit", amount, label, at: new Date().toISOString() }, ...s.walletTxns],
+          walletTxns: [{
+            id: uid(), type: "debit", amount, label, at: new Date().toISOString(),
+            status: "success" as const, category: meta?.category ?? "Booking payment", ref: meta?.ref,
+          }, ...s.walletTxns],
         };
       });
       return out;
     },
+    creditWallet: (amount, label, meta) =>
+      setState((s) => pushNotification({
+        ...s,
+        walletBalance: s.walletBalance + amount,
+        walletTxns: [{
+          id: uid(), type: meta?.type ?? "credit", amount, label, at: new Date().toISOString(),
+          status: "success" as const, category: meta?.category, ref: meta?.ref,
+        }, ...s.walletTxns],
+      }, { kind: "wallet", title: "Wallet credited", body: `₹${amount.toLocaleString("en-IN")} · ${label}` })),
+    addDriverEarning: ({ amount, label, route, status }) =>
+      setState((s) => pushNotification({
+        ...s,
+        driverEarnings: [
+          { id: uid(), amount, label, route, at: new Date().toISOString(), status: status ?? "settled" },
+          ...s.driverEarnings,
+        ].slice(0, 80),
+      }, { kind: "cab", title: "Cabber ride completed", body: `+₹${amount} added to your driver earnings.` })),
+    settlePendingEarnings: () =>
+      setState((s) => ({ ...s, driverEarnings: s.driverEarnings.map((e) => ({ ...e, status: "settled" as const })) })),
+    withdrawEarnings: (amount) => {
+      let out: { ok: boolean; error?: string } = { ok: true };
+      setState((s) => {
+        const sum = driverEarningsSummary(s.driverEarnings, s.driverWithdrawn);
+        if (!Number.isFinite(amount) || amount <= 0) { out = { ok: false, error: "Enter a valid amount." }; return s; }
+        if (amount > sum.withdrawable) { out = { ok: false, error: "Amount exceeds your withdrawable earnings." }; return s; }
+        return pushNotification({
+          ...s,
+          driverWithdrawn: s.driverWithdrawn + amount,
+          walletBalance: s.walletBalance + amount,
+          walletTxns: [{
+            id: uid(), type: "earning" as const, amount, label: "Cabber driver earnings payout",
+            at: new Date().toISOString(), status: "success" as const, category: "Driver earnings",
+          }, ...s.walletTxns],
+        }, { kind: "wallet", title: "Earnings transferred", body: `₹${amount.toLocaleString("en-IN")} moved to your Transit Wallet.` });
+      });
+      return out;
+    },
+    redeemReward: (rewardId) => {
+      let out: { ok: boolean; error?: string } = { ok: true };
+      const item = REWARD_CATALOG.find((r) => r.id === rewardId);
+      if (!item) return { ok: false, error: "Reward not found." };
+      setState((s) => {
+        if (s.points < item.cost) { out = { ok: false, error: "Not enough Transit Points for this reward." }; return s; }
+        const now = new Date();
+        const expires = new Date(now.getTime() + REWARD_VALID_DAYS * 86400000);
+        return pushNotification({
+          ...s,
+          points: s.points - item.cost,
+          rewardLog: [
+            { id: uid(), label: `${item.name} redeemed`, points: -item.cost, coins: 0, at: now.toISOString(), kind: "redeemed" as const },
+            ...s.rewardLog,
+          ].slice(0, 60),
+          redeemedRewards: [{
+            id: uid(), rewardId: item.id, name: item.name, cost: item.cost, benefit: item.benefit,
+            discount: item.discount, status: "redeemed" as const,
+            redeemedAt: now.toISOString(), expiresAt: expires.toISOString(),
+          }, ...s.redeemedRewards],
+        }, { kind: "coins", title: "Reward redeemed", body: `${item.name} · valid for 1 trip until ${expires.toDateString()}.` });
+      });
+      return out;
+    },
+    applyRewardToBooking: (redeemedId, bookingId, bookingLabel) =>
+      setState((s) => ({
+        ...s,
+        redeemedRewards: s.redeemedRewards.map((r) =>
+          r.id === redeemedId && r.status === "redeemed" ? { ...r, status: "applied" as const, bookingId, bookingLabel } : r,
+        ),
+      })),
+    closeRewardsForBooking: (bookingId, outcome) =>
+      setState((s) => {
+        if (!s.redeemedRewards.some((r) => r.bookingId === bookingId && r.status === "applied")) return s;
+        return {
+          ...s,
+          redeemedRewards: s.redeemedRewards.map((r) =>
+            r.bookingId === bookingId && r.status === "applied"
+              ? { ...r, status: outcome, closedAt: new Date().toISOString() }
+              : r,
+          ),
+        };
+      }),
+
     addPaymentMethod: (m) => setState((s) => ({ ...s, paymentMethods: [...s.paymentMethods, { ...m, id: uid() }] })),
     removePaymentMethod: (id) => setState((s) => ({ ...s, paymentMethods: s.paymentMethods.filter((m) => m.id !== id) })),
     spendCoins: (coins) =>

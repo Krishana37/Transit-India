@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n";
-import { useStore } from "@/lib/store";
+import { driverEarningsSummary, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/cabber/driver")({
@@ -190,19 +190,16 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 function DriverDashboard() {
-  const { driver, updateDriver, addBooking } = useStore();
+  const { driver, updateDriver, driverEarnings, driverWithdrawn, addDriverEarning, withdrawEarnings } = useStore();
   const { formatCurrency } = useI18n();
   if (!driver) return null;
 
   const [requests, setRequests] = useState<RideRequest[]>(() => generateRequests(driver.vehicleType, driver.phone));
   const [onTrip, setOnTrip] = useState<RideRequest | null>(null);
-  const [completedFares, setCompletedFares] = useState<number[]>([]);
   const [history, setHistory] = useState(() => generateHistory(driver.vehicleType, driver.name));
 
   const series = useMemo(() => earningsSeries(driver.name), [driver.name]);
-  const todayEarnings = series[series.length - 1]?.earnings ?? 0;
-  const weekEarnings = series.reduce((a, b) => a + b.earnings, 0);
-  const totalEarnings = weekEarnings * 6 + completedFares.reduce((a, b) => a + b, 0);
+  const summary = driverEarningsSummary(driverEarnings, driverWithdrawn);
 
   const accept = (r: RideRequest) => {
     setRequests((rs) => rs.filter((x) => x.id !== r.id));
@@ -216,33 +213,31 @@ function DriverDashboard() {
 
   const completeTrip = () => {
     if (!onTrip) return;
-    setCompletedFares((f) => [...f, onTrip.fare]);
     setHistory((h) => [
       { id: onTrip.id, date: new Date().toISOString().slice(0, 10), rider: onTrip.rider, route: `${onTrip.pickup} → ${onTrip.destination}`, fare: onTrip.fare, rating: 4.6 },
       ...h,
     ]);
-    addBooking({
-      mode: "cab",
-      pnr: `CB${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`,
-      serviceName: `${driver.vehicleModel} · ${driver.name}`,
-      serviceCode: driver.vehicleNumber,
-      fromCode: "PICKUP",
-      fromCity: onTrip.pickup,
-      toCode: onTrip.destination,
-      toCity: onTrip.destination,
-      date: new Date().toISOString().slice(0, 10),
-      depart: new Date().toTimeString().slice(0, 5),
-      arrive: new Date(Date.now() + onTrip.eta * 60000).toTimeString().slice(0, 5),
-      classCode: driver.vehicleType,
-      passengers: [],
-      meals: [],
-      total: onTrip.fare,
-      status: "confirmed",
+    addDriverEarning({
+      amount: onTrip.fare,
+      label: `Cabber Ride Completed — ${onTrip.rider}`,
+      route: `${onTrip.pickup} → ${onTrip.destination}`,
     });
-    toast.success("Ride completed", { description: `Earned ${formatCurrency(onTrip.fare)}.` });
+    toast.success(`Cabber Ride Completed +${formatCurrency(onTrip.fare)}`, {
+      description: "Added to your Cabber driver earnings.",
+    });
     setOnTrip(null);
     setRequests((rs) => (rs.length ? rs : generateRequests(driver.vehicleType, driver.phone + Date.now())));
   };
+
+  const withdraw = () => {
+    const res = withdrawEarnings(summary.withdrawable);
+    if (!res.ok) {
+      toast.error(res.error ?? "Nothing to withdraw yet.");
+      return;
+    }
+    toast.success(`${formatCurrency(summary.withdrawable)} moved to your Transit Wallet.`);
+  };
+
 
   const Icon = vehicleIcons[driver.vehicleType];
 
@@ -270,11 +265,49 @@ function DriverDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={IndianRupee} label="Today" value={formatCurrency(todayEarnings)} />
-        <StatCard icon={Clock} label="This week" value={formatCurrency(weekEarnings)} />
-        <StatCard icon={Award} label="Total earnings" value={formatCurrency(totalEarnings)} />
-      </div>
+      <Card className="glass-card rounded-3xl p-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Cabber driver earnings</div>
+            <p className="text-[12px] text-muted-foreground">Separate from your customer Transit Wallet · Prototype / Demo Data</p>
+          </div>
+          <Button
+            className="shrink-0 rounded-full text-white brand-gradient"
+            disabled={summary.withdrawable <= 0}
+            onClick={withdraw}
+          >
+            Withdraw {formatCurrency(summary.withdrawable)}
+          </Button>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <StatCard icon={IndianRupee} label="Today" value={formatCurrency(summary.today)} />
+          <StatCard icon={Clock} label="This week" value={formatCurrency(summary.week)} />
+          <StatCard icon={Award} label="Total earnings" value={formatCurrency(summary.total)} />
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <StatCard icon={Check} label="Completed rides" value={String(summary.rides)} />
+          <StatCard icon={Clock} label="Pending earnings" value={formatCurrency(summary.pending)} />
+          <StatCard icon={IndianRupee} label="Withdrawable" value={formatCurrency(summary.withdrawable)} />
+        </div>
+        {driverEarnings.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {driverEarnings.slice(0, 5).map((e) => (
+              <div key={e.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border/60 p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-medium">{e.label}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {e.route ? `${e.route} · ` : ""}{new Date(e.at).toLocaleString()}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[13px] font-semibold text-[color:var(--success)]">
+                  +{formatCurrency(e.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
 
       <Card className="glass-card rounded-3xl p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Earnings — last 7 days</div>
