@@ -377,7 +377,18 @@ type StoreValue = State & {
   setDark: (b: boolean) => void;
   setAccessibility: (m: AccessibilityMode) => void;
   addMoney: (amount: number, label?: string) => { ok: boolean; error?: string };
-  payFromWallet: (amount: number, label: string) => { ok: boolean; error?: string };
+  payFromWallet: (amount: number, label: string, meta?: { category?: string; ref?: string }) => { ok: boolean; error?: string };
+  /** Credit the customer wallet instantly (refunds, payouts, promos). */
+  creditWallet: (amount: number, label: string, meta?: { category?: string; ref?: string; type?: WalletTxn["type"] }) => void;
+  /** Cabber driver payouts. */
+  addDriverEarning: (data: { amount: number; label: string; route?: string; status?: DriverEarning["status"] }) => void;
+  settlePendingEarnings: () => void;
+  withdrawEarnings: (amount: number) => { ok: boolean; error?: string };
+  /** One-trip rewards. */
+  redeemReward: (rewardId: string) => { ok: boolean; error?: string };
+  applyRewardToBooking: (redeemedId: string, bookingId: string, bookingLabel: string) => void;
+  closeRewardsForBooking: (bookingId: string, outcome: "used" | "expired") => void;
+
   addPaymentMethod: (m: Omit<PaymentMethod, "id">) => void;
   removePaymentMethod: (id: string) => void;
   spendCoins: (coins: number) => void;
