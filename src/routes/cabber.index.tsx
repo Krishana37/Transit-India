@@ -74,9 +74,29 @@ function CabberPage() {
 
   const [stage, setStage] = useState<Stage>("plan");
   const [driver, setDriver] = useState<ReturnType<typeof driverFor> | null>(null);
+  const [payMode, setPayMode] = useState<"wallet" | "cash">("wallet");
+  const [paidAmount, setPaidAmount] = useState(0);
+
+  const routeLabel = `${pickup.split(" — ")[0]} → ${dest?.label ?? "destination"}`;
 
   const bookRide = () => {
     if (!dest) return;
+    if (payMode === "wallet") {
+      const res = payFromWallet(fare, `Cabber Ride — ${routeLabel}`, { category: "Cabber ride", ref: dest.id });
+      if (!res.ok) {
+        toast.error(res.error ?? "Insufficient wallet balance.", {
+          description: "Add money to your Transit Wallet or pay by cash.",
+        });
+        return;
+      }
+      setPaidAmount(fare);
+      toast.success(`${formatCurrency(fare)} paid from your Transit Wallet.`, {
+        description: `New balance ${formatCurrency(walletBalance - fare)}.`,
+      });
+      reward("wallet");
+    } else {
+      setPaidAmount(0);
+    }
     setStage("matching");
     setTimeout(() => {
       const d = driverFor(`${pickup}-${dest.id}-${vehicle}-${Date.now()}`, vehicle);
@@ -86,9 +106,20 @@ function CabberPage() {
   };
 
   const cancelRide = () => {
+    if (paidAmount > 0) {
+      creditWallet(paidAmount, `Cabber Ride Cancelled — ${routeLabel}`, {
+        type: "refund",
+        category: "Cabber refund",
+      });
+      toast.success(`${formatCurrency(paidAmount)} refunded to your Transit Wallet.`, {
+        description: "Refunded instantly — see it in your wallet history.",
+      });
+    } else {
+      toast("Ride cancelled", { description: "Your Cabber ride was cancelled." });
+    }
+    setPaidAmount(0);
     setStage("plan");
     setDriver(null);
-    toast("Ride cancelled", { description: "Your Cabber ride was cancelled." });
   };
 
   const completeRide = () => {
@@ -113,11 +144,15 @@ function CabberPage() {
       meals: [],
       total: fare,
       status: "confirmed",
+      paidWith: payMode === "wallet" ? "Transit Wallet" : "Cash to driver",
     });
+    reward("cabber");
     toast.success("Ride completed", { description: "Added to My Bookings." });
+    setPaidAmount(0);
     setStage("plan");
     setDriver(null);
   };
+
 
   if (!account) return null;
 
