@@ -46,7 +46,7 @@ const vehicleIcons: Record<VehicleType, typeof Bike> = { Bike, Auto: Rocket, Sed
 type Stage = "plan" | "matching" | "assigned";
 
 function CabberPage() {
-  const { account, hydrated, addBooking } = useStore();
+  const { account, hydrated, addBooking, walletBalance, payFromWallet, creditWallet, reward } = useStore();
   const { formatCurrency } = useI18n();
   const navigate = useNavigate();
 
