@@ -265,11 +265,49 @@ function DriverDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard icon={IndianRupee} label="Today" value={formatCurrency(todayEarnings)} />
-        <StatCard icon={Clock} label="This week" value={formatCurrency(weekEarnings)} />
-        <StatCard icon={Award} label="Total earnings" value={formatCurrency(totalEarnings)} />
-      </div>
+      <Card className="glass-card rounded-3xl p-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Cabber driver earnings</div>
+            <p className="text-[12px] text-muted-foreground">Separate from your customer Transit Wallet · Prototype / Demo Data</p>
+          </div>
+          <Button
+            className="shrink-0 rounded-full text-white brand-gradient"
+            disabled={summary.withdrawable <= 0}
+            onClick={withdraw}
+          >
+            Withdraw {formatCurrency(summary.withdrawable)}
+          </Button>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <StatCard icon={IndianRupee} label="Today" value={formatCurrency(summary.today)} />
+          <StatCard icon={Clock} label="This week" value={formatCurrency(summary.week)} />
+          <StatCard icon={Award} label="Total earnings" value={formatCurrency(summary.total)} />
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <StatCard icon={Check} label="Completed rides" value={String(summary.rides)} />
+          <StatCard icon={Clock} label="Pending earnings" value={formatCurrency(summary.pending)} />
+          <StatCard icon={IndianRupee} label="Withdrawable" value={formatCurrency(summary.withdrawable)} />
+        </div>
+        {driverEarnings.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {driverEarnings.slice(0, 5).map((e) => (
+              <div key={e.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border/60 p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-[13px] font-medium">{e.label}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {e.route ? `${e.route} · ` : ""}{new Date(e.at).toLocaleString()}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[13px] font-semibold text-[color:var(--success)]">
+                  +{formatCurrency(e.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
 
       <Card className="glass-card rounded-3xl p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Earnings — last 7 days</div>
