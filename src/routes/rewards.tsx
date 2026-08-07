@@ -5,13 +5,20 @@ import {
   Coins, Star, Sparkles, Search, Ticket, ScanLine, Wallet, Car, Hotel, Utensils, CalendarCheck,
   Lock, Unlock, Sofa, Fingerprint,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/transit/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
-import { useStore, TIERS, POINT_EVENTS, tierFor, COIN_VALUE, COIN_MAX_SHARE } from "@/lib/store";
+import {
+  useStore, TIERS, POINT_EVENTS, tierFor, COIN_VALUE, COIN_MAX_SHARE,
+  REWARD_CATALOG, REWARD_VALID_DAYS, rewardBadge, journeyPhase, type RedeemedRewardStatus,
+} from "@/lib/store";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/rewards")({
   head: () => ({
