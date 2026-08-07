@@ -314,9 +314,51 @@ export function tierFor(points: number) {
   return [...TIERS].reverse().find((t) => points >= t.min) ?? TIERS[0];
 }
 
+/** Rewards that can be bought with Transit Points. Each is valid for ONE trip. */
+export const REWARD_CATALOG: RewardCatalogItem[] = [
+  { id: "meal-upgrade", name: "Free Meal Upgrade", cost: 300, desc: "Upgrade one onboard meal to the premium thali.", benefit: "Premium meal on one journey", discount: 149 },
+  { id: "seat-upgrade", name: "Seat Upgrade", cost: 500, desc: "Move one booking up to the next available class.", benefit: "Next-class seat on one journey", discount: 250 },
+  { id: "baggage", name: "Extra Baggage Benefit", cost: 350, desc: "Carry 10 kg extra on a single flight or bus trip.", benefit: "+10 kg baggage on one trip", discount: 180 },
+  { id: "priority", name: "Priority Queue", cost: 200, desc: "Skip the boarding queue once at any Transit terminal.", benefit: "Priority boarding on one trip", discount: 99 },
+  { id: "fare-discount", name: "Small Fare Discount", cost: 250, desc: "Flat ₹125 off a single booking at checkout.", benefit: "₹125 off one booking", discount: 125 },
+  { id: "lounge", name: "Lounge / Travel Perk", cost: 750, desc: "One complimentary lounge visit before departure.", benefit: "Lounge access on one trip", discount: 400 },
+];
+
+export const REWARD_VALID_DAYS = 30;
+
+export type DriverEarningsSummary = {
+  today: number; week: number; total: number; rides: number; pending: number; withdrawable: number;
+};
+
+/** Derive the driver dashboard figures from the payout log. */
+export function driverEarningsSummary(earnings: DriverEarning[], withdrawn: number): DriverEarningsSummary {
+  const now = Date.now();
+  const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+  const weekAgo = now - 7 * 86400000;
+  let today = 0, week = 0, total = 0, pending = 0;
+  for (const e of earnings) {
+    const at = new Date(e.at).getTime();
+    total += e.amount;
+    if (e.status === "pending") pending += e.amount;
+    if (at >= startOfDay.getTime()) today += e.amount;
+    if (at >= weekAgo) week += e.amount;
+  }
+  return { today, week, total, rides: earnings.length, pending, withdrawable: Math.max(0, total - pending - withdrawn) };
+}
+
+/** Rewards past their expiry date are treated as expired without extra state. */
+export function isRewardExpired(r: RedeemedReward) {
+  return (r.status === "redeemed" || r.status === "applied") && new Date(r.expiresAt).getTime() < Date.now();
+}
+
+export function rewardBadge(r: RedeemedReward): RedeemedRewardStatus {
+  return isRewardExpired(r) ? "expired" : r.status;
+}
+
 type StoreValue = State & {
   hydrated: boolean;
   unreadCount: number;
+
   signUp: (data: { email: string; username: string; password: string; photo?: string; fullName?: string; language?: string; location?: string; remember?: boolean }) => { ok: boolean; error?: string };
   login: (data: { email: string; password: string; remember?: boolean }) => { ok: boolean; error?: string };
   resetPassword: (data: { email: string; password: string }) => { ok: boolean; error?: string };
