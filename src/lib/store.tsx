@@ -72,13 +72,60 @@ export type DriverProfile = {
   registeredAt: string;
 };
 
+export type WalletTxnStatus = "success" | "pending" | "failed";
+
 export type WalletTxn = {
   id: string;
-  type: "credit" | "debit" | "refund";
+  type: "credit" | "debit" | "refund" | "earning";
   amount: number;
   label: string;
   at: string;
+  status?: WalletTxnStatus;
+  /** Human category shown as a chip, e.g. "Cabber ride", "Top-up". */
+  category?: string;
+  /** Related booking id / PNR / payout reference. */
+  ref?: string;
 };
+
+/** A single completed Cabber ride payout for the signed-in driver. */
+export type DriverEarning = {
+  id: string;
+  amount: number;
+  label: string;
+  route?: string;
+  at: string;
+  /** Pending payouts settle into the withdrawable balance in the prototype. */
+  status: "settled" | "pending";
+};
+
+/** Reward that can be bought with Transit Points. Valid for ONE trip only. */
+export type RewardCatalogItem = {
+  id: string;
+  name: string;
+  cost: number;
+  desc: string;
+  benefit: string;
+  /** Flat rupee benefit applied at checkout, if any. */
+  discount: number;
+};
+
+export type RedeemedRewardStatus = "redeemed" | "applied" | "used" | "expired";
+
+export type RedeemedReward = {
+  id: string;
+  rewardId: string;
+  name: string;
+  cost: number;
+  benefit: string;
+  discount: number;
+  status: RedeemedRewardStatus;
+  bookingId?: string;
+  bookingLabel?: string;
+  redeemedAt: string;
+  expiresAt: string;
+  closedAt?: string;
+};
+
 
 export type PaymentMethodKind = "upi" | "bank" | "debit" | "credit" | "wallet";
 
