@@ -445,7 +445,12 @@ function TxnHistory({ txns }: { txns: WalletTxn[] }) {
               </span>
               <div className="min-w-0">
                 <p className="truncate text-[13px] font-medium">{t.label}</p>
-                <p className="text-[11px] text-muted-foreground">{relTime(t.at)}</p>
+                <p className="break-words text-[11px] text-muted-foreground">
+                  {new Date(t.at).toLocaleString()} · {relTime(t.at)}
+                  {t.category ? ` · ${t.category}` : ""}
+                  {t.ref ? ` · Ref ${t.ref}` : ""}
+                  {` · ${t.status ?? "success"}`}
+                </p>
               </div>
               <span
                 className={cn(
