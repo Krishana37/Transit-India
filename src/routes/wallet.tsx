@@ -136,7 +136,17 @@ function WalletPage() {
           </div>
         </Card>
 
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <SummaryTile label="Money added" value={formatCurrency(totals.added)} tone="up" icon={ArrowDownLeft} />
+          <SummaryTile label="Money spent" value={formatCurrency(totals.spent)} tone="down" icon={ArrowUpRight} />
+          <SummaryTile label="Refunds received" value={formatCurrency(totals.refunded)} tone="up" icon={RotateCcw} />
+          <SummaryTile label="Driver earnings in wallet" value={formatCurrency(totals.earned)} tone="up" icon={Banknote} />
+        </div>
+
+        <CabberEarnings />
+
         <Card className="rounded-3xl border-border/60 p-5">
+
           <h2 className="text-sm font-semibold">Add Money</h2>
           <p className="text-[12px] text-muted-foreground">
             Between {formatCurrency(WALLET_MIN_TOPUP)} and {formatCurrency(WALLET_MAX_TOPUP)} per transaction.
