@@ -211,6 +211,13 @@ type State = {
   ratings: Record<string, ServiceRating>;
   /** Community feedback wall — visible to everyone in the prototype. */
   feedback: FeedbackEntry[];
+  /** Cabber driver payouts — only relevant when `driver` is registered. */
+  driverEarnings: DriverEarning[];
+  /** Total already withdrawn from driver earnings into the Transit Wallet. */
+  driverWithdrawn: number;
+  /** One-trip rewards bought with Transit Points. */
+  redeemedRewards: RedeemedReward[];
+
 };
 
 /** A rating left by the traveller on a service, journey or the app itself. */
