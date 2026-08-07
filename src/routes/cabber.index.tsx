@@ -262,6 +262,39 @@ function CabberPage() {
                 })}
               </div>
 
+              <div className="rounded-2xl border border-border/60 p-3">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                  <div className="min-w-0 text-[10px] uppercase tracking-widest text-muted-foreground">Payment</div>
+                  <span className="shrink-0 text-[11px] text-muted-foreground">
+                    Wallet: <span className="font-semibold text-foreground">{formatCurrency(walletBalance)}</span>
+                  </span>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {([
+                    { id: "wallet" as const, label: "Pay from Transit Wallet", hint: "Deducted instantly" },
+                    { id: "cash" as const, label: "Pay cash to driver", hint: "Settle at drop-off" },
+                  ]).map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setPayMode(opt.id)}
+                      disabled={stage !== "plan"}
+                      className={cn(
+                        "min-w-0 rounded-2xl border border-border p-3 text-left transition hover:border-primary/40 disabled:opacity-60",
+                        payMode === opt.id && "border-primary bg-[color:var(--brand-soft)]",
+                      )}
+                    >
+                      <div className="text-[12px] font-semibold leading-tight">{opt.label}</div>
+                      <div className="text-[11px] text-muted-foreground">{opt.hint}</div>
+                    </button>
+                  ))}
+                </div>
+                {payMode === "wallet" && walletBalance < fare && (
+                  <p className="mt-2 text-[11px] text-destructive">
+                    Insufficient wallet balance — add money or switch to cash.
+                  </p>
+                )}
+              </div>
+
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${vehicle}-${km}`}
@@ -269,13 +302,13 @@ function CabberPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.2 }}
-                  className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3"
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-muted/50 px-4 py-3"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-lg font-semibold">{formatCurrency(fare)}</div>
                     <div className="text-[11px] text-muted-foreground">{km} km · ETA {eta} min</div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <RateDialog
                       ratingKey={serviceRatingKey("cab", vehicle)}
                       title={`${vehicle} rides`}
@@ -288,6 +321,7 @@ function CabberPage() {
                   </div>
                 </motion.div>
               </AnimatePresence>
+
             </Card>
           </div>
 
