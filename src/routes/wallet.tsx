@@ -202,6 +202,72 @@ function WalletPage() {
   );
 }
 
+function SummaryTile({
+  label, value, tone, icon: Icon,
+}: { label: string; value: string; tone: "up" | "down"; icon: typeof ArrowDownLeft }) {
+  return (
+    <Card className="min-w-0 rounded-2xl border-border/60 p-4">
+      <span
+        className={cn(
+          "grid h-8 w-8 place-items-center rounded-full",
+          tone === "up" ? "bg-[color:var(--success)]/15 text-[color:var(--success)]" : "bg-destructive/15 text-destructive",
+        )}
+      >
+        <Icon className="h-4 w-4" />
+      </span>
+      <p className="mt-2 break-words text-[11px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="break-words text-lg font-semibold">{value}</p>
+    </Card>
+  );
+}
+
+/** Driver-only earnings panel — never shown to customers who aren't registered drivers. */
+function CabberEarnings() {
+  const { driver, driverEarnings, driverWithdrawn, withdrawEarnings } = useStore();
+  const { formatCurrency } = useI18n();
+  if (!driver) return null;
+  const summary = driverEarningsSummary(driverEarnings, driverWithdrawn);
+
+  const withdraw = () => {
+    const res = withdrawEarnings(summary.withdrawable);
+    if (!res.ok) {
+      toast.error(res.error ?? "Nothing to withdraw yet.");
+      return;
+    }
+    toast.success(`${formatCurrency(summary.withdrawable)} moved to your Transit Wallet.`);
+  };
+
+  return (
+    <Card className="rounded-3xl border-border/60 p-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold">Cabber driver earnings</h2>
+          <p className="break-words text-[12px] text-muted-foreground">
+            {driver.name} · {driver.vehicleNumber} — kept separate from your customer wallet.
+          </p>
+        </div>
+        <Button
+          className="shrink-0 rounded-full brand-gradient text-white"
+          disabled={summary.withdrawable <= 0}
+          onClick={withdraw}
+        >
+          Withdraw
+        </Button>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <SummaryTile label="Today" value={formatCurrency(summary.today)} tone="up" icon={Banknote} />
+        <SummaryTile label="This week" value={formatCurrency(summary.week)} tone="up" icon={Banknote} />
+        <SummaryTile label="Total earned" value={formatCurrency(summary.total)} tone="up" icon={Banknote} />
+        <SummaryTile label="Completed rides" value={String(summary.rides)} tone="up" icon={Receipt} />
+        <SummaryTile label="Pending" value={formatCurrency(summary.pending)} tone="down" icon={RotateCcw} />
+        <SummaryTile label="Withdrawable" value={formatCurrency(summary.withdrawable)} tone="up" icon={ArrowDownLeft} />
+      </div>
+    </Card>
+  );
+}
+
+
+
 /** Prototype payout: move wallet money to a bank account, UPI ID or saved method. */
 function TransferMoney() {
   const { walletBalance, paymentMethods, transferMoney, addPaymentMethod } = useStore();
