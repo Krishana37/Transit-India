@@ -98,7 +98,7 @@ export type DriverEarning = {
   status: "settled" | "pending";
 };
 
-/** Reward that can be bought with Transit Points. Valid for ONE trip only. */
+/** Reward that can be bought with TripSync Points. Valid for ONE trip only. */
 export type RewardCatalogItem = {
   id: string;
   name: string;
@@ -215,7 +215,7 @@ type State = {
   driverEarnings: DriverEarning[];
   /** Total already withdrawn from driver earnings into the Transit Wallet. */
   driverWithdrawn: number;
-  /** One-trip rewards bought with Transit Points. */
+  /** One-trip rewards bought with TripSync Points. */
   redeemedRewards: RedeemedReward[];
 
 };
@@ -314,7 +314,7 @@ export function tierFor(points: number) {
   return [...TIERS].reverse().find((t) => points >= t.min) ?? TIERS[0];
 }
 
-/** Rewards that can be bought with Transit Points. Each is valid for ONE trip. */
+/** Rewards that can be bought with TripSync Points. Each is valid for ONE trip. */
 export const REWARD_CATALOG: RewardCatalogItem[] = [
   { id: "meal-upgrade", name: "Free Meal Upgrade", cost: 300, desc: "Upgrade one onboard meal to the premium thali.", benefit: "Premium meal on one journey", discount: 149 },
   { id: "seat-upgrade", name: "Seat Upgrade", cost: 500, desc: "Move one booking up to the next available class.", benefit: "Next-class seat on one journey", discount: 250 },
@@ -745,7 +745,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const item = REWARD_CATALOG.find((r) => r.id === rewardId);
       if (!item) return { ok: false, error: "Reward not found." };
       setState((s) => {
-        if (s.points < item.cost) { out = { ok: false, error: "Not enough Transit Points for this reward." }; return s; }
+        if (s.points < item.cost) { out = { ok: false, error: "Not enough TripSync Points for this reward." }; return s; }
         const now = new Date();
         const expires = new Date(now.getTime() + REWARD_VALID_DAYS * 86400000);
         return pushNotification({
@@ -823,7 +823,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ].slice(0, 60),
         };
         return e.coins >= 10
-          ? pushNotification(next, { kind: "coins", title: "Transit Coins earned", body: `+${e.coins} coins · ${e.label}` })
+          ? pushNotification(next, { kind: "coins", title: "TripSync Coins earned", body: `+${e.coins} coins · ${e.label}` })
           : next;
       }),
     notify: (n) => setState((s) => pushNotification(s, n)),

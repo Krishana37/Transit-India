@@ -33,9 +33,9 @@ export const Route = createFileRoute("/dashboard")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "My Dashboard — Transit India" },
-      { name: "description", content: "Manage your Transit India profile, bookings, saved passengers and preferences." },
-      { property: "og:title", content: "Dashboard — Transit India" },
+      { title: "My Dashboard — TripSync" },
+      { name: "description", content: "Manage your TripSync profile, bookings, saved passengers and preferences." },
+      { property: "og:title", content: "Dashboard — TripSync" },
       { property: "og:description", content: "View bookings, manage saved passengers and update your account settings." },
       { property: "og:type", content: "website" },
     ],
@@ -427,7 +427,7 @@ function SettingsPanel() {
     <div className="space-y-6">
       <Card className="rounded-2xl border-border/60 p-5">
         <h3 className="text-sm font-medium">Language</h3>
-        <p className="mb-3 text-[13px] text-muted-foreground">Choose the language used across Transit India.</p>
+        <p className="mb-3 text-[13px] text-muted-foreground">Choose the language used across TripSync.</p>
         <Select value={lang} onValueChange={(v) => setLang(v as typeof lang)}>
           <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -451,7 +451,7 @@ function SettingsPanel() {
 
       <Card className="rounded-2xl border-border/60 p-5">
         <h3 className="text-sm font-medium">Account</h3>
-        <p className="mb-3 text-[13px] text-muted-foreground">Sign out of Transit India on this device.</p>
+        <p className="mb-3 text-[13px] text-muted-foreground">Sign out of TripSync on this device.</p>
         <Button
           variant="outline"
           className="rounded-full text-[color:var(--destructive)]"

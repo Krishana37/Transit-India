@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { BrandLogo } from "@/components/brand/BrandAssets";
 
 /**
- * Transit India opening splash. Original branding only — no third-party
+ * TripSync opening splash. Original branding only — no third-party
  * transport-portal imagery, colours or layout is referenced anywhere.
  */
 export function SplashScreen({ onDone }: { onDone: () => void }) {
@@ -20,7 +20,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       transition={{ duration: 0.55, ease: "easeInOut" }}
       className="fixed inset-0 z-[100] grid place-items-center overflow-hidden bg-background"
       role="status"
-      aria-label="Transit India is starting"
+      aria-label="TripSync is starting"
     >
       {/* ambient field */}
       <div className="pointer-events-none absolute inset-0">

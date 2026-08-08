@@ -48,7 +48,7 @@ export const brandIcons = {
 export type BrandIconName = keyof typeof brandIcons;
 
 /**
- * Official Transit India logo mark. Rendered on a neutral white tile so the
+ * Official TripSync logo mark. Rendered on a neutral white tile so the
  * artwork keeps identical contrast in light and dark themes.
  */
 export function BrandLogo({
@@ -71,7 +71,7 @@ export function BrandLogo({
     >
       <img
         src={brandLogoUrl}
-        alt="Transit India logo"
+        alt="TripSync logo"
         width={size * 2}
         height={size * 2}
         className="h-full w-full object-contain p-[5%] [image-rendering:auto]"

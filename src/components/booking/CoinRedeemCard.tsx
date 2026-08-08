@@ -19,7 +19,7 @@ export function CoinRedeemCard({
         <span className="grid h-8 w-8 place-items-center rounded-xl bg-[color:var(--brand-soft)] text-primary">
           <Coins className="h-4 w-4" />
         </span>
-        Transit Coins
+        TripSync Coins
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
         <div className="rounded-xl bg-muted px-3 py-2">

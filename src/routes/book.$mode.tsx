@@ -45,7 +45,7 @@ export const Route = createFileRoute("/book/$mode")({
   }),
   head: ({ params }) => ({
     meta: [
-      { title: `Book ${params.mode} — Transit India` },
+      { title: `Book ${params.mode} — TripSync` },
       { name: "description", content: `Search, compare and book ${params.mode} tickets with live fares, confirmation probability and Pre-Tatkal queueing.` },
     ],
   }),
@@ -220,8 +220,8 @@ function BookPage() {
     { label: "Convenience fee", amount: convenience, muted: true },
   ];
   if (mealsTotal > 0) fareLines.push({ label: "Meals", amount: mealsTotal });
-  if (coinDiscount > 0) fareLines.push({ label: "Transit Coins discount", amount: -coinDiscount });
-  if (pointDiscount > 0) fareLines.push({ label: "Transit Points discount", amount: -pointDiscount });
+  if (coinDiscount > 0) fareLines.push({ label: "TripSync Coins discount", amount: -coinDiscount });
+  if (pointDiscount > 0) fareLines.push({ label: "TripSync Points discount", amount: -pointDiscount });
 
   const showMeals = m !== "hotel" && m !== "metro";
 
@@ -264,7 +264,7 @@ function BookPage() {
 
   const onPaymentSuccess = (paidWith: string) => {
     if (paidWith === "Transit Wallet") {
-      const res = payFromWallet(total, `Booking · ${segment?.name ?? "Transit India"}`);
+      const res = payFromWallet(total, `Booking · ${segment?.name ?? "TripSync"}`);
       if (!res.ok) {
         notify({ kind: "wallet", title: "Payment failed", body: res.error ?? "Insufficient wallet balance." });
         return;

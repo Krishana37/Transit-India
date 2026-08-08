@@ -20,9 +20,9 @@ import { useStore, type FeedbackTopic } from "@/lib/store";
 export const Route = createFileRoute("/feedback")({
   head: () => ({
     meta: [
-      { title: "Share Feedback — Transit India" },
-      { name: "description", content: "Rate the Transit India prototype, suggest features and read what other travellers are saying." },
-      { property: "og:title", content: "Share Feedback — Transit India" },
+      { title: "Share Feedback — TripSync" },
+      { name: "description", content: "Rate the TripSync prototype, suggest features and read what other travellers are saying." },
+      { property: "og:title", content: "Share Feedback — TripSync" },
       { property: "og:description", content: "Rate your experience, report what could be better and browse the public traveller feedback wall." },
       { property: "og:type", content: "website" },
     ],
@@ -156,7 +156,7 @@ function FeedbackPage() {
                 id="fb-suggestion"
                 value={suggestion}
                 onChange={(e) => setSuggestion(e.target.value)}
-                placeholder={t("feedback.suggestionPh", "Something you wish Transit India had…")}
+                placeholder={t("feedback.suggestionPh", "Something you wish TripSync had…")}
               />
             </div>
 

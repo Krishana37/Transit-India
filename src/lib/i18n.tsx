@@ -52,7 +52,7 @@ export const languages: Language[] = [
  * fall back to English, which keeps the architecture open for new locales.
  */
 export const dictionary: Record<string, Partial<Record<LangCode, string>>> = {
-  "brand.name": { en: "Transit India", hi: "ट्रांज़िट इंडिया", ar: "ترانزيت إنديا", es: "Transit India" },
+  "brand.name": { en: "TripSync", hi: "ट्रांज़िट इंडिया", ar: "ترانزيت إنديا", es: "TripSync" },
   "brand.tagline": { en: "Rail · Bus · Metro", hi: "रेल · बस · मेट्रो", ar: "قطار · حافلة · مترو", es: "Tren · Bus · Metro" },
 
   "nav.home": { en: "Home", hi: "होम", ar: "الرئيسية", es: "Inicio", fr: "Accueil", de: "Start" },
