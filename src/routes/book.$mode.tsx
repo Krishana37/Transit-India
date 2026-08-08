@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { CoinRedeemCard } from "@/components/booking/CoinRedeemCard";
 import { PointsRedeemCard } from "@/components/booking/PointsRedeemCard";
+import { RewardRedeemCard, rewardEligibility } from "@/components/booking/RewardRedeemCard";
 import { FareSidebar, type FareLine } from "@/components/booking/FareSidebar";
 import { MealPicker } from "@/components/booking/MealPicker";
 import { PassengerPicker } from "@/components/booking/PassengerPicker";
@@ -31,7 +32,7 @@ import {
   allocateSeats, computeFare, demandIndex, distanceKm, generateResults, meals, seatState, serviceDisruption,
   transportModes, type Segment, type TransportMode,
 } from "@/lib/inventory";
-import { POINT_VALUE, useStore, type Booking, type PreTatkalDraft, type SavedPassenger } from "@/lib/store";
+import { POINT_VALUE, isRewardExpired, useStore, type Booking, type PreTatkalDraft, type SavedPassenger } from "@/lib/store";
 
 type Search = { from?: string; to?: string; date?: string; slot?: string; q?: string };
 
@@ -78,6 +79,7 @@ function BookPage() {
   const {
     account, hydrated, passengers, addBooking, walletBalance, coins, points, spendCoins, spendPoints,
     payFromWallet, reward, notify, paymentMethods, removeTatkalDraft, ratings,
+    redeemedRewards, applyRewardToBooking,
   } = useStore();
 
   const m = (transportModes.some((x) => x.id === mode) ? mode : "train") as TransportMode;
@@ -106,6 +108,7 @@ function BookPage() {
   const [activeTatkalDraftId, setActiveTatkalDraftId] = useState<string | null>(null);
   const [appliedCoins, setAppliedCoins] = useState(0);
   const [appliedPoints, setAppliedPoints] = useState(0);
+  const [selectedRewardId, setSelectedRewardId] = useState<string | null>(null);
   // Refreshed on every search so fares stay realistic without repeating.
   const [searchNonce, setSearchNonce] = useState(() => uid());
   const [tick, setTick] = useState(0);
@@ -208,7 +211,19 @@ function BookPage() {
     const meal = meals.find((mm) => mm.id === id);
     return sum + (meal ? meal.price * qty : 0);
   }, 0);
-  const preCoinTotal = base + surge + gst + convenience + mealsTotal;
+  const grossTotal = base + surge + gst + convenience + mealsTotal;
+
+  // One-trip rewards bought with TripSync Points, still unused and not expired.
+  const availableRewards = redeemedRewards.filter((r) => r.status === "redeemed" && !isRewardExpired(r));
+  const selectedReward = availableRewards.find((r) => r.id === selectedRewardId) ?? null;
+  const rewardStillEligible =
+    selectedReward
+      ? rewardEligibility(selectedReward, { mode: m, hasMeals: mealsTotal > 0, total: grossTotal }).ok
+      : false;
+  const activeReward = rewardStillEligible ? selectedReward : null;
+  const rewardDiscount = activeReward ? Math.min(activeReward.discount, grossTotal) : 0;
+
+  const preCoinTotal = Math.max(0, grossTotal - rewardDiscount);
   const coinDiscount = Math.round(appliedCoins * 0.25);
   const pointDiscount = Math.min(Math.floor(appliedPoints * POINT_VALUE), Math.max(0, preCoinTotal - coinDiscount));
   const total = Math.max(0, preCoinTotal - coinDiscount - pointDiscount);
@@ -220,6 +235,7 @@ function BookPage() {
     { label: "Convenience fee", amount: convenience, muted: true },
   ];
   if (mealsTotal > 0) fareLines.push({ label: "Meals", amount: mealsTotal });
+  if (activeReward) fareLines.push({ label: `Reward · ${activeReward.name}`, amount: -rewardDiscount });
   if (coinDiscount > 0) fareLines.push({ label: "TripSync Coins discount", amount: -coinDiscount });
   if (pointDiscount > 0) fareLines.push({ label: "TripSync Points discount", amount: -pointDiscount });
 
@@ -277,6 +293,15 @@ function BookPage() {
     const created = finalizeBooking("confirmed", statusLabel);
     if (created) {
       if (activeTatkalDraftId) removeTatkalDraft(activeTatkalDraftId);
+      if (activeReward) {
+        applyRewardToBooking(activeReward.id, created.id, `${created.serviceName} · ${created.date}`);
+        setSelectedRewardId(null);
+        notify({
+          kind: "coins",
+          title: "Reward applied",
+          body: `${activeReward.name} applied to ${created.serviceName}. It is now locked to this trip.`,
+        });
+      }
       reward("booking");
       if (mealsTotal > 0) reward("meal");
       if (m === "hotel") reward("hotel");
@@ -377,12 +402,12 @@ function BookPage() {
                             mode={m}
                             seed={seg.code}
                             alt={`${seg.name} preview`}
-                            className="w-24 shrink-0 sm:w-32"
+                            className="w-20 shrink-0 sm:w-32"
                             ratio="aspect-[4/3]"
                           />
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold">{seg.name}</div>
-                            <div className="text-[12px] text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
+                            <div className="break-words text-sm font-semibold leading-snug">{seg.name}</div>
+                            <div className="break-words text-[12px] leading-snug text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
                             <div className="mt-1.5">
                               <RateDialog
                                 ratingKey={serviceRatingKey(m, seg.code)}
@@ -458,13 +483,13 @@ function BookPage() {
                                 }}
                                 className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:border-primary/40 hover:-translate-y-0.5 ${st.tone === "sold" ? "pointer-events-none opacity-50" : ""}`}
                               >
-                                <div>
-                                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{o.label}</div>
+                                <div className="min-w-0">
+                                  <div className="break-words text-[11px] uppercase tracking-widest text-muted-foreground">{o.label}</div>
                                   <div className="text-base font-bold">{formatCurrency(o.fare)}</div>
                                   <div className={`text-[11px] font-medium ${toneClass}`}>{st.label}</div>
-                                  <ProbabilityBar probability={o.probability} className="mt-1.5 w-32" />
+                                  <ProbabilityBar probability={o.probability} className="mt-1.5 w-full max-w-32" />
                                 </div>
-                                <Button size="sm" className="rounded-full brand-gradient text-white" disabled={st.tone === "sold"}>
+                                <Button size="sm" className="shrink-0 rounded-full brand-gradient text-white" disabled={st.tone === "sold"}>
                                   {st.tone === "sold" ? "Sold Out" : "Book"}
                                 </Button>
                               </div>
@@ -516,7 +541,7 @@ function BookPage() {
             <Card className="mx-auto max-w-xl rounded-2xl p-6">
               <div className="flex items-center gap-2 text-[color:var(--accent-orange)]">
                 <Clock className="h-5 w-5" />
-                <span className="text-sm font-semibold">{currentSeatState.label} on {segment.name}</span>
+                <span className="min-w-0 break-words text-sm font-semibold">{currentSeatState.label} on {segment.name}</span>
               </div>
               <p className="mt-2 text-[13px] text-muted-foreground">
                 {currentSeatState.tone === "rac"
@@ -618,6 +643,15 @@ function BookPage() {
             <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-[1fr_280px]">
               <PaymentFlow total={total} walletBalance={walletBalance} paymentMethods={paymentMethods} onSuccess={onPaymentSuccess} />
               <div className="space-y-4">
+                <RewardRedeemCard
+                  rewards={availableRewards}
+                  mode={m}
+                  hasMeals={mealsTotal > 0}
+                  total={grossTotal}
+                  selectedId={activeReward?.id ?? null}
+                  onSelect={setSelectedRewardId}
+                />
+                <FareSidebar lines={fareLines} total={total} sticky={false} />
                 <CoinRedeemCard coins={coins} total={preCoinTotal} applied={appliedCoins} onApply={setAppliedCoins} />
                 <PointsRedeemCard
                   points={points}
