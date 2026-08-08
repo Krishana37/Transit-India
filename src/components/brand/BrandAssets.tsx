@@ -20,7 +20,7 @@ import bellAsset from "@/assets/brand/bell.png.asset.json";
 import feedbackAsset from "@/assets/brand/feedback.png.asset.json";
 import { cn } from "@/lib/utils";
 
-export const brandLogoUrl = logoAsset.url;
+export const brandLogoUrl = logoUrl;
 
 export const brandIcons = {
   train: trainAsset.url,
