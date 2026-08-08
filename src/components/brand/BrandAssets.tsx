@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/brand/logo.png.asset.json";
+import logoUrl from "@/assets/brand/logo.png";
 import trainAsset from "@/assets/brand/train.png.asset.json";
 import busAsset from "@/assets/brand/bus.png.asset.json";
 import flightAsset from "@/assets/brand/flight.png.asset.json";
