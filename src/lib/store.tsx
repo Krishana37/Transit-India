@@ -98,7 +98,7 @@ export type DriverEarning = {
   status: "settled" | "pending";
 };
 
-/** Reward that can be bought with Transit Points. Valid for ONE trip only. */
+/** Reward that can be bought with TripSync Points. Valid for ONE trip only. */
 export type RewardCatalogItem = {
   id: string;
   name: string;
@@ -213,9 +213,9 @@ type State = {
   feedback: FeedbackEntry[];
   /** Cabber driver payouts — only relevant when `driver` is registered. */
   driverEarnings: DriverEarning[];
-  /** Total already withdrawn from driver earnings into the Transit Wallet. */
+  /** Total already withdrawn from driver earnings into the TripSync Wallet. */
   driverWithdrawn: number;
-  /** One-trip rewards bought with Transit Points. */
+  /** One-trip rewards bought with TripSync Points. */
   redeemedRewards: RedeemedReward[];
 
 };
@@ -233,7 +233,7 @@ const seedPassengers: SavedPassenger[] = [
 
 const seedPaymentMethods: PaymentMethod[] = [
   { id: "pm1", kind: "upi", label: "Primary UPI", detail: "aarav@transitpay", primary: true },
-  { id: "pm2", kind: "credit", label: "Transit Card", detail: "•••• 4412 · 09/29" },
+  { id: "pm2", kind: "credit", label: "TripSync Card", detail: "•••• 4412 · 09/29" },
 ];
 
 const seedFeedback: FeedbackEntry[] = [
@@ -270,11 +270,11 @@ const initialState: State = {
 
 };
 
-/** 1 Transit Coin = ₹0.25, capped at 15% of the fare. */
+/** 1 TripSync Coin = ₹0.25, capped at 15% of the fare. */
 export const COIN_VALUE = 0.25;
 export const COIN_MAX_SHARE = 0.15;
 
-/** 1 Transit Point = ₹0.50 when redeemed at checkout. */
+/** 1 TripSync Point = ₹0.50 when redeemed at checkout. */
 export const POINT_VALUE = 0.5;
 
 /** Add Money limits per attempt. */
@@ -296,7 +296,7 @@ export const POINT_EVENTS: Record<string, { points: number; coins: number; label
   search: { points: 2, coins: 1, label: "Searched a route" },
   booking: { points: 40, coins: 25, label: "Completed a booking" },
   pnr: { points: 3, coins: 2, label: "Checked PNR status" },
-  wallet: { points: 5, coins: 5, label: "Used Transit Wallet" },
+  wallet: { points: 5, coins: 5, label: "Used TripSync Wallet" },
   cabber: { points: 20, coins: 12, label: "Booked a Cabber ride" },
   hotel: { points: 25, coins: 15, label: "Booked a hotel" },
   meal: { points: 10, coins: 6, label: "Ordered a meal" },
@@ -314,12 +314,12 @@ export function tierFor(points: number) {
   return [...TIERS].reverse().find((t) => points >= t.min) ?? TIERS[0];
 }
 
-/** Rewards that can be bought with Transit Points. Each is valid for ONE trip. */
+/** Rewards that can be bought with TripSync Points. Each is valid for ONE trip. */
 export const REWARD_CATALOG: RewardCatalogItem[] = [
   { id: "meal-upgrade", name: "Free Meal Upgrade", cost: 300, desc: "Upgrade one onboard meal to the premium thali.", benefit: "Premium meal on one journey", discount: 149 },
   { id: "seat-upgrade", name: "Seat Upgrade", cost: 500, desc: "Move one booking up to the next available class.", benefit: "Next-class seat on one journey", discount: 250 },
   { id: "baggage", name: "Extra Baggage Benefit", cost: 350, desc: "Carry 10 kg extra on a single flight or bus trip.", benefit: "+10 kg baggage on one trip", discount: 180 },
-  { id: "priority", name: "Priority Queue", cost: 200, desc: "Skip the boarding queue once at any Transit terminal.", benefit: "Priority boarding on one trip", discount: 99 },
+  { id: "priority", name: "Priority Queue", cost: 200, desc: "Skip the boarding queue once at any TripSync terminal.", benefit: "Priority boarding on one trip", discount: 99 },
   { id: "fare-discount", name: "Small Fare Discount", cost: 250, desc: "Flat ₹125 off a single booking at checkout.", benefit: "₹125 off one booking", discount: 125 },
   { id: "lounge", name: "Lounge / Travel Perk", cost: 750, desc: "One complimentary lounge visit before departure.", benefit: "Lounge access on one trip", discount: 400 },
 ];
@@ -433,7 +433,7 @@ export function canCancelBooking(b: Booking): boolean {
 /** Refunds only for upcoming, non-cancelled, not-already-refunded bookings. */
 export function refundEligibility(b: Booking): { eligible: boolean; reason: string; amount: number } {
   if (b.status === "refunded" || b.refundStatus === "credited")
-    return { eligible: false, reason: "Already refunded to your Transit Wallet.", amount: 0 };
+    return { eligible: false, reason: "Already refunded to your TripSync Wallet.", amount: 0 };
   if (b.refundStatus === "requested" || b.refundStatus === "processing")
     return { eligible: false, reason: "A refund is already in progress.", amount: 0 };
   const phase = journeyPhase(b);
@@ -444,7 +444,7 @@ export function refundEligibility(b: Booking): { eligible: boolean; reason: stri
   if (fee === 1) return { eligible: false, reason: "Under 4 hours to departure — no refund is payable.", amount: 0 };
   return {
     eligible: true,
-    reason: `Cancellation fee ${Math.round(fee * 100)}% · credited to Transit Wallet`,
+    reason: `Cancellation fee ${Math.round(fee * 100)}% · credited to TripSync Wallet`,
     amount: Math.round(b.total * (1 - fee)),
   };
 }
@@ -596,7 +596,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (!b || !canCancelBooking(b)) return s;
         const elig = refundEligibility(b);
         const now = new Date().toISOString();
-        // Instant prototype refund: eligible amounts always land in the Transit Wallet.
+        // Instant prototype refund: eligible amounts always land in the TripSync Wallet.
         let next: State = {
           ...s,
           walletBalance: s.walletBalance + elig.amount,
@@ -633,7 +633,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ? pushNotification(next, {
               kind: "refund",
               title: "Refund credited",
-              body: `₹${elig.amount} added to your Transit Wallet for ${b.serviceName}.`,
+              body: `₹${elig.amount} added to your TripSync Wallet for ${b.serviceName}.`,
             })
           : next;
       }),
@@ -660,7 +660,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return pushNotification(next, {
           kind: "refund",
           title: "Refund credited",
-          body: `₹${elig.amount} added to your Transit Wallet for ${b.serviceName}.`,
+          body: `₹${elig.amount} added to your TripSync Wallet for ${b.serviceName}.`,
         });
       });
       return out;
@@ -684,7 +684,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           walletBalance: s.walletBalance + amount,
           walletTxns: [{ id: uid(), type: "credit", amount, label: label ?? "Money added", at: new Date().toISOString(), status: "success", category: "Wallet top-up" }, ...s.walletTxns],
         };
-        return pushNotification(next, { kind: "wallet", title: "Wallet credited", body: `₹${amount} added to your Transit Wallet.` });
+        return pushNotification(next, { kind: "wallet", title: "Wallet credited", body: `₹${amount} added to your TripSync Wallet.` });
       });
       return { ok: true };
     },
@@ -736,7 +736,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             id: uid(), type: "earning" as const, amount, label: "Cabber driver earnings payout",
             at: new Date().toISOString(), status: "success" as const, category: "Driver earnings",
           }, ...s.walletTxns],
-        }, { kind: "wallet", title: "Earnings transferred", body: `₹${amount.toLocaleString("en-IN")} moved to your Transit Wallet.` });
+        }, { kind: "wallet", title: "Earnings transferred", body: `₹${amount.toLocaleString("en-IN")} moved to your TripSync Wallet.` });
       });
       return out;
     },
@@ -745,7 +745,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const item = REWARD_CATALOG.find((r) => r.id === rewardId);
       if (!item) return { ok: false, error: "Reward not found." };
       setState((s) => {
-        if (s.points < item.cost) { out = { ok: false, error: "Not enough Transit Points for this reward." }; return s; }
+        if (s.points < item.cost) { out = { ok: false, error: "Not enough TripSync Points for this reward." }; return s; }
         const now = new Date();
         const expires = new Date(now.getTime() + REWARD_VALID_DAYS * 86400000);
         return pushNotification({
@@ -823,7 +823,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ].slice(0, 60),
         };
         return e.coins >= 10
-          ? pushNotification(next, { kind: "coins", title: "Transit Coins earned", body: `+${e.coins} coins · ${e.label}` })
+          ? pushNotification(next, { kind: "coins", title: "TripSync Coins earned", body: `+${e.coins} coins · ${e.label}` })
           : next;
       }),
     notify: (n) => setState((s) => pushNotification(s, n)),
@@ -869,7 +869,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return pushNotification(next, {
           kind: "wallet",
           title: "Transfer successful",
-          body: `₹${amount.toLocaleString("en-IN")} sent to ${destination} from your Transit Wallet.`,
+          body: `₹${amount.toLocaleString("en-IN")} sent to ${destination} from your TripSync Wallet.`,
         });
       });
       return out;

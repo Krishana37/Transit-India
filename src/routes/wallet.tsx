@@ -27,9 +27,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/wallet")({
   head: () => ({
     meta: [
-      { title: "My Wallet — Transit India" },
-      { name: "description", content: "Manage your Transit Wallet balance, add money, review transactions and payment methods." },
-      { property: "og:title", content: "My Wallet — Transit India" },
+      { title: "My Wallet — TripSync" },
+      { name: "description", content: "Manage your TripSync Wallet balance, add money, review transactions and payment methods." },
+      { property: "og:title", content: "My Wallet — TripSync" },
       { property: "og:description", content: "Top up your wallet, track credits, debits and refunds, and manage saved payment methods." },
       { property: "og:type", content: "website" },
     ],
@@ -106,7 +106,7 @@ function WalletPage() {
         <div className="flex min-w-0 items-center gap-4">
           <BrandIcon name="wallet" label="Wallet" size={72} className="sm:!h-20 sm:!w-20" eager />
           <div className="min-w-0">
-            <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Transit Wallet</p>
+            <p className="text-[12px] uppercase tracking-widest text-muted-foreground">TripSync Wallet</p>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">My Wallet</h1>
             <p className="text-[13px] text-muted-foreground">Add money, review transactions and manage payment methods.</p>
           </div>
@@ -119,13 +119,13 @@ function WalletPage() {
               <p className="mt-1 text-3xl font-bold tracking-tight">{formatCurrency(walletBalance)}</p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-widest text-white/80">Transit Coins</p>
+              <p className="text-[11px] uppercase tracking-widest text-white/80">TripSync Coins</p>
               <p className="mt-1 flex items-center gap-1.5 text-2xl font-semibold">
                 <Coins className="h-5 w-5" /> {coins}
               </p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-widest text-white/80">Transit Points · {tier.name}</p>
+              <p className="text-[11px] uppercase tracking-widest text-white/80">TripSync Points · {tier.name}</p>
               <p className="mt-1 flex items-center gap-1.5 text-2xl font-semibold">
                 <Star className="h-5 w-5" /> {points}
               </p>
@@ -234,7 +234,7 @@ function CabberEarnings() {
       toast.error(res.error ?? "Nothing to withdraw yet.");
       return;
     }
-    toast.success(`${formatCurrency(summary.withdrawable)} moved to your Transit Wallet.`);
+    toast.success(`${formatCurrency(summary.withdrawable)} moved to your TripSync Wallet.`);
   };
 
   return (
@@ -325,7 +325,7 @@ function TransferMoney() {
         </span>
       </div>
       <p className="mt-1 text-[12px] text-muted-foreground">
-        Send your Transit Wallet balance to your own bank account, UPI ID or a saved payment method.
+        Send your TripSync Wallet balance to your own bank account, UPI ID or a saved payment method.
       </p>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">

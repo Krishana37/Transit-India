@@ -13,10 +13,10 @@ export function TicketCard({ booking }: { booking: Booking }) {
   const { updateBooking } = useStore();
 
   const share = async () => {
-    const text = `Transit India ticket\nPNR: ${booking.pnr}\n${booking.serviceName} (${booking.serviceCode})\n${booking.fromCity} → ${booking.toCity} on ${formatDate(booking.date)}\n${booking.depart} → ${booking.arrive} · ${booking.classCode}`;
+    const text = `TripSync ticket\nPNR: ${booking.pnr}\n${booking.serviceName} (${booking.serviceCode})\n${booking.fromCity} → ${booking.toCity} on ${formatDate(booking.date)}\n${booking.depart} → ${booking.arrive} · ${booking.classCode}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "Transit India ticket", text });
+        await navigator.share({ title: "TripSync ticket", text });
       } else {
         await navigator.clipboard.writeText(text);
         toast.success("Ticket details copied to clipboard");

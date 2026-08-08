@@ -26,9 +26,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/complaints")({
   head: () => ({
     meta: [
-      { title: "Complaint Portal — Transit India" },
+      { title: "Complaint Portal — TripSync" },
       { name: "description", content: "Browse community-reported travel complaints, upvote issues and raise your own — fictional demo data." },
-      { property: "og:title", content: "Complaint Portal — Transit India" },
+      { property: "og:title", content: "Complaint Portal — TripSync" },
       { property: "og:description", content: "A community complaint board covering cleanliness, delays, safety and more across all transport modes." },
       { property: "og:type", content: "website" },
     ],
@@ -283,7 +283,7 @@ function RaiseComplaintDialog({
     setCategory(next);
     if (next === TECH_CATEGORY) {
       setMode("Website / App");
-      setStation((s) => s || "Transit India app");
+      setStation((s) => s || "TripSync app");
     }
   };
 

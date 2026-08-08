@@ -23,9 +23,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/rewards")({
   head: () => ({
     meta: [
-      { title: "Transit Coins & Points — Transit India" },
-      { name: "description", content: "Track your Transit Coins and Points, tier progress, ways to earn and rewards catalogue." },
-      { property: "og:title", content: "Transit Coins & Points — Transit India" },
+      { title: "TripSync Coins & Points — TripSync" },
+      { name: "description", content: "Track your TripSync Coins and Points, tier progress, ways to earn and rewards catalogue." },
+      { property: "og:title", content: "TripSync Coins & Points — TripSync" },
       { property: "og:description", content: "Earn coins and points on every booking and redeem them for discounts and perks." },
       { property: "og:type", content: "website" },
     ],
@@ -72,10 +72,10 @@ function RewardsPage() {
     <AppShell>
       <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="space-y-6">
         <div className="flex min-w-0 items-center gap-4">
-          <BrandIcon name="coins" label="Transit Coins" size={72} className="sm:!h-20 sm:!w-20" eager />
+          <BrandIcon name="coins" label="TripSync Coins" size={72} className="sm:!h-20 sm:!w-20" eager />
           <div className="min-w-0">
             <p className="text-[12px] uppercase tracking-widest text-muted-foreground">Loyalty</p>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Transit Coins & Points</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">TripSync Coins & Points</h1>
             <p className="text-[13px] text-muted-foreground">Earn on every action, redeem for discounts and perks.</p>
           </div>
         </div>
@@ -87,7 +87,7 @@ function RewardsPage() {
                 <Coins className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Transit Coins</p>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">TripSync Coins</p>
                 <p className="text-xl font-semibold">{coins}</p>
               </div>
             </div>
@@ -103,7 +103,7 @@ function RewardsPage() {
                 <Star className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Transit Points · {tier.name}</p>
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">TripSync Points · {tier.name}</p>
                 <p className="text-xl font-semibold">{points}</p>
               </div>
             </div>
@@ -191,7 +191,7 @@ const badgeTone: Record<RedeemedRewardStatus, string> = {
   expired: "bg-destructive/10 text-destructive",
 };
 
-/** Redeem Transit Points for one-trip rewards and track their lifecycle. */
+/** Redeem TripSync Points for one-trip rewards and track their lifecycle. */
 function RedeemRewards() {
   const { points, redeemedRewards, redeemReward, applyRewardToBooking, bookings } = useStore();
   const [confirm, setConfirm] = useState<string | null>(null);
@@ -209,7 +209,7 @@ function RedeemRewards() {
       toast.error(res.error ?? "Could not redeem this reward.");
       return;
     }
-    toast.success(`${item.name} redeemed`, { description: `${item.cost} Transit Points used · valid for 1 trip.` });
+    toast.success(`${item.name} redeemed`, { description: `${item.cost} TripSync Points used · valid for 1 trip.` });
   };
 
   return (
@@ -310,7 +310,7 @@ function RedeemRewards() {
           </DialogHeader>
           {item && (
             <p className="text-[13px] text-muted-foreground">
-              Use {item.cost} Transit Points for a {item.name}? The reward is valid for one trip only and expires in {REWARD_VALID_DAYS} days.
+              Use {item.cost} TripSync Points for a {item.name}? The reward is valid for one trip only and expires in {REWARD_VALID_DAYS} days.
             </p>
           )}
           <DialogFooter>

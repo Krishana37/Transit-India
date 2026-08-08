@@ -3,7 +3,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from "ai";
 import { searchTravel } from "@/lib/ai/tools";
 
-const SYSTEM_PROMPT = `You are "Yatra", the friendly AI travel assistant embedded in Transit India, a hackathon prototype for booking trains, buses, flights, hotels, metro and ferries across India.
+const SYSTEM_PROMPT = `You are "Yatra", the friendly AI travel assistant embedded in TripSync, a hackathon prototype for booking trains, buses, flights, hotels, metro and ferries across India.
 
 Rules:
 - Genuinely reason about the user's intent: cheapest option, fastest option, budget constraints, class/time preferences, hotels, refunds/cancellation policy, or Tatkal timing.

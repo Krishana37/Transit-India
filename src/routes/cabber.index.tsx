@@ -85,12 +85,12 @@ function CabberPage() {
       const res = payFromWallet(fare, `Cabber Ride — ${routeLabel}`, { category: "Cabber ride", ref: dest.id });
       if (!res.ok) {
         toast.error(res.error ?? "Insufficient wallet balance.", {
-          description: "Add money to your Transit Wallet or pay by cash.",
+          description: "Add money to your TripSync Wallet or pay by cash.",
         });
         return;
       }
       setPaidAmount(fare);
-      toast.success(`${formatCurrency(fare)} paid from your Transit Wallet.`, {
+      toast.success(`${formatCurrency(fare)} paid from your TripSync Wallet.`, {
         description: `New balance ${formatCurrency(walletBalance - fare)}.`,
       });
       reward("wallet");
@@ -111,7 +111,7 @@ function CabberPage() {
         type: "refund",
         category: "Cabber refund",
       });
-      toast.success(`${formatCurrency(paidAmount)} refunded to your Transit Wallet.`, {
+      toast.success(`${formatCurrency(paidAmount)} refunded to your TripSync Wallet.`, {
         description: "Refunded instantly — see it in your wallet history.",
       });
     } else {
@@ -144,7 +144,7 @@ function CabberPage() {
       meals: [],
       total: fare,
       status: "confirmed",
-      paidWith: payMode === "wallet" ? "Transit Wallet" : "Cash to driver",
+      paidWith: payMode === "wallet" ? "TripSync Wallet" : "Cash to driver",
     });
     reward("cabber");
     toast.success("Ride completed", { description: "Added to My Bookings." });
@@ -271,7 +271,7 @@ function CabberPage() {
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {([
-                    { id: "wallet" as const, label: "Pay from Transit Wallet", hint: "Deducted instantly" },
+                    { id: "wallet" as const, label: "Pay from TripSync Wallet", hint: "Deducted instantly" },
                     { id: "cash" as const, label: "Pay cash to driver", hint: "Settle at drop-off" },
                   ]).map((opt) => (
                     <button

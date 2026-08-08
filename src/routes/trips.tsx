@@ -28,9 +28,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/trips")({
   head: () => ({
     meta: [
-      { title: "My Trips — Transit India" },
+      { title: "My Trips — TripSync" },
       { name: "description", content: "Track upcoming journeys, revisit completed trips and manage cancellations and refunds." },
-      { property: "og:title", content: "My Trips — Transit India" },
+      { property: "og:title", content: "My Trips — TripSync" },
       { property: "og:description", content: "All your upcoming, completed and cancelled bookings across trains, buses, flights and more." },
       { property: "og:type", content: "website" },
     ],
@@ -288,7 +288,7 @@ function RefundPanel({ booking }: { booking: Booking }) {
       { label: "Requested", offsetMin: -40 },
       { label: "Approved", offsetMin: -25 },
       { label: "Processing", offsetMin: -10 },
-      { label: "Credited to Transit Wallet", offsetMin: 0 },
+      { label: "Credited to TripSync Wallet", offsetMin: 0 },
     ];
     return (
       <div className="rounded-2xl border border-border/60 bg-muted/40 p-4">
@@ -305,7 +305,7 @@ function RefundPanel({ booking }: { booking: Booking }) {
             );
           })}
         </ol>
-        <p className="mt-3 text-[11px] text-muted-foreground">Refunds always go to your Transit India Wallet.</p>
+        <p className="mt-3 text-[11px] text-muted-foreground">Refunds always go to your TripSync Wallet.</p>
       </div>
     );
   }
@@ -331,7 +331,7 @@ function RefundPanel({ booking }: { booking: Booking }) {
           onClick={() => {
             const res = requestRefund(booking.id);
             if (res.ok)
-              toast.success("Refund Successfully Credited to Your Transit India Wallet.", {
+              toast.success("Refund Successfully Credited to Your TripSync Wallet.", {
                 description: `${label} for ${booking.serviceName} · wallet balance updated instantly.`,
               });
             else toast.error(res.error ?? "Could not process refund.");

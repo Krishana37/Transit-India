@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/brand/logo.png.asset.json";
+import logoUrl from "@/assets/brand/logo.png";
 import trainAsset from "@/assets/brand/train.png.asset.json";
 import busAsset from "@/assets/brand/bus.png.asset.json";
 import flightAsset from "@/assets/brand/flight.png.asset.json";
@@ -20,7 +20,7 @@ import bellAsset from "@/assets/brand/bell.png.asset.json";
 import feedbackAsset from "@/assets/brand/feedback.png.asset.json";
 import { cn } from "@/lib/utils";
 
-export const brandLogoUrl = logoAsset.url;
+export const brandLogoUrl = logoUrl;
 
 export const brandIcons = {
   train: trainAsset.url,
@@ -48,7 +48,7 @@ export const brandIcons = {
 export type BrandIconName = keyof typeof brandIcons;
 
 /**
- * Official Transit India logo mark. Rendered on a neutral white tile so the
+ * Official TripSync logo mark. Rendered on a neutral white tile so the
  * artwork keeps identical contrast in light and dark themes.
  */
 export function BrandLogo({
@@ -71,7 +71,7 @@ export function BrandLogo({
     >
       <img
         src={brandLogoUrl}
-        alt="Transit India logo"
+        alt="TripSync logo"
         width={size * 2}
         height={size * 2}
         className="h-full w-full object-contain p-[5%] [image-rendering:auto]"

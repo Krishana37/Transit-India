@@ -21,9 +21,9 @@ import { transportModes, type TransportMode } from "@/lib/inventory";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Transit India — Book trains, buses, flights & more with one sentence" },
+      { title: "TripSync — Book trains, buses, flights & more with one sentence" },
       { name: "description", content: "AI-powered travel booking prototype for India: conversational search, pre-Tatkal queue, passenger profiles, multilingual UI and Cabber last-mile rides." },
-      { property: "og:title", content: "Transit India — Smarter travel booking" },
+      { property: "og:title", content: "TripSync — Smarter travel booking" },
       { property: "og:description", content: "Conversational booking across trains, buses, flights, hotels, metro and ferries. Hackathon prototype." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -137,7 +137,7 @@ function Home() {
 
           <Card className="glass-card mt-10 flex flex-col items-start justify-between gap-4 rounded-3xl p-6 md:flex-row md:items-center">
             <div>
-              <div className="text-sm font-semibold">Enjoying Transit India?</div>
+              <div className="text-sm font-semibold">Enjoying TripSync?</div>
               <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
                 Rate the app and help us shape what gets built next.
               </p>
@@ -148,7 +148,7 @@ function Home() {
             </div>
             <RateDialog
               ratingKey="app"
-              title="Transit India"
+              title="TripSync"
               subtitle="Tell us how the whole experience feels — search, booking, wallet and everything in between."
               trigger={
                 <Button className="rounded-full brand-gradient text-white">
