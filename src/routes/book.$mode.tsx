@@ -263,7 +263,7 @@ function BookPage() {
   };
 
   const onPaymentSuccess = (paidWith: string) => {
-    if (paidWith === "Transit Wallet") {
+    if (paidWith === "TripSync Wallet") {
       const res = payFromWallet(total, `Booking · ${segment?.name ?? "TripSync"}`);
       if (!res.ok) {
         notify({ kind: "wallet", title: "Payment failed", body: res.error ?? "Insufficient wallet balance." });

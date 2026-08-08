@@ -288,7 +288,7 @@ function RefundPanel({ booking }: { booking: Booking }) {
       { label: "Requested", offsetMin: -40 },
       { label: "Approved", offsetMin: -25 },
       { label: "Processing", offsetMin: -10 },
-      { label: "Credited to Transit Wallet", offsetMin: 0 },
+      { label: "Credited to TripSync Wallet", offsetMin: 0 },
     ];
     return (
       <div className="rounded-2xl border border-border/60 bg-muted/40 p-4">

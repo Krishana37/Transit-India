@@ -34,7 +34,7 @@ export function PointsRedeemCard({
       </div>
 
       <p className="mt-2 text-[11px] text-muted-foreground" data-a11y="optional">
-        1 Transit Point = {formatCurrency(POINT_VALUE)}. You can never redeem more points than you own.
+        1 TripSync Point = {formatCurrency(POINT_VALUE)}. You can never redeem more points than you own.
       </p>
 
       {maxPoints > 0 ? (

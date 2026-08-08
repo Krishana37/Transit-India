@@ -235,7 +235,7 @@ function DriverDashboard() {
       toast.error(res.error ?? "Nothing to withdraw yet.");
       return;
     }
-    toast.success(`${formatCurrency(summary.withdrawable)} moved to your Transit Wallet.`);
+    toast.success(`${formatCurrency(summary.withdrawable)} moved to your TripSync Wallet.`);
   };
 
 
@@ -269,7 +269,7 @@ function DriverDashboard() {
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Cabber driver earnings</div>
-            <p className="text-[12px] text-muted-foreground">Separate from your customer Transit Wallet · Prototype / Demo Data</p>
+            <p className="text-[12px] text-muted-foreground">Separate from your customer TripSync Wallet · Prototype / Demo Data</p>
           </div>
           <Button
             className="shrink-0 rounded-full text-white brand-gradient"
