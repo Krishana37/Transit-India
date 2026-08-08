@@ -480,6 +480,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [state, hydrated]);
 
+  // A one-trip reward locked to a booking is burnt once that journey completes.
+  useEffect(() => {
+    if (!hydrated) return;
+    const settle = () =>
+      setState((s) => {
+        const done = new Set(
+          s.bookings.filter((b) => journeyPhase(b) === "completed").map((b) => b.id),
+        );
+        const needs = s.redeemedRewards.some(
+          (r) => r.status === "applied" && r.bookingId && done.has(r.bookingId),
+        );
+        if (!needs) return s;
+        const now = new Date().toISOString();
+        return {
+          ...s,
+          redeemedRewards: s.redeemedRewards.map((r) =>
+            r.status === "applied" && r.bookingId && done.has(r.bookingId)
+              ? { ...r, status: "used" as const, closedAt: now }
+              : r,
+          ),
+        };
+      });
+    settle();
+    const id = setInterval(settle, 30000);
+    return () => clearInterval(id);
+  }, [hydrated, state.bookings, state.redeemedRewards]);
+
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.documentElement.classList.toggle("dark", state.dark);
