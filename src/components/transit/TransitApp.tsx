@@ -181,7 +181,7 @@ function Header({ dark, setDark }: { dark: boolean; setDark: (b: boolean) => voi
           </div>
           <div className="leading-tight">
             <div className="text-[15px] font-semibold tracking-tight">TripSync</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Rail · Bus · Metro</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Travel · Simplified</div>
           </div>
         </div>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">

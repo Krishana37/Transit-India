@@ -53,7 +53,7 @@ export const languages: Language[] = [
  */
 export const dictionary: Record<string, Partial<Record<LangCode, string>>> = {
   "brand.name": { en: "TripSync", hi: "ट्रांज़िट इंडिया", ar: "ترانزيت إنديا", es: "TripSync" },
-  "brand.tagline": { en: "Rail · Bus · Metro", hi: "रेल · बस · मेट्रो", ar: "قطار · حافلة · مترو", es: "Tren · Bus · Metro" },
+  "brand.tagline": { en: "Travel · Simplified", hi: "यात्रा · सरल", ar: "سفر · مبسط", es: "Viaja · Simplificado" },
 
   "nav.home": { en: "Home", hi: "होम", ar: "الرئيسية", es: "Inicio", fr: "Accueil", de: "Start" },
   "nav.book": { en: "Book", hi: "बुक करें", ar: "احجز", es: "Reservar", fr: "Réserver", de: "Buchen" },
