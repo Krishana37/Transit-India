@@ -68,7 +68,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
           transition={{ delay: 0.35, duration: 0.5 }}
           className="mt-6 text-3xl font-semibold tracking-tight md:text-4xl"
         >
-          Transit <span className="text-brand-gradient">India</span>
+          Trip<span className="text-brand-gradient">Sync</span>
         </motion.h1>
 
         <motion.p
