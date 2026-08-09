@@ -14,6 +14,9 @@ import { cabVehicleImage, ServicePreview } from "@/components/media/ServicePrevi
 import { AppShell } from "@/components/transit/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { courierFare } from "@/components/cabber/driverData";
+import { CABBER_COURIER_MAX, CABBER_RIDE_MAX } from "@/lib/store";
+import { Package, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
@@ -68,8 +71,19 @@ function CabberPage() {
   const [vehicle, setVehicle] = useState<VehicleType>("Auto");
   const vehicleInfo = vehicleCatalog.find((v) => v.type === vehicle)!;
 
+  // Cabber offers two clearly separated services — never mixed up.
+  const [service, setService] = useState<"ride" | "courier">("ride");
+  const [parcel, setParcel] = useState("Documents");
+  const [weightKg, setWeightKg] = useState(2);
+  const [declaredValue, setDeclaredValue] = useState(2000);
+  const [receiver, setReceiver] = useState("");
+  const isCourier = service === "courier";
+
   const km = dest ? lastMileDistance(pickup, dest.id) : 0;
-  const fare = fareFor(km, vehicleInfo);
+  const rideFare = Math.min(fareFor(km, vehicleInfo), CABBER_RIDE_MAX);
+  const fare = isCourier
+    ? courierFare(km, weightKg, Math.min(declaredValue, CABBER_COURIER_MAX))
+    : rideFare;
   const eta = etaFor(km, vehicleInfo);
 
   const [stage, setStage] = useState<Stage>("plan");
@@ -82,7 +96,12 @@ function CabberPage() {
   const bookRide = () => {
     if (!dest) return;
     if (payMode === "wallet") {
-      const res = payFromWallet(fare, `Cabber Ride — ${routeLabel}`, { category: "Cabber ride", ref: dest.id });
+      const balanceBefore = walletBalance;
+      const res = payFromWallet(
+        fare,
+        isCourier ? `Cabber Courier — ${routeLabel}` : `Cabber Ride — ${routeLabel}`,
+        { category: isCourier ? "Cabber courier" : "Cabber ride", ref: dest.id },
+      );
       if (!res.ok) {
         toast.error(res.error ?? "Insufficient wallet balance.", {
           description: "Add money to your Transit Wallet or pay by cash.",
@@ -91,7 +110,7 @@ function CabberPage() {
       }
       setPaidAmount(fare);
       toast.success(`${formatCurrency(fare)} paid from your Transit Wallet.`, {
-        description: `New balance ${formatCurrency(walletBalance - fare)}.`,
+        description: `${isCourier ? "Courier" : "Ride"} fare ${formatCurrency(fare)} · balance ${formatCurrency(balanceBefore)} → ${formatCurrency(balanceBefore - fare)}.`,
       });
       reward("wallet");
     } else {
@@ -107,7 +126,7 @@ function CabberPage() {
 
   const cancelRide = () => {
     if (paidAmount > 0) {
-      creditWallet(paidAmount, `Cabber Ride Cancelled — ${routeLabel}`, {
+      creditWallet(paidAmount, isCourier ? `Cabber courier cancellation refund — ${routeLabel}` : `Cabber cancellation refund — ${routeLabel}`, {
         type: "refund",
         category: "Cabber refund",
       });
@@ -130,7 +149,7 @@ function CabberPage() {
       pnr: String(Math.floor(1000000000 + Math.random() * 9000000000)),
       mode: "cab",
 
-      serviceName: `${driver.model} · ${driver.name}`,
+      serviceName: `${isCourier ? "Courier" : "Passenger ride"} · ${driver.model} · ${driver.name}`,
       serviceCode: driver.plate,
       fromCode: "PICKUP",
       fromCity: pickup,
@@ -139,7 +158,7 @@ function CabberPage() {
       date: now.toISOString().slice(0, 10),
       depart: now.toTimeString().slice(0, 5),
       arrive: arrive.toTimeString().slice(0, 5),
-      classCode: vehicle,
+      classCode: isCourier ? `Courier · ${parcel}` : vehicle,
       passengers: [],
       meals: [],
       total: fare,
