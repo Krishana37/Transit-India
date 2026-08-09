@@ -398,44 +398,126 @@ function DriverDashboard() {
         </div>
       </Card>
 
+      {/* Drivers choose which Cabber jobs they want — rides, courier or both. */}
+      <Card className="glass-card rounded-3xl p-5">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Services you accept</div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {([
+            { id: "ride", label: "Passenger rides", icon: Users, desc: "Fares up to ₹10,000" },
+            { id: "courier", label: "Courier jobs", icon: Package, desc: "Consignments up to ₹1,00,000" },
+            { id: "both", label: "Both", icon: Check, desc: "Receive every Cabber job" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => updateDriver({ services: opt.id })}
+              className={cn(
+                "min-w-0 rounded-2xl border p-3 text-left transition",
+                services === opt.id ? "border-primary bg-[color:var(--brand-soft)]" : "border-border bg-muted/30",
+              )}
+            >
+              <opt.icon className="h-4 w-4 shrink-0 text-primary" />
+              <div className="mt-1.5 break-words text-[13px] font-semibold leading-snug">{opt.label}</div>
+              <div className="break-words text-[11px] leading-relaxed text-muted-foreground">{opt.desc}</div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
       {onTrip ? (
         <Card className="glass-card space-y-4 rounded-3xl p-5">
-          <div className="flex items-center justify-between">
-            <Badge className="rounded-full bg-[color:var(--warning)]/15 text-[color:var(--warning)]">On trip</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Badge className="rounded-full bg-[color:var(--warning)]/15 text-[color:var(--warning)]">On trip · Passenger ride</Badge>
             <div className="text-[12px] text-muted-foreground">{onTrip.km} km · ETA {onTrip.eta} min</div>
           </div>
           <CabberMap distanceKm={onTrip.km} etaMins={onTrip.eta} status="en-route" className="aspect-[16/9] w-full" />
-          <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3 text-[13px]">
-            <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {onTrip.pickup} → {onTrip.destination}</span>
-            <span className="font-semibold">{formatCurrency(onTrip.fare)}</span>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-muted/50 px-4 py-3 text-[13px]">
+            <span className="flex min-w-0 items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="min-w-0 break-words">{onTrip.pickup} → {onTrip.destination}</span>
+            </span>
+            <span className="shrink-0 font-semibold tabular-nums">{formatCurrency(onTrip.fare)}</span>
           </div>
+          <EarningPreview fare={onTrip.fare} />
           <Button onClick={completeTrip} className="h-11 w-full rounded-full text-white brand-gradient">Complete ride</Button>
         </Card>
-      ) : (
-        <Card className="glass-card space-y-3 rounded-3xl p-5">
-          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Incoming ride requests</div>
-          {!driver.available && <p className="text-[13px] text-muted-foreground">You're offline — go online to receive ride requests.</p>}
-          {driver.available && requests.length === 0 && <p className="text-[13px] text-muted-foreground">No requests right now. New rides will appear here.</p>}
-          {driver.available && requests.map((r) => (
-            <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border p-4">
-              <div>
-                <div className="text-sm font-semibold">{r.rider}</div>
-                <div className="text-[12px] text-muted-foreground">{r.pickup} → {r.destination}</div>
-                <div className="text-[11px] text-muted-foreground">{r.km} km · ETA {r.eta} min</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold">{formatCurrency(r.fare)}</span>
-                <Button size="icon" variant="outline" className="h-9 w-9 rounded-full text-destructive" onClick={() => decline(r)}>
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button size="icon" className="h-9 w-9 rounded-full text-white brand-gradient" onClick={() => accept(r)}>
-                  <Check className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+      ) : onCourier ? (
+        <Card className="glass-card space-y-4 rounded-3xl p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Badge className="rounded-full bg-[color:var(--warning)]/15 text-[color:var(--warning)]">On job · Courier</Badge>
+            <div className="text-[12px] text-muted-foreground">{onCourier.km} km · ETA {onCourier.eta} min</div>
+          </div>
+          <CabberMap distanceKm={onCourier.km} etaMins={onCourier.eta} status="en-route" className="aspect-[16/9] w-full" />
+          <div className="space-y-1 rounded-xl bg-muted/50 px-4 py-3 text-[13px]">
+            <div className="break-words font-medium">{onCourier.parcel} · {onCourier.weightKg} kg</div>
+            <div className="break-words text-[12px] text-muted-foreground">{onCourier.pickup} → {onCourier.destination}</div>
+            <div className="text-[12px] text-muted-foreground">Declared value {formatCurrency(onCourier.value)}</div>
+          </div>
+          <EarningPreview fare={onCourier.fare} label="Courier charge" />
+          <Button onClick={completeCourier} className="h-11 w-full rounded-full text-white brand-gradient">Complete courier job</Button>
         </Card>
+      ) : (
+        <>
+          {acceptsRides && (
+            <Card className="glass-card space-y-3 rounded-3xl p-5">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Incoming ride requests</div>
+              {!driver.available && <p className="text-[13px] text-muted-foreground">You're offline — go online to receive ride requests.</p>}
+              {driver.available && requests.length === 0 && <p className="text-[13px] text-muted-foreground">No requests right now. New rides will appear here.</p>}
+              {driver.available && requests.map((r) => (
+                <div key={r.id} className="grid gap-3 rounded-2xl border border-border p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <div className="break-words text-sm font-semibold leading-snug">{r.rider}</div>
+                    <div className="break-words text-[12px] leading-snug text-muted-foreground">{r.pickup} → {r.destination}</div>
+                    <div className="text-[11px] text-muted-foreground">Passenger ride · {r.km} km · ETA {r.eta} min</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(r.fare)}</span>
+                    <Button size="icon" variant="outline" aria-label="Decline ride" className="h-9 w-9 rounded-full text-destructive" onClick={() => decline(r)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" aria-label="Accept ride" className="h-9 w-9 rounded-full text-white brand-gradient" onClick={() => accept(r)}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {acceptsCourier && (
+            <Card className="glass-card space-y-3 rounded-3xl p-5">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Incoming courier jobs</div>
+              {!driver.available && <p className="text-[13px] text-muted-foreground">You're offline — go online to receive courier jobs.</p>}
+              {driver.available && courierRequests.length === 0 && <p className="text-[13px] text-muted-foreground">No courier jobs right now. High-value consignments appear rarely.</p>}
+              {driver.available && courierRequests.map((c) => (
+                <div key={c.id} className="grid gap-3 rounded-2xl border border-border p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <div className="break-words text-sm font-semibold leading-snug">{c.sender}</div>
+                    <div className="break-words text-[12px] leading-snug text-muted-foreground">{c.pickup} → {c.destination}</div>
+                    <div className="break-words text-[11px] leading-snug text-muted-foreground">
+                      Courier · {c.parcel} · {c.weightKg} kg · value {formatCurrency(c.value)}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(c.fare)}</span>
+                    <Button
+                      size="icon" variant="outline" aria-label="Decline courier job"
+                      className="h-9 w-9 rounded-full text-destructive"
+                      onClick={() => setCourierRequests((cs) => cs.filter((x) => x.id !== c.id))}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" aria-label="Accept courier job" className="h-9 w-9 rounded-full text-white brand-gradient" onClick={() => acceptCourier(c)}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+        </>
       )}
+
 
       <Card className="glass-card rounded-3xl p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Ride history</div>
