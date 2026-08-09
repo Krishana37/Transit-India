@@ -402,9 +402,9 @@ function CabberPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.2 }}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-muted/50 px-4 py-3"
+                  className="flex flex-col gap-3 rounded-2xl bg-muted/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
                       {isCourier ? "Courier charge" : "Ride fare"}
                     </div>
@@ -419,14 +419,14 @@ function CabberPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
                     <RateDialog
                       ratingKey={serviceRatingKey("cab", vehicle)}
                       title={`${vehicle} rides`}
                       subtitle="Rate this ride category so other riders know what to expect."
                       compact
                     />
-                    <Button onClick={bookRide} disabled={!dest || stage !== "plan"} className="h-11 rounded-full px-6 text-white brand-gradient">
+                     <Button onClick={bookRide} disabled={!dest || stage !== "plan"} className="h-11 flex-1 rounded-full px-6 text-white brand-gradient sm:flex-none">
                       {isCourier ? "Book courier" : "Book ride"}
                     </Button>
                   </div>
