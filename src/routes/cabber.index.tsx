@@ -249,11 +249,12 @@ function CabberPage() {
                       key={k.id}
                       onClick={() => setKind(k.id)}
                       className={cn(
-                        "flex flex-col items-center gap-1.5 rounded-2xl border border-border py-3 text-[12px] font-medium transition hover:border-primary/40",
+                        "flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border border-border px-2 py-3 text-center text-[12px] font-medium leading-snug transition hover:border-primary/40",
                         kind === k.id && "border-primary bg-[color:var(--brand-soft)] text-primary",
                       )}
                     >
-                      <k.icon className="h-4 w-4" /> {k.id}
+                      <k.icon className="h-4 w-4 shrink-0" />
+                      <span className="min-w-0 break-words">{k.id}</span>
                     </button>
                   ))}
                 </div>
