@@ -337,8 +337,26 @@ export const REWARD_CATALOG: RewardCatalogItem[] = [
 
 export const REWARD_VALID_DAYS = 30;
 
+/** Cabber commission: exactly ₹5 for every ₹100 of completed fare — nothing hidden. */
+export const CABBER_COMMISSION_PER_100 = 5;
+
+export function cabberCommission(fare: number) {
+  return Math.round((Math.max(0, fare) / 100) * CABBER_COMMISSION_PER_100);
+}
+
+export function cabberDriverPayout(fare: number) {
+  return Math.max(0, Math.round(fare) - cabberCommission(fare));
+}
+
+/** Passenger rides go up to ₹10,000; courier jobs up to ₹1,00,000. */
+export const CABBER_RIDE_MAX = 10000;
+export const CABBER_COURIER_MAX = 100000;
+
 export type DriverEarningsSummary = {
   today: number; week: number; total: number; rides: number; pending: number; withdrawable: number;
+  /** Split of the payout log for the driver wallet view. */
+  rideJobs: number; courierJobs: number; rideEarnings: number; courierEarnings: number;
+  grossFare: number; commission: number;
 };
 
 /** Derive the driver dashboard figures from the payout log. */
@@ -347,15 +365,25 @@ export function driverEarningsSummary(earnings: DriverEarning[], withdrawn: numb
   const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
   const weekAgo = now - 7 * 86400000;
   let today = 0, week = 0, total = 0, pending = 0;
+  let rideJobs = 0, courierJobs = 0, rideEarnings = 0, courierEarnings = 0, grossFare = 0, commission = 0;
   for (const e of earnings) {
     const at = new Date(e.at).getTime();
     total += e.amount;
+    grossFare += e.fare ?? e.amount;
+    commission += e.commission ?? 0;
+    if (e.kind === "courier") { courierJobs += 1; courierEarnings += e.amount; }
+    else { rideJobs += 1; rideEarnings += e.amount; }
     if (e.status === "pending") pending += e.amount;
     if (at >= startOfDay.getTime()) today += e.amount;
     if (at >= weekAgo) week += e.amount;
   }
-  return { today, week, total, rides: earnings.length, pending, withdrawable: Math.max(0, total - pending - withdrawn) };
+  return {
+    today, week, total, rides: earnings.length, pending,
+    withdrawable: Math.max(0, total - pending - withdrawn),
+    rideJobs, courierJobs, rideEarnings, courierEarnings, grossFare, commission,
+  };
 }
+
 
 /** Rewards past their expiry date are treated as expired without extra state. */
 export function isRewardExpired(r: RedeemedReward) {
