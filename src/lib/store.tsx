@@ -87,16 +87,27 @@ export type WalletTxn = {
   ref?: string;
 };
 
-/** A single completed Cabber ride payout for the signed-in driver. */
+/** A single completed Cabber job payout for the signed-in driver. */
 export type DriverEarning = {
   id: string;
+  /** Net amount the driver keeps (gross fare minus the ₹5 per ₹100 commission). */
   amount: number;
+  /** Gross fare / courier value of the job. */
+  fare?: number;
+  /** Transit India commission taken from the fare. */
+  commission?: number;
+  /** Passenger ride or courier job — never mixed up. */
+  kind?: CabberServiceKind;
   label: string;
   route?: string;
   at: string;
   /** Pending payouts settle into the withdrawable balance in the prototype. */
   status: "settled" | "pending";
 };
+
+/** Cabber offers two clearly separated services. */
+export type CabberServiceKind = "ride" | "courier";
+
 
 /** Reward that can be bought with Transit Points. Valid for ONE trip only. */
 export type RewardCatalogItem = {
