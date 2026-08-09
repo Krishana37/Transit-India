@@ -166,7 +166,9 @@ function CabberPage() {
       paidWith: payMode === "wallet" ? "Transit Wallet" : "Cash to driver",
     });
     reward("cabber");
-    toast.success("Ride completed", { description: "Added to My Bookings." });
+    toast.success(isCourier ? "Courier delivered" : "Ride completed", {
+      description: `${isCourier ? "Courier job" : "Passenger ride"} added to My Bookings.`,
+    });
     setPaidAmount(0);
     setStage("plan");
     setDriver(null);
@@ -182,6 +184,9 @@ function CabberPage() {
           <div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Cabber · Last-mile rides</div>
             <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Book a ride to your station, airport or bus stand</h1>
+            <p className="mt-1 break-words text-[12px] text-muted-foreground">
+              Selected service: <span className="font-semibold text-foreground">{isCourier ? "Courier" : "Passenger Ride"}</span>
+            </p>
           </div>
           <Button asChild variant="outline" className="rounded-full">
             <Link to="/cabber/driver">Become a Cabber driver</Link>
