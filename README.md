@@ -1,228 +1,134 @@
-# Transit India
+<div align="center">
 
-You are a senior Product Designer, UI/UX Expert, and Frontend Developer with 15+ years of experience. Design and develop a modern, premium, fully responsive prototype for an Indian Public Transport Ticket Booking platform called Transit India.
+# 🚆 Transit India
 
-This is only a frontend prototype with realistic dummy data. Do not build a backend or authentication.
+### One journey, one app — plan, book, and manage travel across India.
 
-Important Requirement
+![Status](https://img.shields.io/badge/Status-Hackathon%20Prototype-8A2BE2?style=for-the-badge)
+![Type](https://img.shields.io/badge/Type-Frontend%20Only-FF6F00?style=for-the-badge)
+![Data](https://img.shields.io/badge/Data-Simulated-6c757d?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Educational-2E8B57?style=for-the-badge)
 
-Do NOT implement every feature.
+<!-- Banner — 5:4 ratio -->
+![Transit India Banner](assets/Images/banner.png)
 
-The reference document contains many ideas, but this prototype should include only the most useful, high-impact features that significantly improve the user experience. Prioritize simplicity over feature overload.
+</div>
 
-Build an MVP that feels polished, practical, and ready for real users.
+---
 
-Focus on quality rather than quantity.
+## 🎯 Purpose
 
-Prioritize These Core Features
+The project reimagines the traditional public transport booking experience with a cleaner interface, simplified navigation, smart search, and a unified travel ecosystem.
 
-Only implement these essential features:
+---
 
-1. AI Conversational Search ⭐
+## ✨ Key Features
 
-Replace traditional dropdown-heavy booking forms with a natural language search bar.
+- 🚆 Train booking
+- 🚌 Bus booking
+- ✈️ Flight booking
+- 🚇 Metro information and routes
+- ⛴️ Ferry booking
+- 🏨 Hotel booking
+- 🚕 Cabber — last-mile transportation
+- 🎫 PNR status
+- 💰 Transit Wallet
+- ⭐ Transit Points and rewards
+- 🌐 Multilingual interface
+- ♿ Accessibility options
+- 📍 Location-based travel suggestions
+- 👤 Passenger profiles
+- 🧳 My Trips and travel history
+- 📢 Complaints and feedback
+- 🌙 Modern responsive interface with dark-mode support
 
-Example:
+---
 
-"Book the cheapest AC train from Delhi to Jaipur tomorrow morning."
+## 🔗 Getting Started
 
-Include:
+**[🚀 Launch Transit India →](https://transit-india-ai.netlify.app)**
 
- Voice Search
+<div align="center">
+<img src="assets/Images/qr-code.png" alt="Scan to open Transit India" width="160" />
 
- Smart suggestions
+📱 *Scan to open Transit India*
+</div>
 
-2. Smart Search Results ⭐
+### 📲 Install as an App (PWA)
 
-Modern card-based results showing:
+Transit India can be installed straight from the browser — no app store needed.
 
- Departure & Arrival
+**On Desktop (Google Chrome):**
 
- Duration
+1. Open the Transit India live website in Google Chrome
+2. Visit: [https://transit-india-ai.netlify.app](https://transit-india-ai.netlify.app)
+3. Wait for the website to load completely
+4. Click the **Install** icon in the Chrome address bar, if available
+5. Click **Install** in the confirmation popup
+6. Transit India will be installed as an app on your device
+7. Open Transit India from your device's Apps/Start Menu
 
- Fare
+**On Android:**
 
- Seat Availability
+Open the website in Chrome → tap the **⋮** (three-dot menu) → select **Install app** or **Add to Home screen** → confirm the installation.
 
- Confirmation Probability
+> 💡 In some cases, an install prompt will pop up automatically — you can install directly from there.
+>
+> The installation option may vary depending on the browser and device. The website can also be used directly from the browser without installing it.
 
- Book Now button
+---
 
-No outdated tables.
+## 📸 Screenshots
 
-3. Saved Passenger Profiles ⭐
+| Login | Home |
+|:---:|:---:|
+| ![Login](assets/Images/screenshots/login-ss.png) | ![Home](assets/Images/screenshots/home-ss.png) |
 
-Allow users to quickly select saved passengers instead of entering details every time.
+| Booking | Wallet |
+|:---:|:---:|
+| ![Booking](assets/Images/screenshots/booking-ss.png) | ![Wallet](assets/Images/screenshots/wallet-ss.png) |
 
-4. Tatkal Ready Queue ⭐
+| My Trips | AI Assistant |
+|:---:|:---:|
+| ![My Trips](assets/Images/screenshots/my-trips-ss.png) | ![AI Assistant](assets/Images/screenshots/ai-assistant-ss.png) |
 
-Instead of directly booking, users can prepare everything in advance.
+---
 
-Include:
+## 🚀 Future Scope
 
- Countdown Timer
+- 🔗 Real-time transport APIs with live train running status
+- 📊 Confirmation-probability scoring powered by real historical data
+- 🧭 Live coach position guidance on the platform
+- 🔐 OTP / biometric authentication, removing CAPTCHA entirely
+- 💳 Real-time payment status with instant rollback protection
+- 📶 Offline ticket and journey access with real QR validation
+- 🎙️ Voice-first search and booking for greater accessibility
+- 💡 Budget Planner with intelligent fare recommendations
+- 🧠 AI-based crowding and travel-quality insights from post-journey ratings
+- 🌦️ Weather and platform-change alerts
+- 🏛️ Government-authorized booking integrations
 
- Prepare Booking button
+---
 
- Automatically changes to "Book Instantly" when booking opens.
+## ⚠️ Hackathon Disclaimer
 
-5. Transparent Fare Breakdown ⭐
+**Frontend Prototype / Hackathon Project**
+The project uses realistic dummy data for demonstration and does not process real bookings or payments.
 
-Display:
+> Transit India is a conceptual frontend prototype created exclusively for hackathon and educational purposes. It is not a real booking platform and is not affiliated with, endorsed by, or connected to any government organization, railway operator, airline, hotel company, transport provider, or commercial travel service. All names, logos, routes, schedules, fares, vehicles, operators, QR codes, and booking information are fictional placeholders created solely for demonstration.
 
- Base Fare
+---
 
- Taxes
+## 📄 License
 
- Convenience Fee
+**Educational & Hackathon Use Notice**
 
- Total Fare
+This project has been created solely for educational purposes and hackathon demonstration. It is a frontend prototype that uses fictional data and does not provide real travel booking services. This project is not intended for commercial deployment or production use.
 
-6. AI Travel Assistant ⭐
+**No formal license** is applied to this repository.
 
-Floating chatbot that helps users:
+<div align="center">
 
- Find routes
+**Transit India** — travel across a country, from one place. 🇮🇳
 
- Explain fares
-
- Suggest alternatives
-
- Answer booking questions
-
-7. Alternative Travel Suggestions ⭐
-
-If a preferred train is unavailable, suggest:
-
- Earlier/Later Train
-
- Bus Option
-
- Metro Combination
-
- Cheapest Route
-
-8. Simple Payment Screen
-
-Prototype only.
-
-Dummy payment animation.
-
-No backend.
-
-9. Ticket Confirmation
-
-Show:
-
- QR Ticket
-
- Journey Details
-
- Download Ticket
-
- Share Ticket
-
-Do NOT Include
-
-Avoid unnecessary or low-priority features such as:
-
- Group Booking
-
- Food Ordering
-
- Cab Booking
-
- Weather Alerts
-
- Platform Position Tracking
-
- Journey Ratings
-
- Travel History Analytics
-
- Offline Mode
-
- Family Priority Mode
-
- Advanced Settings
-
- Complex Account Management
-
-These can be future enhancements and are out of scope for this MVP.
-
-Design Style
-
- Premium SaaS UI
-
- Apple-inspired minimalism
-
- Google Material Design
-
- Soft white background
-
- Blue (#1565C0)
-
- Orange (#FF9800)
-
- Rounded cards
-
- Glassmorphism search card
-
- Smooth animations
-
- Plenty of whitespace
-
- Responsive
-
- Mobile-first
-
- Dark mode support
-
-The interface should feel handcrafted by professional designers—not AI-generated.
-
-Nostalgic Touch
-
-On the first visit only, show a 2–3 second intro animation inspired by the old IRCTC interface (dense tables, tiny blue links, fake CAPTCHA), then smoothly transition into the modern UI. This keeps the nostalgic theme while showcasing the redesigned experience described in the reference.
-
-Technical Stack
-
- React + Next.js
-
- TypeScript
-
- Tailwind CSS
-
- Framer Motion
-
- Lucide Icons
-
- Component-based architecture
-
- Dummy JSON data only
-
-Final Goal
-
-Create a website that solves the biggest frustrations of booking public transport in India by focusing on speed, simplicity, and usability. The prototype should highlight only the strongest user-facing ideas from the reference—AI conversational search, saved passenger profiles, Tatkal ready queue, transparent pricing, AI assistance, confirmation probability, and alternative route suggestions—without trying to include every feature from the document.
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://transit-india-ai.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/bbecda87-66a7-4408-b582-f0de8ff3b9b2).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+</div>
