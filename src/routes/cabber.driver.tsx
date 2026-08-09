@@ -309,13 +309,15 @@ function DriverDashboard() {
             <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Cabber driver earnings</div>
             <p className="text-[12px] text-muted-foreground">Separate from your customer Transit Wallet · Prototype / Demo Data</p>
           </div>
-          <Button
-            className="shrink-0 rounded-full text-white brand-gradient"
-            disabled={summary.withdrawable <= 0}
-            onClick={withdraw}
-          >
-            Withdraw {formatCurrency(summary.withdrawable)}
-          </Button>
+          {summary.withdrawable > 0 ? (
+            <Button className="shrink-0 rounded-full text-white brand-gradient" onClick={withdraw}>
+              Withdraw {formatCurrency(summary.withdrawable)}
+            </Button>
+          ) : (
+            <span className="shrink-0 rounded-full bg-[color:var(--brand-soft)] px-3 py-1.5 text-center text-[11px] font-semibold leading-snug text-primary">
+              Auto-credited to Transit Wallet
+            </span>
+          )}
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <StatCard icon={IndianRupee} label="Today" value={formatCurrency(summary.today)} />
@@ -323,9 +325,31 @@ function DriverDashboard() {
           <StatCard icon={Award} label="Total earnings" value={formatCurrency(summary.total)} />
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <StatCard icon={Check} label="Completed rides" value={String(summary.rides)} />
-          <StatCard icon={Clock} label="Pending earnings" value={formatCurrency(summary.pending)} />
+          <StatCard icon={Users} label="Completed rides" value={String(summary.rideJobs)} />
+          <StatCard icon={Package} label="Courier jobs" value={String(summary.courierJobs)} />
           <StatCard icon={IndianRupee} label="Withdrawable" value={formatCurrency(summary.withdrawable)} />
+        </div>
+
+        {/* Transparent commission maths — ₹5 per ₹100, nothing hidden. */}
+        <div className="mt-3 space-y-2 rounded-2xl border border-border/60 p-3">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Earnings breakdown · ₹{CABBER_COMMISSION_PER_100} commission per ₹100
+          </div>
+          {[
+            { label: "Total fare collected", value: formatCurrency(summary.grossFare) },
+            { label: "Transit India commission", value: `− ${formatCurrency(summary.commission)}` },
+            { label: "Passenger ride earnings", value: formatCurrency(summary.rideEarnings) },
+            { label: "Courier earnings", value: formatCurrency(summary.courierEarnings) },
+          ].map((row) => (
+            <div key={row.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 text-[13px]">
+              <span className="min-w-0 break-words text-muted-foreground">{row.label}</span>
+              <span className="shrink-0 tabular-nums">{row.value}</span>
+            </div>
+          ))}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t border-border pt-2 text-[13px] font-semibold">
+            <span className="min-w-0">Driver earnings</span>
+            <span className="shrink-0 tabular-nums text-[color:var(--success)]">{formatCurrency(summary.total)}</span>
+          </div>
         </div>
         {driverEarnings.length > 0 && (
           <div className="mt-4 space-y-2">
@@ -333,6 +357,10 @@ function DriverDashboard() {
               <div key={e.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border/60 p-3">
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-medium">{e.label}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {e.kind === "courier" ? "Courier" : "Passenger ride"}
+                    {e.fare != null ? ` · fare ${formatCurrency(e.fare)} − commission ${formatCurrency(e.commission ?? 0)}` : ""}
+                  </p>
                   <p className="truncate text-[11px] text-muted-foreground">
                     {e.route ? `${e.route} · ` : ""}{new Date(e.at).toLocaleString()}
                   </p>
