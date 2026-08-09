@@ -735,6 +735,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return out;
     },
     registerDriver: (d) => setState((s) => ({ ...s, driver: { ...d, registeredAt: new Date().toISOString() } })),
+    deleteDriverAccount: () =>
+      setState((s) => pushNotification({
+        ...s,
+        // Only the Cabber driver profile and its payout log are removed — the
+        // main Transit India account, wallet and bookings stay untouched.
+        driver: null,
+        driverEarnings: [],
+        driverWithdrawn: 0,
+      }, {
+        kind: "cab",
+        title: "Cabber driver account deleted",
+        body: "Your Cabber driver profile has been permanently removed. Your Transit India account is unchanged.",
+      })),
+
     updateDriver: (patch) => setState((s) => (s.driver ? { ...s, driver: { ...s.driver, ...patch } } : s)),
     pushRecentSearch: (q) =>
       setState((s) => ({ ...s, recentSearches: [q, ...s.recentSearches.filter((r) => r !== q)].slice(0, 6) })),
