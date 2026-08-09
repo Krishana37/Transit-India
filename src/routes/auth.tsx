@@ -17,9 +17,9 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in or create an account — TripSync" },
-      { name: "description", content: "Access your TripSync account to manage bookings, saved passengers and preferences." },
-      { property: "og:title", content: "Sign in — TripSync" },
+      { title: "Sign in or create an account — Transit India" },
+      { name: "description", content: "Access your Transit India account to manage bookings, saved passengers and preferences." },
+      { property: "og:title", content: "Sign in — Transit India" },
       { property: "og:description", content: "A single account for trains, buses, flights, hotels, metro and last-mile Cabber rides." },
       { property: "og:type", content: "website" },
     ],
@@ -298,7 +298,7 @@ function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
       return;
     }
     setError(null);
-    toast.success("Account created — welcome to TripSync!");
+    toast.success("Account created — welcome to Transit India!");
     onSuccess();
   };
 

@@ -46,7 +46,7 @@ export const Route = createFileRoute("/book/$mode")({
   }),
   head: ({ params }) => ({
     meta: [
-      { title: `Book ${params.mode} — TripSync` },
+      { title: `Book ${params.mode} — Transit India` },
       { name: "description", content: `Search, compare and book ${params.mode} tickets with live fares, confirmation probability and Pre-Tatkal queueing.` },
     ],
   }),
@@ -213,7 +213,7 @@ function BookPage() {
   }, 0);
   const grossTotal = base + surge + gst + convenience + mealsTotal;
 
-  // One-trip rewards bought with TripSync Points, still unused and not expired.
+  // One-trip rewards bought with Transit Points, still unused and not expired.
   const availableRewards = redeemedRewards.filter((r) => r.status === "redeemed" && !isRewardExpired(r));
   const selectedReward = availableRewards.find((r) => r.id === selectedRewardId) ?? null;
   const rewardStillEligible =
@@ -236,8 +236,8 @@ function BookPage() {
   ];
   if (mealsTotal > 0) fareLines.push({ label: "Meals", amount: mealsTotal });
   if (activeReward) fareLines.push({ label: `Reward · ${activeReward.name}`, amount: -rewardDiscount });
-  if (coinDiscount > 0) fareLines.push({ label: "TripSync Coins discount", amount: -coinDiscount });
-  if (pointDiscount > 0) fareLines.push({ label: "TripSync Points discount", amount: -pointDiscount });
+  if (coinDiscount > 0) fareLines.push({ label: "Transit Coins discount", amount: -coinDiscount });
+  if (pointDiscount > 0) fareLines.push({ label: "Transit Points discount", amount: -pointDiscount });
 
   const showMeals = m !== "hotel" && m !== "metro";
 
@@ -279,8 +279,8 @@ function BookPage() {
   };
 
   const onPaymentSuccess = (paidWith: string) => {
-    if (paidWith === "TripSync Wallet") {
-      const res = payFromWallet(total, `Booking · ${segment?.name ?? "TripSync"}`);
+    if (paidWith === "Transit Wallet") {
+      const res = payFromWallet(total, `Booking · ${segment?.name ?? "Transit India"}`);
       if (!res.ok) {
         notify({ kind: "wallet", title: "Payment failed", body: res.error ?? "Insufficient wallet balance." });
         return;

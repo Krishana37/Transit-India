@@ -19,7 +19,7 @@ export function PointsRedeemCard({
         <span className="grid h-8 w-8 place-items-center rounded-xl bg-[color:var(--brand-soft)] text-primary">
           <Star className="h-4 w-4" />
         </span>
-        TripSync Points
+        Transit Points
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
@@ -34,7 +34,7 @@ export function PointsRedeemCard({
       </div>
 
       <p className="mt-2 text-[11px] text-muted-foreground" data-a11y="optional">
-        1 TripSync Point = {formatCurrency(POINT_VALUE)}. You can never redeem more points than you own.
+        1 Transit Point = {formatCurrency(POINT_VALUE)}. You can never redeem more points than you own.
       </p>
 
       {maxPoints > 0 ? (

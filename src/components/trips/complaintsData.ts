@@ -57,19 +57,19 @@ export const statuses: ComplaintStatus[] = [
 
 export const seedComplaints: Complaint[] = [
   {
-    id: "TIC-11204", handle: "app_user_441", mode: "Website / App", station: "TripSync app", route: "Wallet → Refund",
+    id: "TIC-11204", handle: "app_user_441", mode: "Website / App", station: "Transit India app", route: "Wallet → Refund",
     category: TECH_CATEGORY, technicalIssue: "Refund issue", subject: "Refund not showing in wallet history",
     body: "Cancelled a Rajdhani booking; the refund toast appeared but the wallet history took a while to list the entry.",
     upvotes: 46, status: "In progress", date: "2024-05-14", time: "10:24",
   },
   {
-    id: "TIC-11188", handle: "hindi_first", mode: "Website / App", station: "TripSync app", route: "Language switcher",
+    id: "TIC-11188", handle: "hindi_first", mode: "Website / App", station: "Transit India app", route: "Language switcher",
     category: TECH_CATEGORY, technicalIssue: "Translation issue", subject: "Some screens stay in English",
     body: "After switching to Hindi, a few labels on the booking screen still render in English.",
     upvotes: 61, status: "Under review", date: "2024-05-13", time: "18:02",
   },
   {
-    id: "TIC-11150", handle: "mobile_ux_ria", mode: "Website / App", station: "TripSync app", route: "My Trips",
+    id: "TIC-11150", handle: "mobile_ux_ria", mode: "Website / App", station: "Transit India app", route: "My Trips",
     category: TECH_CATEGORY, technicalIssue: "UI / Layout issue", subject: "Long station names overlap on mobile",
     body: "On a small phone the station name pushes past the card edge in the trip list.",
     upvotes: 23, status: "Resolved", date: "2024-05-09", time: "09:41",

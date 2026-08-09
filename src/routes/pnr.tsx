@@ -23,9 +23,9 @@ export const Route = createFileRoute("/pnr")({
   }),
   head: () => ({
     meta: [
-      { title: "PNR status & live journey tracking — TripSync" },
+      { title: "PNR status & live journey tracking — Transit India" },
       { name: "description", content: "Check a booking status by PNR, service number or passenger name and follow the prototype live journey progress." },
-      { property: "og:title", content: "PNR status — TripSync" },
+      { property: "og:title", content: "PNR status — Transit India" },
       { property: "og:description", content: "Prototype PNR tracking with chart status, coach, platform and live journey progress." },
       { property: "og:type", content: "website" },
     ],
