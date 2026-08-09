@@ -9,7 +9,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { CabberMap } from "@/components/cabber/CabberMap";
 import { vehicleCatalog, type VehicleType } from "@/components/cabber/data";
-import { generateHistory, generateRequests, earningsSeries, type RideRequest } from "@/components/cabber/driverData";
+import {
+  generateHistory, generateRequests, generateCourierRequests, earningsSeries,
+  type RideRequest, type CourierRequest,
+} from "@/components/cabber/driverData";
 import { AppShell } from "@/components/transit/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +22,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n";
-import { driverEarningsSummary, useStore } from "@/lib/store";
+import {
+  cabberCommission, cabberDriverPayout, CABBER_COMMISSION_PER_100, driverEarningsSummary, useStore,
+} from "@/lib/store";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Package, Trash2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/cabber/driver")({
@@ -190,12 +200,17 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 function DriverDashboard() {
-  const { driver, updateDriver, driverEarnings, driverWithdrawn, addDriverEarning, withdrawEarnings } = useStore();
+  const { driver, updateDriver, deleteDriverAccount, driverEarnings, driverWithdrawn, addDriverEarning, withdrawEarnings } = useStore();
   const { formatCurrency } = useI18n();
   if (!driver) return null;
 
   const [requests, setRequests] = useState<RideRequest[]>(() => generateRequests(driver.vehicleType, driver.phone));
+  const [courierRequests, setCourierRequests] = useState<CourierRequest[]>(() => generateCourierRequests(driver.phone));
   const [onTrip, setOnTrip] = useState<RideRequest | null>(null);
+  const [onCourier, setOnCourier] = useState<CourierRequest | null>(null);
+  const services = driver.services ?? "both";
+  const acceptsRides = services === "ride" || services === "both";
+  const acceptsCourier = services === "courier" || services === "both";
   const [history, setHistory] = useState(() => generateHistory(driver.vehicleType, driver.name));
 
   const series = useMemo(() => earningsSeries(driver.name), [driver.name]);
@@ -211,6 +226,28 @@ function DriverDashboard() {
     toast("Ride declined");
   };
 
+  const acceptCourier = (c: CourierRequest) => {
+    setCourierRequests((cs) => cs.filter((x) => x.id !== c.id));
+    setOnCourier(c);
+    toast.success("Courier job accepted", { description: `Pick up ${c.parcel} from ${c.sender}.` });
+  };
+
+  const completeCourier = () => {
+    if (!onCourier) return;
+    const commission = cabberCommission(onCourier.fare);
+    addDriverEarning({
+      fare: onCourier.fare,
+      kind: "courier",
+      label: `Courier Job Completed — ${onCourier.sender}`,
+      route: `${onCourier.pickup} → ${onCourier.destination}`,
+    });
+    toast.success(`Courier job completed +${formatCurrency(cabberDriverPayout(onCourier.fare))}`, {
+      description: `Courier charge ${formatCurrency(onCourier.fare)} − commission ${formatCurrency(commission)}. Credited to your Transit Wallet.`,
+    });
+    setOnCourier(null);
+    setCourierRequests((cs) => (cs.length ? cs : generateCourierRequests(driver.phone + Date.now())));
+  };
+
   const completeTrip = () => {
     if (!onTrip) return;
     setHistory((h) => [
@@ -218,12 +255,13 @@ function DriverDashboard() {
       ...h,
     ]);
     addDriverEarning({
-      amount: onTrip.fare,
+      fare: onTrip.fare,
+      kind: "ride",
       label: `Cabber Ride Completed — ${onTrip.rider}`,
       route: `${onTrip.pickup} → ${onTrip.destination}`,
     });
-    toast.success(`Cabber Ride Completed +${formatCurrency(onTrip.fare)}`, {
-      description: "Added to your Cabber driver earnings.",
+    toast.success(`Cabber Ride Completed +${formatCurrency(cabberDriverPayout(onTrip.fare))}`, {
+      description: `Ride fare ${formatCurrency(onTrip.fare)} − commission ${formatCurrency(cabberCommission(onTrip.fare))}. Credited to your Transit Wallet.`,
     });
     setOnTrip(null);
     setRequests((rs) => (rs.length ? rs : generateRequests(driver.vehicleType, driver.phone + Date.now())));
