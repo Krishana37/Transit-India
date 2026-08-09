@@ -412,6 +412,9 @@ type StoreValue = State & {
   requestRefund: (id: string) => { ok: boolean; error?: string };
   registerDriver: (d: Omit<DriverProfile, "registeredAt">) => void;
   updateDriver: (patch: Partial<DriverProfile>) => void;
+  /** Permanently remove the Cabber driver profile (never the main Transit India account). */
+  deleteDriverAccount: () => void;
+
   pushRecentSearch: (q: string) => void;
   setDark: (b: boolean) => void;
   setAccessibility: (m: AccessibilityMode) => void;
