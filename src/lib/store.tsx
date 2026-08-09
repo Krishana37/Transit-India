@@ -423,7 +423,7 @@ type StoreValue = State & {
   /** Credit the customer wallet instantly (refunds, payouts, promos). */
   creditWallet: (amount: number, label: string, meta?: { category?: string; ref?: string; type?: WalletTxn["type"] }) => void;
   /** Cabber driver payouts. */
-  addDriverEarning: (data: { amount: number; label: string; route?: string; status?: DriverEarning["status"] }) => void;
+  addDriverEarning: (data: { fare: number; kind: CabberServiceKind; label: string; route?: string; status?: DriverEarning["status"] }) => DriverEarning;
   settlePendingEarnings: () => void;
   withdrawEarnings: (amount: number) => { ok: boolean; error?: string };
   /** One-trip rewards. */
