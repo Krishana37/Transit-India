@@ -85,3 +85,54 @@ export function earningsSeries(driverName: string) {
 }
 
 export { driverFor };
+
+/** Courier jobs are valued far higher than passenger rides (up to ₹1,00,000). */
+export type CourierRequest = {
+  id: string;
+  sender: string;
+  pickup: string;
+  destination: string;
+  km: number;
+  eta: number;
+  /** Declared value of the consignment. */
+  value: number;
+  /** Payable courier charge — this is what commission is calculated on. */
+  fare: number;
+  parcel: string;
+  weightKg: number;
+};
+
+const parcelKinds = ["Documents", "Electronics", "Medical supplies", "Retail consignment", "Jewellery box", "Machine spares"];
+const senderNames = ["Kiran Traders", "Sunrise Pharma", "Meera Exports", "Nova Electronics", "Anand & Sons", "Blue Ridge Retail"];
+
+/** Courier charge: base + distance + a small 0.6% handling fee on declared value. */
+export function courierFare(km: number, weightKg: number, value: number) {
+  return Math.round(60 + km * 9 + weightKg * 12 + value * 0.006);
+}
+
+export function generateCourierRequests(seed: string, count = 3): CourierRequest[] {
+  const destOptions = destinationsFor("Railway Station", "Delhi").concat(destinationsFor("Airport", "Delhi"));
+  return Array.from({ length: count }).map((_, i) => {
+    const s = `${seed}-courier-${i}`;
+    const h = hash(s);
+    const pickup = pickupSpots[h % pickupSpots.length];
+    const dest = destOptions[(h >> 2) % destOptions.length];
+    const km = lastMileDistance(pickup, dest.id + s);
+    const weightKg = 1 + (h >> 5) % 25;
+    // High-value consignments are rare: most jobs stay small, one in ~six is big.
+    const big = h % 6 === 0;
+    const value = big ? 20000 + (h % 80001) : 500 + (h % 12000);
+    return {
+      id: s,
+      sender: senderNames[(h >> 4) % senderNames.length],
+      pickup,
+      destination: dest.label,
+      km,
+      eta: etaFor(km, vehicleCatalog[1]),
+      value: Math.min(value, 100000),
+      fare: courierFare(km, weightKg, Math.min(value, 100000)),
+      parcel: parcelKinds[(h >> 7) % parcelKinds.length],
+      weightKg,
+    };
+  });
+}

@@ -9,7 +9,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { CabberMap } from "@/components/cabber/CabberMap";
 import { vehicleCatalog, type VehicleType } from "@/components/cabber/data";
-import { generateHistory, generateRequests, earningsSeries, type RideRequest } from "@/components/cabber/driverData";
+import {
+  generateHistory, generateRequests, generateCourierRequests, earningsSeries,
+  type RideRequest, type CourierRequest,
+} from "@/components/cabber/driverData";
 import { AppShell } from "@/components/transit/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +22,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n";
-import { driverEarningsSummary, useStore } from "@/lib/store";
+import {
+  cabberCommission, cabberDriverPayout, CABBER_COMMISSION_PER_100, driverEarningsSummary, useStore,
+} from "@/lib/store";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Package, Trash2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/cabber/driver")({
@@ -190,12 +200,17 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 function DriverDashboard() {
-  const { driver, updateDriver, driverEarnings, driverWithdrawn, addDriverEarning, withdrawEarnings } = useStore();
+  const { driver, updateDriver, deleteDriverAccount, driverEarnings, driverWithdrawn, addDriverEarning, withdrawEarnings } = useStore();
   const { formatCurrency } = useI18n();
   if (!driver) return null;
 
   const [requests, setRequests] = useState<RideRequest[]>(() => generateRequests(driver.vehicleType, driver.phone));
+  const [courierRequests, setCourierRequests] = useState<CourierRequest[]>(() => generateCourierRequests(driver.phone));
   const [onTrip, setOnTrip] = useState<RideRequest | null>(null);
+  const [onCourier, setOnCourier] = useState<CourierRequest | null>(null);
+  const services = driver.services ?? "both";
+  const acceptsRides = services === "ride" || services === "both";
+  const acceptsCourier = services === "courier" || services === "both";
   const [history, setHistory] = useState(() => generateHistory(driver.vehicleType, driver.name));
 
   const series = useMemo(() => earningsSeries(driver.name), [driver.name]);
@@ -211,6 +226,28 @@ function DriverDashboard() {
     toast("Ride declined");
   };
 
+  const acceptCourier = (c: CourierRequest) => {
+    setCourierRequests((cs) => cs.filter((x) => x.id !== c.id));
+    setOnCourier(c);
+    toast.success("Courier job accepted", { description: `Pick up ${c.parcel} from ${c.sender}.` });
+  };
+
+  const completeCourier = () => {
+    if (!onCourier) return;
+    const commission = cabberCommission(onCourier.fare);
+    addDriverEarning({
+      fare: onCourier.fare,
+      kind: "courier",
+      label: `Courier Job Completed — ${onCourier.sender}`,
+      route: `${onCourier.pickup} → ${onCourier.destination}`,
+    });
+    toast.success(`Courier job completed +${formatCurrency(cabberDriverPayout(onCourier.fare))}`, {
+      description: `Courier charge ${formatCurrency(onCourier.fare)} − commission ${formatCurrency(commission)}. Credited to your Transit Wallet.`,
+    });
+    setOnCourier(null);
+    setCourierRequests((cs) => (cs.length ? cs : generateCourierRequests(driver.phone + Date.now())));
+  };
+
   const completeTrip = () => {
     if (!onTrip) return;
     setHistory((h) => [
@@ -218,12 +255,13 @@ function DriverDashboard() {
       ...h,
     ]);
     addDriverEarning({
-      amount: onTrip.fare,
+      fare: onTrip.fare,
+      kind: "ride",
       label: `Cabber Ride Completed — ${onTrip.rider}`,
       route: `${onTrip.pickup} → ${onTrip.destination}`,
     });
-    toast.success(`Cabber Ride Completed +${formatCurrency(onTrip.fare)}`, {
-      description: "Added to your Cabber driver earnings.",
+    toast.success(`Cabber Ride Completed +${formatCurrency(cabberDriverPayout(onTrip.fare))}`, {
+      description: `Ride fare ${formatCurrency(onTrip.fare)} − commission ${formatCurrency(cabberCommission(onTrip.fare))}. Credited to your Transit Wallet.`,
     });
     setOnTrip(null);
     setRequests((rs) => (rs.length ? rs : generateRequests(driver.vehicleType, driver.phone + Date.now())));
@@ -235,7 +273,7 @@ function DriverDashboard() {
       toast.error(res.error ?? "Nothing to withdraw yet.");
       return;
     }
-    toast.success(`${formatCurrency(summary.withdrawable)} moved to your TripSync Wallet.`);
+    toast.success(`${formatCurrency(summary.withdrawable)} moved to your Transit Wallet.`);
   };
 
 
@@ -269,15 +307,17 @@ function DriverDashboard() {
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Cabber driver earnings</div>
-            <p className="text-[12px] text-muted-foreground">Separate from your customer TripSync Wallet · Prototype / Demo Data</p>
+            <p className="text-[12px] text-muted-foreground">Separate from your customer Transit Wallet · Prototype / Demo Data</p>
           </div>
-          <Button
-            className="shrink-0 rounded-full text-white brand-gradient"
-            disabled={summary.withdrawable <= 0}
-            onClick={withdraw}
-          >
-            Withdraw {formatCurrency(summary.withdrawable)}
-          </Button>
+          {summary.withdrawable > 0 ? (
+            <Button className="shrink-0 rounded-full text-white brand-gradient" onClick={withdraw}>
+              Withdraw {formatCurrency(summary.withdrawable)}
+            </Button>
+          ) : (
+            <span className="shrink-0 rounded-full bg-[color:var(--brand-soft)] px-3 py-1.5 text-center text-[11px] font-semibold leading-snug text-primary">
+              Auto-credited to Transit Wallet
+            </span>
+          )}
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <StatCard icon={IndianRupee} label="Today" value={formatCurrency(summary.today)} />
@@ -285,9 +325,31 @@ function DriverDashboard() {
           <StatCard icon={Award} label="Total earnings" value={formatCurrency(summary.total)} />
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <StatCard icon={Check} label="Completed rides" value={String(summary.rides)} />
-          <StatCard icon={Clock} label="Pending earnings" value={formatCurrency(summary.pending)} />
+          <StatCard icon={Users} label="Completed rides" value={String(summary.rideJobs)} />
+          <StatCard icon={Package} label="Courier jobs" value={String(summary.courierJobs)} />
           <StatCard icon={IndianRupee} label="Withdrawable" value={formatCurrency(summary.withdrawable)} />
+        </div>
+
+        {/* Transparent commission maths — ₹5 per ₹100, nothing hidden. */}
+        <div className="mt-3 space-y-2 rounded-2xl border border-border/60 p-3">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Earnings breakdown · ₹{CABBER_COMMISSION_PER_100} commission per ₹100
+          </div>
+          {[
+            { label: "Total fare collected", value: formatCurrency(summary.grossFare) },
+            { label: "Transit India commission", value: `− ${formatCurrency(summary.commission)}` },
+            { label: "Passenger ride earnings", value: formatCurrency(summary.rideEarnings) },
+            { label: "Courier earnings", value: formatCurrency(summary.courierEarnings) },
+          ].map((row) => (
+            <div key={row.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 text-[13px]">
+              <span className="min-w-0 break-words text-muted-foreground">{row.label}</span>
+              <span className="shrink-0 tabular-nums">{row.value}</span>
+            </div>
+          ))}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t border-border pt-2 text-[13px] font-semibold">
+            <span className="min-w-0">Driver earnings</span>
+            <span className="shrink-0 tabular-nums text-[color:var(--success)]">{formatCurrency(summary.total)}</span>
+          </div>
         </div>
         {driverEarnings.length > 0 && (
           <div className="mt-4 space-y-2">
@@ -295,6 +357,10 @@ function DriverDashboard() {
               <div key={e.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border/60 p-3">
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-medium">{e.label}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">
+                    {e.kind === "courier" ? "Courier" : "Passenger ride"}
+                    {e.fare != null ? ` · fare ${formatCurrency(e.fare)} − commission ${formatCurrency(e.commission ?? 0)}` : ""}
+                  </p>
                   <p className="truncate text-[11px] text-muted-foreground">
                     {e.route ? `${e.route} · ` : ""}{new Date(e.at).toLocaleString()}
                   </p>
@@ -332,44 +398,126 @@ function DriverDashboard() {
         </div>
       </Card>
 
+      {/* Drivers choose which Cabber jobs they want — rides, courier or both. */}
+      <Card className="glass-card rounded-3xl p-5">
+        <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Services you accept</div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {([
+            { id: "ride", label: "Passenger rides", icon: Users, desc: "Fares up to ₹10,000" },
+            { id: "courier", label: "Courier jobs", icon: Package, desc: "Consignments up to ₹1,00,000" },
+            { id: "both", label: "Both", icon: Check, desc: "Receive every Cabber job" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => updateDriver({ services: opt.id })}
+              className={cn(
+                "min-w-0 rounded-2xl border p-3 text-left transition",
+                services === opt.id ? "border-primary bg-[color:var(--brand-soft)]" : "border-border bg-muted/30",
+              )}
+            >
+              <opt.icon className="h-4 w-4 shrink-0 text-primary" />
+              <div className="mt-1.5 break-words text-[13px] font-semibold leading-snug">{opt.label}</div>
+              <div className="break-words text-[11px] leading-relaxed text-muted-foreground">{opt.desc}</div>
+            </button>
+          ))}
+        </div>
+      </Card>
+
       {onTrip ? (
         <Card className="glass-card space-y-4 rounded-3xl p-5">
-          <div className="flex items-center justify-between">
-            <Badge className="rounded-full bg-[color:var(--warning)]/15 text-[color:var(--warning)]">On trip</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Badge className="rounded-full bg-[color:var(--warning)]/15 text-[color:var(--warning)]">On trip · Passenger ride</Badge>
             <div className="text-[12px] text-muted-foreground">{onTrip.km} km · ETA {onTrip.eta} min</div>
           </div>
           <CabberMap distanceKm={onTrip.km} etaMins={onTrip.eta} status="en-route" className="aspect-[16/9] w-full" />
-          <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3 text-[13px]">
-            <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {onTrip.pickup} → {onTrip.destination}</span>
-            <span className="font-semibold">{formatCurrency(onTrip.fare)}</span>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-xl bg-muted/50 px-4 py-3 text-[13px]">
+            <span className="flex min-w-0 items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="min-w-0 break-words">{onTrip.pickup} → {onTrip.destination}</span>
+            </span>
+            <span className="shrink-0 font-semibold tabular-nums">{formatCurrency(onTrip.fare)}</span>
           </div>
+          <EarningPreview fare={onTrip.fare} />
           <Button onClick={completeTrip} className="h-11 w-full rounded-full text-white brand-gradient">Complete ride</Button>
         </Card>
-      ) : (
-        <Card className="glass-card space-y-3 rounded-3xl p-5">
-          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Incoming ride requests</div>
-          {!driver.available && <p className="text-[13px] text-muted-foreground">You're offline — go online to receive ride requests.</p>}
-          {driver.available && requests.length === 0 && <p className="text-[13px] text-muted-foreground">No requests right now. New rides will appear here.</p>}
-          {driver.available && requests.map((r) => (
-            <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border p-4">
-              <div>
-                <div className="text-sm font-semibold">{r.rider}</div>
-                <div className="text-[12px] text-muted-foreground">{r.pickup} → {r.destination}</div>
-                <div className="text-[11px] text-muted-foreground">{r.km} km · ETA {r.eta} min</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold">{formatCurrency(r.fare)}</span>
-                <Button size="icon" variant="outline" className="h-9 w-9 rounded-full text-destructive" onClick={() => decline(r)}>
-                  <X className="h-4 w-4" />
-                </Button>
-                <Button size="icon" className="h-9 w-9 rounded-full text-white brand-gradient" onClick={() => accept(r)}>
-                  <Check className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+      ) : onCourier ? (
+        <Card className="glass-card space-y-4 rounded-3xl p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Badge className="rounded-full bg-[color:var(--warning)]/15 text-[color:var(--warning)]">On job · Courier</Badge>
+            <div className="text-[12px] text-muted-foreground">{onCourier.km} km · ETA {onCourier.eta} min</div>
+          </div>
+          <CabberMap distanceKm={onCourier.km} etaMins={onCourier.eta} status="en-route" className="aspect-[16/9] w-full" />
+          <div className="space-y-1 rounded-xl bg-muted/50 px-4 py-3 text-[13px]">
+            <div className="break-words font-medium">{onCourier.parcel} · {onCourier.weightKg} kg</div>
+            <div className="break-words text-[12px] text-muted-foreground">{onCourier.pickup} → {onCourier.destination}</div>
+            <div className="text-[12px] text-muted-foreground">Declared value {formatCurrency(onCourier.value)}</div>
+          </div>
+          <EarningPreview fare={onCourier.fare} label="Courier charge" />
+          <Button onClick={completeCourier} className="h-11 w-full rounded-full text-white brand-gradient">Complete courier job</Button>
         </Card>
+      ) : (
+        <>
+          {acceptsRides && (
+            <Card className="glass-card space-y-3 rounded-3xl p-5">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Incoming ride requests</div>
+              {!driver.available && <p className="text-[13px] text-muted-foreground">You're offline — go online to receive ride requests.</p>}
+              {driver.available && requests.length === 0 && <p className="text-[13px] text-muted-foreground">No requests right now. New rides will appear here.</p>}
+              {driver.available && requests.map((r) => (
+                <div key={r.id} className="grid gap-3 rounded-2xl border border-border p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <div className="break-words text-sm font-semibold leading-snug">{r.rider}</div>
+                    <div className="break-words text-[12px] leading-snug text-muted-foreground">{r.pickup} → {r.destination}</div>
+                    <div className="text-[11px] text-muted-foreground">Passenger ride · {r.km} km · ETA {r.eta} min</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(r.fare)}</span>
+                    <Button size="icon" variant="outline" aria-label="Decline ride" className="h-9 w-9 rounded-full text-destructive" onClick={() => decline(r)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" aria-label="Accept ride" className="h-9 w-9 rounded-full text-white brand-gradient" onClick={() => accept(r)}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {acceptsCourier && (
+            <Card className="glass-card space-y-3 rounded-3xl p-5">
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Incoming courier jobs</div>
+              {!driver.available && <p className="text-[13px] text-muted-foreground">You're offline — go online to receive courier jobs.</p>}
+              {driver.available && courierRequests.length === 0 && <p className="text-[13px] text-muted-foreground">No courier jobs right now. High-value consignments appear rarely.</p>}
+              {driver.available && courierRequests.map((c) => (
+                <div key={c.id} className="grid gap-3 rounded-2xl border border-border p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <div className="break-words text-sm font-semibold leading-snug">{c.sender}</div>
+                    <div className="break-words text-[12px] leading-snug text-muted-foreground">{c.pickup} → {c.destination}</div>
+                    <div className="break-words text-[11px] leading-snug text-muted-foreground">
+                      Courier · {c.parcel} · {c.weightKg} kg · value {formatCurrency(c.value)}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-sm font-semibold tabular-nums">{formatCurrency(c.fare)}</span>
+                    <Button
+                      size="icon" variant="outline" aria-label="Decline courier job"
+                      className="h-9 w-9 rounded-full text-destructive"
+                      onClick={() => setCourierRequests((cs) => cs.filter((x) => x.id !== c.id))}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" aria-label="Accept courier job" className="h-9 w-9 rounded-full text-white brand-gradient" onClick={() => acceptCourier(c)}>
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+        </>
       )}
+
 
       <Card className="glass-card rounded-3xl p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Ride history</div>
@@ -400,6 +548,72 @@ function DriverDashboard() {
           </Table>
         </div>
       </Card>
+
+      {/* Deleting the Cabber profile never touches the main Transit India account. */}
+      <Card className="glass-card rounded-3xl border-destructive/30 p-5">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
+            <h2 className="break-words text-sm font-semibold text-destructive">Delete Cabber driver account</h2>
+            <p className="break-words text-[12px] leading-relaxed text-muted-foreground">
+              Permanently removes your Cabber driver profile, earnings log and job access. Your Transit India
+              customer account, wallet and bookings stay exactly as they are.
+            </p>
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="shrink-0 rounded-full border-destructive/40 text-destructive">
+                <Trash2 className="mr-1.5 h-4 w-4" /> Delete account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete your Cabber driver account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This is permanent. Your driver profile, earnings history and Cabber access will be removed and you
+                  will need to register again to drive. Your Transit India customer account will NOT be deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => {
+                    deleteDriverAccount();
+                    toast.success("Cabber driver account deleted", {
+                      description: "Your Transit India customer account is unchanged.",
+                    });
+                  }}
+                >
+                  Delete permanently
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/** Transparent ride-fare → commission → driver earning maths. */
+function EarningPreview({ fare, label = "Ride fare" }: { fare: number; label?: string }) {
+  const { formatCurrency } = useI18n();
+  const commission = cabberCommission(fare);
+  return (
+    <div className="space-y-1.5 rounded-xl border border-border/60 p-3 text-[13px]">
+      {[
+        { k: label, v: formatCurrency(fare) },
+        { k: `Transit India commission (₹${CABBER_COMMISSION_PER_100} per ₹100)`, v: `− ${formatCurrency(commission)}` },
+      ].map((row) => (
+        <div key={row.k} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
+          <span className="min-w-0 break-words text-muted-foreground">{row.k}</span>
+          <span className="shrink-0 tabular-nums">{row.v}</span>
+        </div>
+      ))}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t border-border pt-1.5 font-semibold">
+        <span className="min-w-0">You earn</span>
+        <span className="shrink-0 tabular-nums text-[color:var(--success)]">{formatCurrency(cabberDriverPayout(fare))}</span>
+      </div>
     </div>
   );
 }

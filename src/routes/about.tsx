@@ -11,12 +11,12 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — TripSync | AI travel booking prototype" },
+      { title: "About — Transit India | AI travel booking prototype" },
       {
         name: "description",
-        content: "Learn how the TripSync hackathon prototype demonstrates conversational AI, pre-Tatkal booking, multi-transport search, multilingual UX and last-mile connectivity.",
+        content: "Learn how the Transit India hackathon prototype demonstrates conversational AI, pre-Tatkal booking, multi-transport search, multilingual UX and last-mile connectivity.",
       },
-      { property: "og:title", content: "About TripSync" },
+      { property: "og:title", content: "About Transit India" },
       {
         property: "og:description",
         content: "A conceptual AI-powered travel platform prototype built for a hackathon — conversational booking, Tatkal automation, and more.",

@@ -14,6 +14,9 @@ import { cabVehicleImage, ServicePreview } from "@/components/media/ServicePrevi
 import { AppShell } from "@/components/transit/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { courierFare } from "@/components/cabber/driverData";
+import { CABBER_COURIER_MAX, CABBER_RIDE_MAX } from "@/lib/store";
+import { Package, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
@@ -68,8 +71,19 @@ function CabberPage() {
   const [vehicle, setVehicle] = useState<VehicleType>("Auto");
   const vehicleInfo = vehicleCatalog.find((v) => v.type === vehicle)!;
 
+  // Cabber offers two clearly separated services — never mixed up.
+  const [service, setService] = useState<"ride" | "courier">("ride");
+  const [parcel, setParcel] = useState("Documents");
+  const [weightKg, setWeightKg] = useState(2);
+  const [declaredValue, setDeclaredValue] = useState(2000);
+  const [receiver, setReceiver] = useState("");
+  const isCourier = service === "courier";
+
   const km = dest ? lastMileDistance(pickup, dest.id) : 0;
-  const fare = fareFor(km, vehicleInfo);
+  const rideFare = Math.min(fareFor(km, vehicleInfo), CABBER_RIDE_MAX);
+  const fare = isCourier
+    ? courierFare(km, weightKg, Math.min(declaredValue, CABBER_COURIER_MAX))
+    : rideFare;
   const eta = etaFor(km, vehicleInfo);
 
   const [stage, setStage] = useState<Stage>("plan");
@@ -82,16 +96,21 @@ function CabberPage() {
   const bookRide = () => {
     if (!dest) return;
     if (payMode === "wallet") {
-      const res = payFromWallet(fare, `Cabber Ride — ${routeLabel}`, { category: "Cabber ride", ref: dest.id });
+      const balanceBefore = walletBalance;
+      const res = payFromWallet(
+        fare,
+        isCourier ? `Cabber Courier — ${routeLabel}` : `Cabber Ride — ${routeLabel}`,
+        { category: isCourier ? "Cabber courier" : "Cabber ride", ref: dest.id },
+      );
       if (!res.ok) {
         toast.error(res.error ?? "Insufficient wallet balance.", {
-          description: "Add money to your TripSync Wallet or pay by cash.",
+          description: "Add money to your Transit Wallet or pay by cash.",
         });
         return;
       }
       setPaidAmount(fare);
-      toast.success(`${formatCurrency(fare)} paid from your TripSync Wallet.`, {
-        description: `New balance ${formatCurrency(walletBalance - fare)}.`,
+      toast.success(`${formatCurrency(fare)} paid from your Transit Wallet.`, {
+        description: `${isCourier ? "Courier" : "Ride"} fare ${formatCurrency(fare)} · balance ${formatCurrency(balanceBefore)} → ${formatCurrency(balanceBefore - fare)}.`,
       });
       reward("wallet");
     } else {
@@ -107,11 +126,11 @@ function CabberPage() {
 
   const cancelRide = () => {
     if (paidAmount > 0) {
-      creditWallet(paidAmount, `Cabber Ride Cancelled — ${routeLabel}`, {
+      creditWallet(paidAmount, isCourier ? `Cabber courier cancellation refund — ${routeLabel}` : `Cabber cancellation refund — ${routeLabel}`, {
         type: "refund",
         category: "Cabber refund",
       });
-      toast.success(`${formatCurrency(paidAmount)} refunded to your TripSync Wallet.`, {
+      toast.success(`${formatCurrency(paidAmount)} refunded to your Transit Wallet.`, {
         description: "Refunded instantly — see it in your wallet history.",
       });
     } else {
@@ -130,7 +149,7 @@ function CabberPage() {
       pnr: String(Math.floor(1000000000 + Math.random() * 9000000000)),
       mode: "cab",
 
-      serviceName: `${driver.model} · ${driver.name}`,
+      serviceName: `${isCourier ? "Courier" : "Passenger ride"} · ${driver.model} · ${driver.name}`,
       serviceCode: driver.plate,
       fromCode: "PICKUP",
       fromCity: pickup,
@@ -139,15 +158,17 @@ function CabberPage() {
       date: now.toISOString().slice(0, 10),
       depart: now.toTimeString().slice(0, 5),
       arrive: arrive.toTimeString().slice(0, 5),
-      classCode: vehicle,
+      classCode: isCourier ? `Courier · ${parcel}` : vehicle,
       passengers: [],
       meals: [],
       total: fare,
       status: "confirmed",
-      paidWith: payMode === "wallet" ? "TripSync Wallet" : "Cash to driver",
+      paidWith: payMode === "wallet" ? "Transit Wallet" : "Cash to driver",
     });
     reward("cabber");
-    toast.success("Ride completed", { description: "Added to My Bookings." });
+    toast.success(isCourier ? "Courier delivered" : "Ride completed", {
+      description: `${isCourier ? "Courier job" : "Passenger ride"} added to My Bookings.`,
+    });
     setPaidAmount(0);
     setStage("plan");
     setDriver(null);
@@ -163,6 +184,9 @@ function CabberPage() {
           <div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Cabber · Last-mile rides</div>
             <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Book a ride to your station, airport or bus stand</h1>
+            <p className="mt-1 break-words text-[12px] text-muted-foreground">
+              Selected service: <span className="font-semibold text-foreground">{isCourier ? "Courier" : "Passenger Ride"}</span>
+            </p>
           </div>
           <Button asChild variant="outline" className="rounded-full">
             <Link to="/cabber/driver">Become a Cabber driver</Link>
@@ -171,9 +195,35 @@ function CabberPage() {
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-4">
+            <Card className="glass-card space-y-3 rounded-3xl p-5">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Service type</div>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { id: "ride" as const, label: "Passenger Ride", icon: Users, hint: "Book a cab for yourself" },
+                  { id: "courier" as const, label: "Courier", icon: Package, hint: "Send a parcel or consignment" },
+                ]).map((opt) => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setService(opt.id)}
+                    disabled={stage !== "plan"}
+                    className={cn(
+                      "min-w-0 rounded-2xl border border-border p-3 text-left transition hover:border-primary/40 disabled:opacity-60",
+                      service === opt.id && "border-primary bg-[color:var(--brand-soft)]",
+                    )}
+                  >
+                    <opt.icon className={cn("h-4 w-4 shrink-0", service === opt.id ? "text-primary" : "text-muted-foreground")} />
+                    <div className="mt-1.5 break-words text-[13px] font-semibold leading-snug">{opt.label}</div>
+                    <div className="break-words text-[11px] leading-relaxed text-muted-foreground">{opt.hint}</div>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
             <Card className="glass-card space-y-4 rounded-3xl p-5">
               <div>
-                <div className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">Pickup address</div>
+                <div className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {isCourier ? "Parcel pickup address" : "Pickup address"}
+                </div>
                 <Input value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="Enter your pickup address" className="h-11 rounded-xl" />
                 <div className="mt-2 flex flex-wrap gap-2">
                   {savedAddresses.map((a) => (
@@ -199,11 +249,12 @@ function CabberPage() {
                       key={k.id}
                       onClick={() => setKind(k.id)}
                       className={cn(
-                        "flex flex-col items-center gap-1.5 rounded-2xl border border-border py-3 text-[12px] font-medium transition hover:border-primary/40",
+                        "flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border border-border px-2 py-3 text-center text-[12px] font-medium leading-snug transition hover:border-primary/40",
                         kind === k.id && "border-primary bg-[color:var(--brand-soft)] text-primary",
                       )}
                     >
-                      <k.icon className="h-4 w-4" /> {k.id}
+                      <k.icon className="h-4 w-4 shrink-0" />
+                      <span className="min-w-0 break-words">{k.id}</span>
                     </button>
                   ))}
                 </div>
@@ -233,8 +284,57 @@ function CabberPage() {
               </div>
             </Card>
 
+            {isCourier && (
+              <Card className="glass-card space-y-3 rounded-3xl p-5">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Courier details</div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="min-w-0">
+                    <label htmlFor="courier-parcel" className="mb-1.5 block text-[11px] text-muted-foreground">Parcel type</label>
+                    <select
+                      id="courier-parcel"
+                      value={parcel}
+                      onChange={(e) => setParcel(e.target.value)}
+                      className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm"
+                    >
+                      {["Documents", "Electronics", "Medical supplies", "Retail consignment", "Jewellery box", "Machine spares"].map((x) => (
+                        <option key={x} value={x}>{x}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="min-w-0">
+                    <label htmlFor="courier-receiver" className="mb-1.5 block text-[11px] text-muted-foreground">Receiver name</label>
+                    <Input id="courier-receiver" value={receiver} onChange={(e) => setReceiver(e.target.value)} placeholder="Who collects the parcel?" className="h-11 rounded-xl" />
+                  </div>
+                  <div className="min-w-0">
+                    <label htmlFor="courier-weight" className="mb-1.5 block text-[11px] text-muted-foreground">Weight (kg)</label>
+                    <Input
+                      id="courier-weight" type="number" min={1} max={50} value={weightKg}
+                      onChange={(e) => setWeightKg(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+                      className="h-11 rounded-xl"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <label htmlFor="courier-value" className="mb-1.5 block text-[11px] text-muted-foreground">
+                      Declared value (up to {formatCurrency(CABBER_COURIER_MAX)})
+                    </label>
+                    <Input
+                      id="courier-value" type="number" min={0} max={CABBER_COURIER_MAX} value={declaredValue}
+                      onChange={(e) => setDeclaredValue(Math.max(0, Math.min(CABBER_COURIER_MAX, Number(e.target.value) || 0)))}
+                      className="h-11 rounded-xl"
+                    />
+                  </div>
+                </div>
+                <p className="break-words text-[11px] leading-relaxed text-muted-foreground">
+                  High-value consignments up to {formatCurrency(CABBER_COURIER_MAX)} are supported, but such jobs are
+                  rare and matched only when a verified Cabber courier driver is available.
+                </p>
+              </Card>
+            )}
+
             <Card className="glass-card space-y-3 rounded-3xl p-5">
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Choose a vehicle</div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                {isCourier ? "Choose a courier vehicle" : "Choose a vehicle"}
+              </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {vehicleCatalog.map((v) => {
                   const Icon = vehicleIcons[v.type];
@@ -271,7 +371,7 @@ function CabberPage() {
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   {([
-                    { id: "wallet" as const, label: "Pay from TripSync Wallet", hint: "Deducted instantly" },
+                    { id: "wallet" as const, label: "Pay from Transit Wallet", hint: "Deducted instantly" },
                     { id: "cash" as const, label: "Pay cash to driver", hint: "Settle at drop-off" },
                   ]).map((opt) => (
                     <button
@@ -305,8 +405,19 @@ function CabberPage() {
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-muted/50 px-4 py-3"
                 >
                   <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                      {isCourier ? "Courier charge" : "Ride fare"}
+                    </div>
                     <div className="text-lg font-semibold">{formatCurrency(fare)}</div>
-                    <div className="text-[11px] text-muted-foreground">{km} km · ETA {eta} min</div>
+                    <div className="break-words text-[11px] leading-snug text-muted-foreground">
+                      {km} km · ETA {eta} min
+                      {isCourier ? ` · ${parcel} · ${weightKg} kg · value ${formatCurrency(declaredValue)}` : ""}
+                    </div>
+                    {payMode === "wallet" && (
+                      <div className="break-words text-[11px] leading-snug text-muted-foreground">
+                        Wallet {formatCurrency(walletBalance)} → {formatCurrency(Math.max(0, walletBalance - fare))} after payment
+                      </div>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <RateDialog
@@ -316,7 +427,7 @@ function CabberPage() {
                       compact
                     />
                     <Button onClick={bookRide} disabled={!dest || stage !== "plan"} className="h-11 rounded-full px-6 text-white brand-gradient">
-                      Book ride
+                      {isCourier ? "Book courier" : "Book ride"}
                     </Button>
                   </div>
                 </motion.div>

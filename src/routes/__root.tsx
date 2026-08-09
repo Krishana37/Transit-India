@@ -83,9 +83,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TripSync — AI travel booking prototype" },
+      { title: "Transit India — AI travel booking prototype" },
       { name: "description", content: "Conversational booking for trains, buses, flights, hotels, metro, ferries and last-mile cabs. Hackathon prototype." },
-      { name: "author", content: "TripSync" },
+      { name: "author", content: "Transit India" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

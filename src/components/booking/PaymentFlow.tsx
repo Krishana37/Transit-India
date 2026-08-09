@@ -91,13 +91,13 @@ export function PaymentFlow({
 
         <div className="mt-4 grid grid-cols-1 gap-2.5">
           <button
-            onClick={() => start("TripSync Wallet", true)}
+            onClick={() => start("Transit Wallet", true)}
             className="flex items-center justify-between gap-2 rounded-2xl border border-border bg-background/70 p-3.5 text-left transition hover:border-primary/40 hover:-translate-y-0.5"
           >
             <span className="flex items-center gap-2.5">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-[color:var(--brand-soft)] text-primary"><Banknote className="h-4 w-4" /></span>
               <span>
-                <span className="block text-sm font-medium">TripSync Wallet</span>
+                <span className="block text-sm font-medium">Transit Wallet</span>
                 <span className="block text-[11px] text-muted-foreground">Balance {formatCurrency(walletBalance)}</span>
               </span>
             </span>

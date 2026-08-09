@@ -46,7 +46,7 @@ export const Route = createFileRoute("/book/$mode")({
   }),
   head: ({ params }) => ({
     meta: [
-      { title: `Book ${params.mode} — TripSync` },
+      { title: `Book ${params.mode} — Transit India` },
       { name: "description", content: `Search, compare and book ${params.mode} tickets with live fares, confirmation probability and Pre-Tatkal queueing.` },
     ],
   }),
@@ -213,7 +213,7 @@ function BookPage() {
   }, 0);
   const grossTotal = base + surge + gst + convenience + mealsTotal;
 
-  // One-trip rewards bought with TripSync Points, still unused and not expired.
+  // One-trip rewards bought with Transit Points, still unused and not expired.
   const availableRewards = redeemedRewards.filter((r) => r.status === "redeemed" && !isRewardExpired(r));
   const selectedReward = availableRewards.find((r) => r.id === selectedRewardId) ?? null;
   const rewardStillEligible =
@@ -236,8 +236,8 @@ function BookPage() {
   ];
   if (mealsTotal > 0) fareLines.push({ label: "Meals", amount: mealsTotal });
   if (activeReward) fareLines.push({ label: `Reward · ${activeReward.name}`, amount: -rewardDiscount });
-  if (coinDiscount > 0) fareLines.push({ label: "TripSync Coins discount", amount: -coinDiscount });
-  if (pointDiscount > 0) fareLines.push({ label: "TripSync Points discount", amount: -pointDiscount });
+  if (coinDiscount > 0) fareLines.push({ label: "Transit Coins discount", amount: -coinDiscount });
+  if (pointDiscount > 0) fareLines.push({ label: "Transit Points discount", amount: -pointDiscount });
 
   const showMeals = m !== "hotel" && m !== "metro";
 
@@ -279,8 +279,8 @@ function BookPage() {
   };
 
   const onPaymentSuccess = (paidWith: string) => {
-    if (paidWith === "TripSync Wallet") {
-      const res = payFromWallet(total, `Booking · ${segment?.name ?? "TripSync"}`);
+    if (paidWith === "Transit Wallet") {
+      const res = payFromWallet(total, `Booking · ${segment?.name ?? "Transit India"}`);
       if (!res.ok) {
         notify({ kind: "wallet", title: "Payment failed", body: res.error ?? "Insufficient wallet balance." });
         return;
@@ -396,8 +396,8 @@ function BookPage() {
                   const alternatives = sortedResults.filter((s) => s.id !== seg.id).slice(0, 2);
                   return (
                     <Card key={seg.id} className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                      <div className="space-y-2">
+                        <div className="flex min-w-0 items-start gap-3">
                           <ServicePreview
                             mode={m}
                             seed={seg.code}
@@ -405,9 +405,9 @@ function BookPage() {
                             className="w-20 shrink-0 sm:w-32"
                             ratio="aspect-[4/3]"
                           />
-                          <div className="min-w-0">
-                            <div className="break-words text-sm font-semibold leading-snug">{seg.name}</div>
-                            <div className="break-words text-[12px] leading-snug text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-sm font-semibold leading-snug" title={seg.name}>{seg.name}</div>
+                            <div className="truncate text-[12px] leading-snug text-muted-foreground">{seg.code}{seg.operator ? ` · ${seg.operator}` : ""}</div>
                             <div className="mt-1.5">
                               <RateDialog
                                 ratingKey={serviceRatingKey(m, seg.code)}
@@ -418,20 +418,28 @@ function BookPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {disruption.cancelled && (
-                            <Badge className="rounded-full border-none bg-destructive text-white text-[10px]">Cancelled</Badge>
-                          )}
-                          {!disruption.cancelled && disruption.delayMins > 0 && (
-                            <Badge variant="outline" className="rounded-full border-[color:var(--accent-orange)]/40 text-[10px] text-[color:var(--accent-orange)]">
-                              Delayed by {disruption.delayMins}m
-                            </Badge>
-                          )}
-                          {seg.tags.map((tg) => (
-                            <Badge key={tg} variant="outline" className="rounded-full text-[10px]">{tg}</Badge>
-                          ))}
-                        </div>
+
+                        {/* Status + tags always sit on their own line so nothing overlaps the service name. */}
+                        {(disruption.cancelled || disruption.delayMins > 0) && (
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                            {disruption.cancelled ? (
+                              <Badge className="rounded-full border-none bg-destructive text-[11px] text-white">Cancelled</Badge>
+                            ) : (
+                              <Badge variant="outline" className="max-w-full whitespace-normal rounded-full border-[color:var(--accent-orange)]/40 text-[11px] leading-snug text-[color:var(--accent-orange)]">
+                                Delayed by {disruption.delayMins} minutes
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                        {seg.tags.length > 0 && (
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                            {seg.tags.map((tg) => (
+                              <Badge key={tg} variant="outline" className="max-w-full whitespace-normal rounded-full text-[10px] leading-snug">{tg}</Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
+
 
                       <div className="mt-3">
                         {m === "hotel" ? (

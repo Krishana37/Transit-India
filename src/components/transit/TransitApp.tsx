@@ -180,8 +180,8 @@ function Header({ dark, setDark }: { dark: boolean; setDark: (b: boolean) => voi
             <TrainIcon className="h-5 w-5" />
           </div>
           <div className="leading-tight">
-            <div className="text-[15px] font-semibold tracking-tight">TripSync</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Travel · Simplified</div>
+            <div className="text-[15px] font-semibold tracking-tight">Transit India</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Rail · Bus · Metro</div>
           </div>
         </div>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
@@ -822,7 +822,7 @@ function PassengersScreen({
             Continue to payment <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
           <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-            <Shield className="h-3 w-3" /> Secured by TripSync · UPI, Cards, Netbanking
+            <Shield className="h-3 w-3" /> Secured by Transit India · UPI, Cards, Netbanking
           </div>
         </Card>
       </aside>

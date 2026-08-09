@@ -60,7 +60,7 @@ export function RewardRedeemCard({
 
       {rewards.length === 0 ? (
         <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-          You have no unused rewards right now. Redeem TripSync Points on the Rewards page to unlock meal upgrades,
+          You have no unused rewards right now. Redeem Transit Points on the Rewards page to unlock meal upgrades,
           seat upgrades and fare discounts.
         </p>
       ) : (

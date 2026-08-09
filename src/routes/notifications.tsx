@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/notifications")({
   head: () => ({
     meta: [
-      { title: "Notification centre — TripSync" },
+      { title: "Notification centre — Transit India" },
       { name: "description", content: "Review journey alerts, wallet updates and reward notifications in one place." },
-      { property: "og:title", content: "Notification centre — TripSync" },
+      { property: "og:title", content: "Notification centre — Transit India" },
       { property: "og:description", content: "Stay on top of platform changes, delays, refunds and rewards." },
       { property: "og:type", content: "website" },
     ],
