@@ -22,9 +22,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Transit India — Book trains, buses, flights & more with one sentence" },
-      { name: "description", content: "AI-powered travel booking prototype for India: conversational search, pre-Tatkal queue, passenger profiles, multilingual UI and Cabber last-mile rides." },
-      { property: "og:title", content: "Transit India — Smarter travel booking" },
-      { property: "og:description", content: "Conversational booking across trains, buses, flights, hotels, metro and ferries. Hackathon prototype." },
+      { name: "description", content: "Transit India is a unified travel platform that brings trains, buses, metros, flights, ferries, and cabs into one simple experience." },
+      { property: "og:title", content: "Transit India — Book trains, buses, flights & more with one sentence" },
+      { property: "og:description", content: "Transit India is a unified travel platform that brings trains, buses, metros, flights, ferries, and cabs into one simple experience." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
