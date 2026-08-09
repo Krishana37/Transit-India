@@ -1,55 +1,56 @@
 import logoUrl from "@/assets/brand/logo.png";
-import trainAsset from "@/assets/brand/train.png.asset.json";
-import busAsset from "@/assets/brand/bus.png.asset.json";
-import flightAsset from "@/assets/brand/flight.png.asset.json";
-import metroAsset from "@/assets/brand/metro.png.asset.json";
-import ferryAsset from "@/assets/brand/ferry.png.asset.json";
-import hotelAsset from "@/assets/brand/hotel.png.asset.json";
-import cabberAsset from "@/assets/brand/cabber.png.asset.json";
-import homeAsset from "@/assets/brand/home.png.asset.json";
-import languageAsset from "@/assets/brand/language.png.asset.json";
-import accessibilityAsset from "@/assets/brand/accessibility.png.asset.json";
-import complaintAsset from "@/assets/brand/complaint.png.asset.json";
-import aboutAsset from "@/assets/brand/about.png.asset.json";
-import tripsAsset from "@/assets/brand/trips.png.asset.json";
-import pnrAsset from "@/assets/brand/pnr.png.asset.json";
-import walletAsset from "@/assets/brand/wallet.png.asset.json";
-import coinsAsset from "@/assets/brand/coins.png.asset.json";
-import pretatkalAsset from "@/assets/brand/pretatkal.png.asset.json";
-import bellAsset from "@/assets/brand/bell.png.asset.json";
-import feedbackAsset from "@/assets/brand/feedback.png.asset.json";
+import trainAsset from "@/assets/brand/train.png";
+import busAsset from "@/assets/brand/bus.png";
+import flightAsset from "@/assets/brand/flight.png";
+import metroAsset from "@/assets/brand/metro.png";
+import ferryAsset from "@/assets/brand/ferry.png";
+import hotelAsset from "@/assets/brand/hotel.png";
+import cabberAsset from "@/assets/brand/cabber.png";
+import homeAsset from "@/assets/brand/home.png";
+import languageAsset from "@/assets/brand/language.png";
+import accessibilityAsset from "@/assets/brand/accessibility.png";
+import complaintAsset from "@/assets/brand/complaint.png";
+import aboutAsset from "@/assets/brand/about.png";
+import tripsAsset from "@/assets/brand/trips.png";
+import pnrAsset from "@/assets/brand/pnr.png";
+import walletAsset from "@/assets/brand/wallet.png";
+import coinsAsset from "@/assets/brand/coins.png";
+import pretatkalAsset from "@/assets/brand/pretatkal.png";
+import bellAsset from "@/assets/brand/bell.png";
+import feedbackAsset from "@/assets/brand/feedback.png";
 import { cn } from "@/lib/utils";
 
 export const brandLogoUrl = logoUrl;
 
 export const brandIcons = {
-  train: trainAsset.url,
-  bus: busAsset.url,
-  flight: flightAsset.url,
-  metro: metroAsset.url,
-  ferry: ferryAsset.url,
-  hotel: hotelAsset.url,
-  cabber: cabberAsset.url,
-  cab: cabberAsset.url,
-  home: homeAsset.url,
-  language: languageAsset.url,
-  accessibility: accessibilityAsset.url,
-  complaint: complaintAsset.url,
-  about: aboutAsset.url,
-  trips: tripsAsset.url,
-  pnr: pnrAsset.url,
-  wallet: walletAsset.url,
-  coins: coinsAsset.url,
-  pretatkal: pretatkalAsset.url,
-  bell: bellAsset.url,
-  feedback: feedbackAsset.url,
+  train: trainAsset,
+  bus: busAsset,
+  flight: flightAsset,
+  metro: metroAsset,
+  ferry: ferryAsset,
+  hotel: hotelAsset,
+  cabber: cabberAsset,
+  cab: cabberAsset,
+  home: homeAsset,
+  language: languageAsset,
+  accessibility: accessibilityAsset,
+  complaint: complaintAsset,
+  about: aboutAsset,
+  trips: tripsAsset,
+  pnr: pnrAsset,
+  wallet: walletAsset,
+  coins: coinsAsset,
+  pretatkal: pretatkalAsset,
+  bell: bellAsset,
+  feedback: feedbackAsset,
 } as const;
 
 export type BrandIconName = keyof typeof brandIcons;
 
 /**
- * Official Transit India logo mark. Rendered on a neutral white tile so the
- * artwork keeps identical contrast in light and dark themes.
+ * Official Transit India logo mark.
+ * Rendered on a neutral white tile so the artwork keeps identical contrast
+ * in light and dark themes.
  */
 export function BrandLogo({
   className,
@@ -106,6 +107,7 @@ export function BrandIcon({
   eager?: boolean;
 }) {
   const inner = Math.round(size * 0.9);
+
   const img = (
     <img
       src={brandIcons[name]}
@@ -123,7 +125,10 @@ export function BrandIcon({
   if (plain) {
     return (
       <span
-        className={cn("inline-flex shrink-0 items-center justify-center", className)}
+        className={cn(
+          "inline-flex shrink-0 items-center justify-center",
+          className,
+        )}
         style={{ width: size, height: size }}
       >
         {img}
@@ -144,5 +149,3 @@ export function BrandIcon({
     </span>
   );
 }
-
-
