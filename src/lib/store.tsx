@@ -69,6 +69,8 @@ export type DriverProfile = {
   vehicleNumber: string;
   vehicleType: "Bike" | "Auto" | "Sedan" | "SUV";
   available: boolean;
+  /** Which Cabber jobs the driver accepts: passenger rides, courier jobs or both. */
+  services?: "ride" | "courier" | "both";
   registeredAt: string;
 };
 
