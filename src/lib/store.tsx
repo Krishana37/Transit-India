@@ -781,14 +781,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           status: "success" as const, category: meta?.category, ref: meta?.ref,
         }, ...s.walletTxns],
       }, { kind: "wallet", title: "Wallet credited", body: `₹${amount.toLocaleString("en-IN")} · ${label}` })),
-    addDriverEarning: ({ amount, label, route, status }) =>
-      setState((s) => pushNotification({
-        ...s,
-        driverEarnings: [
-          { id: uid(), amount, label, route, at: new Date().toISOString(), status: status ?? "settled" },
-          ...s.driverEarnings,
-        ].slice(0, 80),
-      }, { kind: "cab", title: "Cabber ride completed", body: `+₹${amount} added to your driver earnings.` })),
+    addDriverEarning: ({ fare, kind, label, route, status }) => {
+      const gross = Math.round(fare);
+      const commission = cabberCommission(gross);
+      const net = gross - commission;
+      const created: DriverEarning = {
+        id: uid(), amount: net, fare: gross, commission, kind, label, route,
+        at: new Date().toISOString(), status: status ?? "settled",
+      };
+      setState((s) => {
+        const settled = created.status === "settled";
+        return pushNotification({
+          ...s,
+          driverEarnings: [created, ...s.driverEarnings].slice(0, 80),
+          // Settled payouts land in the Transit Wallet straight away.
+          walletBalance: settled ? s.walletBalance + net : s.walletBalance,
+          driverWithdrawn: settled ? s.driverWithdrawn + net : s.driverWithdrawn,
+          walletTxns: settled
+            ? [{
+                id: uid(), type: "earning" as const, amount: net, label,
+                at: created.at, status: "success" as const,
+                category: kind === "courier" ? "Courier earnings" : "Ride earnings",
+                ref: route,
+              }, ...s.walletTxns]
+            : s.walletTxns,
+        }, {
+          kind: "cab",
+          title: kind === "courier" ? "Courier job completed" : "Cabber ride completed",
+          body: `Fare ₹${gross.toLocaleString("en-IN")} − commission ₹${commission.toLocaleString("en-IN")} = ₹${net.toLocaleString("en-IN")} earned.`,
+        });
+      });
+      return created;
+    },
+
     settlePendingEarnings: () =>
       setState((s) => ({ ...s, driverEarnings: s.driverEarnings.map((e) => ({ ...e, status: "settled" as const })) })),
     withdrawEarnings: (amount) => {
