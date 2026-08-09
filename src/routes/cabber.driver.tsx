@@ -548,6 +548,72 @@ function DriverDashboard() {
           </Table>
         </div>
       </Card>
+
+      {/* Deleting the Cabber profile never touches the main Transit India account. */}
+      <Card className="glass-card rounded-3xl border-destructive/30 p-5">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
+            <h2 className="break-words text-sm font-semibold text-destructive">Delete Cabber driver account</h2>
+            <p className="break-words text-[12px] leading-relaxed text-muted-foreground">
+              Permanently removes your Cabber driver profile, earnings log and job access. Your Transit India
+              customer account, wallet and bookings stay exactly as they are.
+            </p>
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="shrink-0 rounded-full border-destructive/40 text-destructive">
+                <Trash2 className="mr-1.5 h-4 w-4" /> Delete account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete your Cabber driver account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This is permanent. Your driver profile, earnings history and Cabber access will be removed and you
+                  will need to register again to drive. Your Transit India customer account will NOT be deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={() => {
+                    deleteDriverAccount();
+                    toast.success("Cabber driver account deleted", {
+                      description: "Your Transit India customer account is unchanged.",
+                    });
+                  }}
+                >
+                  Delete permanently
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/** Transparent ride-fare → commission → driver earning maths. */
+function EarningPreview({ fare, label = "Ride fare" }: { fare: number; label?: string }) {
+  const { formatCurrency } = useI18n();
+  const commission = cabberCommission(fare);
+  return (
+    <div className="space-y-1.5 rounded-xl border border-border/60 p-3 text-[13px]">
+      {[
+        { k: label, v: formatCurrency(fare) },
+        { k: `Transit India commission (₹${CABBER_COMMISSION_PER_100} per ₹100)`, v: `− ${formatCurrency(commission)}` },
+      ].map((row) => (
+        <div key={row.k} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
+          <span className="min-w-0 break-words text-muted-foreground">{row.k}</span>
+          <span className="shrink-0 tabular-nums">{row.v}</span>
+        </div>
+      ))}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-t border-border pt-1.5 font-semibold">
+        <span className="min-w-0">You earn</span>
+        <span className="shrink-0 tabular-nums text-[color:var(--success)]">{formatCurrency(cabberDriverPayout(fare))}</span>
+      </div>
     </div>
   );
 }
