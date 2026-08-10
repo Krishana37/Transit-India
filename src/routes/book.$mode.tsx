@@ -536,10 +536,10 @@ function BookPage() {
       scoreOf,
     ]);
 
-  /*
+  {/*
    * HOTEL:
    * Hotel booking has no travel distance.
-   */
+   */}
   const km = isHotel
     ? 0
     : distanceKm(
