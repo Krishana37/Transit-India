@@ -22,6 +22,7 @@ import {
   stationByCode,
   type SearchState,
 } from "@/components/transit/SmartSearch";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -50,13 +51,14 @@ import {
 import { RoutePreview } from "@/components/booking/RoutePreview";
 import { ServicePreview } from "@/components/media/ServicePreview";
 import { RateDialog } from "@/components/common/RateDialog";
-import { StarRating } from "@/components/common/StarRating";
+import { TicketCard } from "@/components/booking/TicketCard";
+
 import {
   blendRating,
   communityRating,
   serviceRatingKey,
 } from "@/lib/ratings";
-import { TicketCard } from "@/components/booking/TicketCard";
+
 import { useI18n } from "@/lib/i18n";
 
 import {
@@ -91,17 +93,36 @@ type Search = {
 };
 
 export const Route = createFileRoute("/book/$mode")({
-  validateSearch: (search: Record<string, unknown>): Search => ({
-    from: typeof search.from === "string" ? search.from : undefined,
-    to: typeof search.to === "string" ? search.to : undefined,
-    date: typeof search.date === "string" ? search.date : undefined,
-    slot: typeof search.slot === "string" ? search.slot : undefined,
-    q: typeof search.q === "string" ? search.q : undefined,
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): Search => ({
+    from:
+      typeof search.from === "string"
+        ? search.from
+        : undefined,
+    to:
+      typeof search.to === "string"
+        ? search.to
+        : undefined,
+    date:
+      typeof search.date === "string"
+        ? search.date
+        : undefined,
+    slot:
+      typeof search.slot === "string"
+        ? search.slot
+        : undefined,
+    q:
+      typeof search.q === "string"
+        ? search.q
+        : undefined,
   }),
 
   head: ({ params }) => ({
     meta: [
-      { title: `Book ${params.mode} — Transit India` },
+      {
+        title: `Book ${params.mode} — Transit India`,
+      },
       {
         name: "description",
         content: `Search, compare and book ${params.mode} tickets with live fares, confirmation probability and Pre-Tatkal queueing.`,
@@ -112,7 +133,10 @@ export const Route = createFileRoute("/book/$mode")({
   component: BookPage,
 });
 
-const modeIcons: Record<TransportMode, typeof Train> = {
+const modeIcons: Record<
+  TransportMode,
+  typeof Train
+> = {
   train: Train,
   bus: Bus,
   flight: Plane,
@@ -136,14 +160,20 @@ type Step =
   | "ticket";
 
 function uid() {
-  return Math.random().toString(36).slice(2, 10);
+  return Math.random()
+    .toString(36)
+    .slice(2, 10);
 }
 
 function genPnr() {
   let s = "";
+
   for (let i = 0; i < 10; i++) {
-    s += Math.floor(Math.random() * 10);
+    s += Math.floor(
+      Math.random() * 10,
+    );
   }
+
   return s;
 }
 
@@ -151,7 +181,11 @@ function BookPage() {
   const { mode } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const { t, formatCurrency, formatDate } = useI18n();
+  const {
+    t,
+    formatCurrency,
+    formatDate,
+  } = useI18n();
 
   const {
     account,
@@ -174,7 +208,11 @@ function BookPage() {
   } = useStore();
 
   const m = (
-    transportModes.some((x) => x.id === mode) ? mode : "train"
+    transportModes.some(
+      (x) => x.id === mode,
+    )
+      ? mode
+      : "train"
   ) as TransportMode;
 
   const isHotel = m === "hotel";
@@ -182,84 +220,168 @@ function BookPage() {
   /*
    * HOTEL:
    * Hotel booking does NOT use From → To.
-   * The existing SearchState still needs from/to internally because
-   * SmartSearch is shared with the other transport modes.
    *
-   * For hotel mode:
-   * - from = selected hotel/location
-   * - to = same location internally
-   * - UI must never display it as a route.
+   * SmartSearch is shared with other modes,
+   * therefore internally both values remain
+   * the same for hotel mode.
+   *
+   * The UI never displays hotel as a route.
    */
-  const [state, setState] = useState<SearchState>(() => {
-    const hotelLocation = stationByCode(search.from) ?? stationByCode("NDLS");
+  const [state, setState] =
+    useState<SearchState>(() => {
+      const hotelLocation =
+        stationByCode(search.from) ??
+        stationByCode("NDLS");
 
-    if (isHotel) {
+      if (isHotel) {
+        return {
+          from: hotelLocation,
+          to: hotelLocation,
+          date: search.date
+            ? new Date(search.date)
+            : (() => {
+                const d = new Date();
+                d.setDate(
+                  d.getDate() + 1,
+                );
+                return d;
+              })(),
+          slot:
+            search.slot ??
+            "morning",
+          query:
+            search.q ?? "",
+        };
+      }
+
       return {
-        from: hotelLocation,
-        to: hotelLocation,
+        from: stationByCode(
+          search.from,
+        ),
+        to: stationByCode(
+          search.to,
+          search.from === "JP"
+            ? "NDLS"
+            : "JP",
+        ),
         date: search.date
           ? new Date(search.date)
           : (() => {
               const d = new Date();
-              d.setDate(d.getDate() + 1);
+              d.setDate(
+                d.getDate() + 1,
+              );
               return d;
             })(),
-        slot: search.slot ?? "morning",
-        query: search.q ?? "",
+        slot:
+          search.slot ??
+          "morning",
+        query:
+          search.q ?? "",
       };
-    }
-
-    return {
-      from: stationByCode(search.from),
-      to: stationByCode(
-        search.to,
-        search.from === "JP" ? "NDLS" : "JP",
-      ),
-      date: search.date
-        ? new Date(search.date)
-        : (() => {
-            const d = new Date();
-            d.setDate(d.getDate() + 1);
-            return d;
-          })(),
-      slot: search.slot ?? "morning",
-      query: search.q ?? "",
-    };
-  });
+    });
 
   useEffect(() => {
-    if (hydrated && !account) {
-      navigate({ to: "/auth" });
+    if (
+      hydrated &&
+      !account
+    ) {
+      navigate({
+        to: "/auth",
+      });
     }
-  }, [hydrated, account, navigate]);
+  }, [
+    hydrated,
+    account,
+    navigate,
+  ]);
 
-  const [step, setStep] = useState<Step>("results");
-  const [segment, setSegment] = useState<Segment | null>(null);
-  const [classCode, setClassCode] = useState<string>("");
-  const [selectedPax, setSelectedPax] = useState<string[]>([]);
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactMobile, setContactMobile] = useState("");
-  const [mealQty, setMealQty] = useState<Record<string, number>>({});
-  const [booking, setBooking] = useState<Booking | null>(null);
-  const [isTatkalFlow, setIsTatkalFlow] = useState(false);
-  const [activeTatkalDraftId, setActiveTatkalDraftId] =
-    useState<string | null>(null);
-  const [appliedCoins, setAppliedCoins] = useState(0);
-  const [appliedPoints, setAppliedPoints] = useState(0);
-  const [selectedRewardId, setSelectedRewardId] =
-    useState<string | null>(null);
+  const [step, setStep] =
+    useState<Step>("results");
 
-  const [searchNonce, setSearchNonce] = useState(() => uid());
-  const [tick, setTick] = useState(0);
+  const [segment, setSegment] =
+    useState<Segment | null>(
+      null,
+    );
+
+  const [classCode, setClassCode] =
+    useState("");
+
+  const [
+    selectedPax,
+    setSelectedPax,
+  ] = useState<string[]>([]);
+
+  const [
+    contactEmail,
+    setContactEmail,
+  ] = useState("");
+
+  const [
+    contactMobile,
+    setContactMobile,
+  ] = useState("");
+
+  const [mealQty, setMealQty] =
+    useState<Record<
+      string,
+      number
+    >>({});
+
+  const [booking, setBooking] =
+    useState<Booking | null>(
+      null,
+    );
+
+  const [
+    isTatkalFlow,
+    setIsTatkalFlow,
+  ] = useState(false);
+
+  const [
+    activeTatkalDraftId,
+    setActiveTatkalDraftId,
+  ] = useState<string | null>(
+    null,
+  );
+
+  const [
+    appliedCoins,
+    setAppliedCoins,
+  ] = useState(0);
+
+  const [
+    appliedPoints,
+    setAppliedPoints,
+  ] = useState(0);
+
+  const [
+    selectedRewardId,
+    setSelectedRewardId,
+  ] = useState<string | null>(
+    null,
+  );
+
+  const [
+    searchNonce,
+    setSearchNonce,
+  ] = useState(() => uid());
+
+  const [tick, setTick] =
+    useState(0);
+
   const [sortBy, setSortBy] =
-    useState<SortKey>("recommended");
+    useState<SortKey>(
+      "recommended",
+    );
 
   useEffect(() => {
     const id = setInterval(() => {
       setTick((x) => x + 1);
     }, 12000);
 
-    return () => clearInterval(id);
+    return () =>
+      clearInterval(id);
   }, []);
 
   const results = useMemo(
@@ -283,89 +405,147 @@ function BookPage() {
     ],
   );
 
-  const aiInterpretation = useMemo(() => {
-    const q = state.query.toLowerCase();
+  const aiInterpretation =
+    useMemo(() => {
+      const q =
+        state.query.toLowerCase();
 
-    if (!q) return null;
-    if (q.includes("cheapest") || q.includes("budget")) {
-      return "Sorted by lowest fare";
-    }
-    if (q.includes("fastest")) {
-      return "Sorted by shortest duration";
-    }
-    if (q.includes("ac")) {
-      return "Filtered to AC classes only";
-    }
+      if (!q) return null;
 
-    return null;
-  }, [state.query]);
+      if (
+        q.includes("cheapest") ||
+        q.includes("budget")
+      ) {
+        return "Sorted by lowest fare";
+      }
+
+      if (
+        q.includes("fastest")
+      ) {
+        return "Sorted by shortest duration";
+      }
+
+      if (q.includes("ac")) {
+        return "Filtered to AC classes only";
+      }
+
+      return null;
+    }, [state.query]);
 
   const scoreOf = useCallback(
     (seg: Segment) =>
       blendRating(
         communityRating(
-          serviceRatingKey(m, seg.code),
+          serviceRatingKey(
+            m,
+            seg.code,
+          ),
         ),
-        ratings[serviceRatingKey(m, seg.code)]?.stars,
+        ratings[
+          serviceRatingKey(
+            m,
+            seg.code,
+          )
+        ]?.stars,
       ).stars,
     [m, ratings],
   );
 
-  const sortedResults = useMemo(() => {
-    let list = [...results];
+  const sortedResults =
+    useMemo(() => {
+      let list = [...results];
 
-    const q = state.query.toLowerCase();
+      const q =
+        state.query.toLowerCase();
 
-    if (q.includes("ac")) {
-      list = list.filter((s) =>
-        s.options.some((o) =>
-          /A|AC|CC|EC|3A|2A|1A|VOLVO|DELUXE|SUITE/.test(
-            o.code,
-          ),
-        ),
-      );
-    }
+      if (q.includes("ac")) {
+        list = list.filter(
+          (s) =>
+            s.options.some(
+              (o) =>
+                /A|AC|CC|EC|3A|2A|1A|VOLVO|DELUXE|SUITE/.test(
+                  o.code,
+                ),
+            ),
+        );
+      }
 
-    const effective =
-      sortBy !== "recommended"
-        ? sortBy
-        : q.includes("cheapest") || q.includes("budget")
-          ? "price"
-          : q.includes("fastest")
-            ? "duration"
-            : q.includes("best") || q.includes("rated")
-              ? "rating"
-              : "recommended";
+      const effective =
+        sortBy !== "recommended"
+          ? sortBy
+          : q.includes(
+                "cheapest",
+              ) ||
+              q.includes(
+                "budget",
+              )
+            ? "price"
+            : q.includes(
+                  "fastest",
+                )
+              ? "duration"
+              : q.includes(
+                    "best",
+                  ) ||
+                  q.includes(
+                    "rated",
+                  )
+                ? "rating"
+                : "recommended";
 
-    if (effective === "price") {
-      list.sort(
-        (a, b) =>
-          Math.min(...a.options.map((o) => o.fare)) -
-          Math.min(...b.options.map((o) => o.fare)),
-      );
-    } else if (effective === "duration") {
-      list.sort(
-        (a, b) => a.durationMins - b.durationMins,
-      );
-    } else if (effective === "rating") {
-      list.sort((a, b) => scoreOf(b) - scoreOf(a));
-    }
+      if (
+        effective === "price"
+      ) {
+        list.sort(
+          (a, b) =>
+            Math.min(
+              ...a.options.map(
+                (o) => o.fare,
+              ),
+            ) -
+            Math.min(
+              ...b.options.map(
+                (o) => o.fare,
+              ),
+            ),
+        );
+      } else if (
+        effective ===
+        "duration"
+      ) {
+        list.sort(
+          (a, b) =>
+            a.durationMins -
+            b.durationMins,
+        );
+      } else if (
+        effective === "rating"
+      ) {
+        list.sort(
+          (a, b) =>
+            scoreOf(b) -
+            scoreOf(a),
+        );
+      }
 
-    return list;
-  }, [
-    results,
-    state.query,
-    sortBy,
-    scoreOf,
-  ]);
+      return list;
+    }, [
+      results,
+      state.query,
+      sortBy,
+      scoreOf,
+    ]);
 
   /*
    * HOTEL:
-   * There is no travel distance and no route calculation.
+   * Hotel booking has no travel distance.
    */
   const km = isHotel
     ? 0
-    : distanceKm(state.from, state.to);
+    : distanceKm(
+        state.from,
+        state.to,
+      );
 
   const demand = isHotel
     ? 1
@@ -381,19 +561,20 @@ function BookPage() {
     if (isHotel) {
       navigate({
         to: "/book/$mode",
-        params: { mode: m },
+        params: {
+          mode: m,
+        },
         search: {
-          /*
-           * For hotels, from is used only as the location.
-           * to is intentionally omitted.
-           */
-          from: state.from.code,
+          from:
+            state.from.code,
           to: undefined,
           date: state.date
             .toISOString()
             .slice(0, 10),
           slot: state.slot,
-          q: state.query || undefined,
+          q:
+            state.query ||
+            undefined,
         },
       });
 
@@ -402,21 +583,32 @@ function BookPage() {
 
     navigate({
       to: "/book/$mode",
-      params: { mode: m },
+      params: {
+        mode: m,
+      },
       search: {
-        from: state.from.code,
-        to: state.to.code,
+        from:
+          state.from.code,
+        to:
+          state.to.code,
         date: state.date
           .toISOString()
           .slice(0, 10),
         slot: state.slot,
-        q: state.query || undefined,
+        q:
+          state.query ||
+          undefined,
       },
     });
   };
 
-  // RAC / Waiting List apply only to trains, never to 1st AC.
-  const racWlFor = (code: string) =>
+  /*
+   * RAC / WL applies only to trains.
+   * 1A and General never get RAC/WL.
+   */
+  const racWlFor = (
+    code: string,
+  ) =>
     m === "train" &&
     !code.startsWith("1A") &&
     code !== "GEN";
@@ -431,7 +623,8 @@ function BookPage() {
       availableBase,
       tick,
       {
-        racWl: racWlFor(code),
+        racWl:
+          racWlFor(code),
       },
     );
 
@@ -439,9 +632,10 @@ function BookPage() {
     seg: Segment,
     code: string,
   ) => {
-    const option = seg.options.find(
-      (o) => o.code === code,
-    );
+    const option =
+      seg.options.find(
+        (o) => o.code === code,
+      );
 
     if (!option) return;
 
@@ -451,7 +645,11 @@ function BookPage() {
       option.available,
     );
 
-    if (st.tone === "sold") return;
+    if (
+      st.tone === "sold"
+    ) {
+      return;
+    }
 
     setSegment(seg);
     setClassCode(code);
@@ -466,21 +664,29 @@ function BookPage() {
     }
   };
 
-  const togglePax = (id: string) =>
+  const togglePax = (
+    id: string,
+  ) =>
     setSelectedPax((s) =>
       s.includes(id)
-        ? s.filter((x) => x !== id)
+        ? s.filter(
+            (x) => x !== id,
+          )
         : [...s, id],
     );
 
   const chosenPassengers: SavedPassenger[] =
     passengers.filter((p) =>
-      selectedPax.includes(p.id),
+      selectedPax.includes(
+        p.id,
+      ),
     );
 
-  const option = segment?.options.find(
-    (o) => o.code === classCode,
-  );
+  const option =
+    segment?.options.find(
+      (o) =>
+        o.code === classCode,
+    );
 
   const currentSeatState =
     segment && option
@@ -511,27 +717,34 @@ function BookPage() {
   );
 
   const convenience =
-    chosenPassengers.length > 0
-      ? 25 + chosenPassengers.length * 5
+    chosenPassengers.length >
+    0
+      ? 25 +
+        chosenPassengers.length *
+          5
       : 0;
 
-  const mealsTotal = Object.entries(
-    mealQty,
-  ).reduce(
-    (sum, [id, qty]) => {
-      const meal = meals.find(
-        (mm) => mm.id === id,
-      );
+  const mealsTotal =
+    Object.entries(
+      mealQty,
+    ).reduce(
+      (sum, [id, qty]) => {
+        const meal =
+          meals.find(
+            (mm) =>
+              mm.id === id,
+          );
 
-      return (
-        sum +
-        (meal
-          ? meal.price * qty
-          : 0)
-      );
-    },
-    0,
-  );
+        return (
+          sum +
+          (meal
+            ? meal.price *
+              qty
+            : 0)
+        );
+      },
+      0,
+    );
 
   const grossTotal =
     base +
@@ -543,13 +756,16 @@ function BookPage() {
   const availableRewards =
     redeemedRewards.filter(
       (r) =>
-        r.status === "redeemed" &&
+        r.status ===
+          "redeemed" &&
         !isRewardExpired(r),
     );
 
   const selectedReward =
     availableRewards.find(
-      (r) => r.id === selectedRewardId,
+      (r) =>
+        r.id ===
+        selectedRewardId,
     ) ?? null;
 
   const rewardStillEligible =
@@ -558,7 +774,8 @@ function BookPage() {
           selectedReward,
           {
             mode: m,
-            hasMeals: mealsTotal > 0,
+            hasMeals:
+              mealsTotal > 0,
             total: grossTotal,
           },
         ).ok
@@ -569,31 +786,38 @@ function BookPage() {
       ? selectedReward
       : null;
 
-  const rewardDiscount = activeReward
-    ? Math.min(
-        activeReward.discount,
-        grossTotal,
-      )
-    : 0;
+  const rewardDiscount =
+    activeReward
+      ? Math.min(
+          activeReward.discount,
+          grossTotal,
+        )
+      : 0;
 
-  const preCoinTotal = Math.max(
-    0,
-    grossTotal - rewardDiscount,
-  );
-
-  const coinDiscount = Math.round(
-    appliedCoins * 0.25,
-  );
-
-  const pointDiscount = Math.min(
-    Math.floor(
-      appliedPoints * POINT_VALUE,
-    ),
+  const preCoinTotal =
     Math.max(
       0,
-      preCoinTotal - coinDiscount,
-    ),
-  );
+      grossTotal -
+        rewardDiscount,
+    );
+
+  const coinDiscount =
+    Math.round(
+      appliedCoins * 0.25,
+    );
+
+  const pointDiscount =
+    Math.min(
+      Math.floor(
+        appliedPoints *
+          POINT_VALUE,
+      ),
+      Math.max(
+        0,
+        preCoinTotal -
+          coinDiscount,
+      ),
+    );
 
   const total = Math.max(
     0,
@@ -602,30 +826,34 @@ function BookPage() {
       pointDiscount,
   );
 
-  const fareLines: FareLine[] = [
-    {
-      label: `Base fare × ${Math.max(
-        1,
-        chosenPassengers.length,
-      )}`,
-      amount: base,
-    },
-    {
-      label: "Dynamic surge",
-      amount: surge,
-      muted: true,
-    },
-    {
-      label: "Taxes & GST (5%)",
-      amount: gst,
-      muted: true,
-    },
-    {
-      label: "Convenience fee",
-      amount: convenience,
-      muted: true,
-    },
-  ];
+  const fareLines: FareLine[] =
+    [
+      {
+        label: `Base fare × ${Math.max(
+          1,
+          chosenPassengers.length,
+        )}`,
+        amount: base,
+      },
+      {
+        label:
+          "Dynamic surge",
+        amount: surge,
+        muted: true,
+      },
+      {
+        label:
+          "Taxes & GST (5%)",
+        amount: gst,
+        muted: true,
+      },
+      {
+        label:
+          "Convenience fee",
+        amount: convenience,
+        muted: true,
+      },
+    ];
 
   if (mealsTotal > 0) {
     fareLines.push({
@@ -637,21 +865,26 @@ function BookPage() {
   if (activeReward) {
     fareLines.push({
       label: `Reward · ${activeReward.name}`,
-      amount: -rewardDiscount,
+      amount:
+        -rewardDiscount,
     });
   }
 
   if (coinDiscount > 0) {
     fareLines.push({
-      label: "Transit Coins discount",
-      amount: -coinDiscount,
+      label:
+        "Transit Coins discount",
+      amount:
+        -coinDiscount,
     });
   }
 
   if (pointDiscount > 0) {
     fareLines.push({
-      label: "Transit Points discount",
-      amount: -pointDiscount,
+      label:
+        "Transit Points discount",
+      amount:
+        -pointDiscount,
     });
   }
 
@@ -665,105 +898,177 @@ function BookPage() {
   const goPayment = () =>
     setStep("payment");
 
+  /*
+   * IMPORTANT ROUTE FIX:
+   *
+   * For normal transport, booking uses the
+   * selected Segment's actual route.
+   *
+   * This prevents the booking from always
+   * saving state.from/state.to when the
+   * generated result has a different route.
+   */
   const finalizeBooking = (
     statusOverride?: Booking["status"],
     statusLabel?: string,
   ) => {
-    if (!segment || !option) return;
+    if (
+      !segment ||
+      !option
+    ) {
+      return;
+    }
 
     const pnr = genPnr();
 
     const mealsPayload =
-      Object.entries(mealQty)
-        .filter(([, qty]) => qty > 0)
-        .map(([id, qty]) => {
-          const meal = meals.find(
-            (mm) => mm.id === id,
-          );
+      Object.entries(
+        mealQty,
+      )
+        .filter(
+          ([, qty]) =>
+            qty > 0,
+        )
+        .map(
+          ([id, qty]) => {
+            const meal =
+              meals.find(
+                (mm) =>
+                  mm.id === id,
+              );
 
-          return {
-            id,
-            name: meal?.name ?? id,
-            price: meal?.price ?? 0,
-            qty,
-          };
-        });
+            return {
+              id,
+              name:
+                meal?.name ??
+                id,
+              price:
+                meal?.price ??
+                0,
+              qty,
+            };
+          },
+        );
 
-    const created = addBooking({
-      pnr,
-      mode: m,
-      serviceName: segment.name,
-      serviceCode: segment.code,
+    /*
+     * Segment route is preferred.
+     * State route is only the fallback.
+     *
+     * Hotel intentionally keeps its location
+     * instead of creating a From → To route.
+     */
+    const bookingFromCode =
+      isHotel
+        ? state.from.code
+        : segment.fromCode ??
+          state.from.code;
 
-      /*
-       * HOTEL:
-       * The location is stored in fromCode/fromCity.
-       * toCode/toCity are intentionally blank.
-       */
-      fromCode: state.from.code,
-      fromCity: state.from.city,
+    const bookingFromCity =
+      isHotel
+        ? state.from.city
+        : segment.from ??
+          state.from.city;
 
-      toCode: isHotel
+    const bookingToCode =
+      isHotel
         ? ""
-        : state.to.code,
+        : segment.toCode ??
+          state.to.code;
 
-      toCity: isHotel
+    const bookingToCity =
+      isHotel
         ? ""
-        : state.to.city,
+        : segment.to ??
+          state.to.city;
 
-      date: state.date
-        .toISOString()
-        .slice(0, 10),
-
-      depart: segment.depart,
-      arrive: segment.arrive,
-
-      classCode: statusLabel
-        ? `${classCode} · ${statusLabel}`
-        : classCode,
-
-      passengers:
-        chosenPassengers.length
-          ? chosenPassengers
-          : passengers.slice(0, 1),
-
-      meals: mealsPayload,
-
-      total,
-
-      status:
-        statusOverride ??
-        "confirmed",
-
-      coach:
-        m === "train" ||
-        m === "bus"
-          ? `${classCode}${
-              1 +
-              (Math.abs(
-                pnr.charCodeAt(0),
-              ) %
-                9)
-            }`
-          : undefined,
-
-      seats: allocateSeats(
+    const created =
+      addBooking({
         pnr,
-        m,
-        classCode,
-        (
+        mode: m,
+        serviceName:
+          segment.name,
+        serviceCode:
+          segment.code,
+
+        fromCode:
+          bookingFromCode,
+
+        fromCity:
+          bookingFromCity,
+
+        toCode:
+          bookingToCode,
+
+        toCity:
+          bookingToCity,
+
+        date: state.date
+          .toISOString()
+          .slice(0, 10),
+
+        depart:
+          segment.depart,
+
+        arrive:
+          segment.arrive,
+
+        classCode:
+          statusLabel
+            ? `${classCode} · ${statusLabel}`
+            : classCode,
+
+        passengers:
           chosenPassengers.length
             ? chosenPassengers
-            : passengers.slice(0, 1)
-        ).length,
-      ),
+            : passengers.slice(
+                0,
+                1,
+              ),
 
-      tatkal:
-        isTatkalFlow ||
-        statusOverride === "queued",
+        meals:
+          mealsPayload,
 
-      coinsUsed: appliedCoins,
-    });
+        total,
+
+        status:
+          statusOverride ??
+          "confirmed",
+
+        coach:
+          m === "train" ||
+          m === "bus"
+            ? `${classCode}${
+                1 +
+                (Math.abs(
+                  pnr.charCodeAt(
+                    0,
+                  ),
+                ) % 9)
+              }`
+            : undefined,
+
+        seats: allocateSeats(
+          pnr,
+          m,
+          classCode,
+          (
+            chosenPassengers.length
+              ? chosenPassengers
+              : passengers.slice(
+                  0,
+                  1,
+                )
+          ).length,
+        ),
+
+        tatkal:
+          isTatkalFlow ||
+          statusOverride ===
+            "queued",
+
+        coinsUsed:
+          appliedCoins,
+      });
 
     setBooking(created);
 
@@ -789,7 +1094,8 @@ function BookPage() {
       if (!res.ok) {
         notify({
           kind: "wallet",
-          title: "Payment failed",
+          title:
+            "Payment failed",
           body:
             res.error ??
             "Insufficient wallet balance.",
@@ -802,7 +1108,9 @@ function BookPage() {
     }
 
     if (appliedCoins > 0) {
-      spendCoins(appliedCoins);
+      spendCoins(
+        appliedCoins,
+      );
     }
 
     if (appliedPoints > 0) {
@@ -833,7 +1141,9 @@ function BookPage() {
       );
 
     if (created) {
-      if (activeTatkalDraftId) {
+      if (
+        activeTatkalDraftId
+      ) {
         removeTatkalDraft(
           activeTatkalDraftId,
         );
@@ -846,11 +1156,14 @@ function BookPage() {
           `${created.serviceName} · ${created.date}`,
         );
 
-        setSelectedRewardId(null);
+        setSelectedRewardId(
+          null,
+        );
 
         notify({
           kind: "coins",
-          title: "Reward applied",
+          title:
+            "Reward applied",
           body: `${activeReward.name} applied to ${created.serviceName}. It is now locked to this trip.`,
         });
       }
@@ -921,685 +1234,1120 @@ function BookPage() {
     setStep("payment");
   };
 
-  if (!hydrated || !account) {
+  if (
+    !hydrated ||
+    !account
+  ) {
     return null;
   }
 
   return (
-    <AppShell wide>
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        {transportModes.map(
-          (tm) => {
-            const Icon =
-              modeIcons[tm.id];
+    <AppShell>
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-center gap-2">
+          {transportModes.map(
+            (tm) => {
+              const Icon =
+                modeIcons[tm.id];
 
-            return (
-              <button
-                key={tm.id}
-                onClick={() =>
-                  navigate({
-                    to: "/book/$mode",
-                    params: {
-                      mode: tm.id,
-                    },
-                    search: isHotel
-                      ? {
-                          from:
-                            state.from.code,
-                          to: undefined,
-                          date:
-                            state.date
-                              .toISOString()
-                              .slice(
-                                0,
-                                10,
-                              ),
-                          slot: state.slot,
-                          q: undefined,
-                        }
-                      : {
-                          from:
-                            state.from.code,
-                          to:
-                            state.to.code,
-                          date:
-                            state.date
-                              .toISOString()
-                              .slice(
-                                0,
-                                10,
-                              ),
-                          slot: state.slot,
-                          q: undefined,
-                        },
-                  })
-                }
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition ${
-                  tm.id === m
-                    ? "border-primary bg-[color:var(--brand-soft)] text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/40"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {tm.label}
-              </button>
-            );
-          },
-        )}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {step === "results" && (
-          <motion.section
-            key="results"
-            initial={{
-              opacity: 0,
-              y: 12,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: -8,
-            }}
-          >
-            <SmartSearch
-              mode={m}
-              value={state}
-              onChange={(p) =>
-                setState((s) => {
-                  /*
-                   * HOTEL:
-                   * Keep From/To internally equal.
-                   * If SmartSearch changes the location,
-                   * both values become that location.
-                   */
-                  if (isHotel) {
-                    const nextFrom =
-                      p.from ??
-                      s.from;
-
-                    return {
-                      ...s,
-                      ...p,
-                      from: nextFrom,
-                      to: nextFrom,
-                    };
+              return (
+                <button
+                  key={tm.id}
+                  onClick={() =>
+                    navigate({
+                      to: "/book/$mode",
+                      params: {
+                        mode: tm.id,
+                      },
+                      search:
+                        tm.id ===
+                        "hotel"
+                          ? {
+                              from:
+                                state
+                                  .from
+                                  .code,
+                              to: undefined,
+                              date:
+                                state.date
+                                  .toISOString()
+                                  .slice(
+                                    0,
+                                    10,
+                                  ),
+                              slot:
+                                state.slot,
+                              q: undefined,
+                            }
+                          : {
+                              from:
+                                state
+                                  .from
+                                  .code,
+                              to:
+                                state
+                                  .to
+                                  .code,
+                              date:
+                                state.date
+                                  .toISOString()
+                                  .slice(
+                                    0,
+                                    10,
+                                  ),
+                              slot:
+                                state.slot,
+                              q: undefined,
+                            },
+                    })
                   }
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition ${
+                    tm.id === m
+                      ? "border-primary bg-[color:var(--brand-soft)] text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {tm.label}
+                </button>
+              );
+            },
+          )}
+        </div>
 
-                  return {
-                    ...s,
-                    ...p,
-                  };
-                })
-              }
-              onSubmit={submitSearch}
-              compact
-            />
+        <AnimatePresence mode="wait">
+          {step ===
+            "results" && (
+            <motion.section
+              key="results"
+              initial={{
+                opacity: 0,
+                y: 12,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              exit={{
+                opacity: 0,
+                y: -8,
+              }}
+            >
+              <SmartSearch
+                mode={m}
+                value={state}
+                onChange={(p) =>
+                  setState(
+                    (s) => {
+                      /*
+                       * HOTEL:
+                       * Keep From/To internally equal.
+                       */
+                      if (isHotel) {
+                        const nextFrom =
+                          p.from ??
+                          s.from;
 
-            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-              <div className="space-y-4">
-                {aiInterpretation && (
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-primary/40 bg-[color:var(--brand-soft)] px-3 py-1 text-[11px] text-primary"
-                  >
-                    <Sparkles className="mr-1.5 h-3 w-3" />
-                    AI applied:{" "}
-                    {aiInterpretation}
-                  </Badge>
-                )}
+                        return {
+                          ...s,
+                          ...p,
+                          from:
+                            nextFrom,
+                          to:
+                            nextFrom,
+                        };
+                      }
 
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[12px] text-muted-foreground">
-                    {isHotel
-                      ? "Hotel prices update based on location, room type, dates and demand."
-                      : `Fares update live with distance (${km} km), class and demand (×${demand}).`}
-                  </p>
+                      return {
+                        ...s,
+                        ...p,
+                      };
+                    },
+                  )
+                }
+                onSubmit={
+                  submitSearch
+                }
+                compact
+              />
 
-                  <div
-                    className="flex flex-wrap items-center gap-1.5"
-                    data-a11y="optional"
-                  >
-                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                      Sort
-                    </span>
-
-                    {([
+              <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+                <div className="space-y-4">
+                  {aiInterpretation && (
+                    <Badge
+                      variant="outline"
+                      className="rounded-full border-primary/40 bg-[color:var(--brand-soft)] px-3 py-1 text-[11px] text-primary"
+                    >
+                      <Sparkles className="mr-1.5 h-3 w-3" />
+                      AI applied:{" "}
                       {
-                        id: "recommended",
-                        label: "Recommended",
-                      },
-                      {
-                        id: "rating",
-                        label: "Top rated",
-                      },
-                      {
-                        id: "price",
-                        label: "Cheapest",
-                      },
-                      {
-                        id: "duration",
-                        label: "Fastest",
-                      },
-                    ] as {
-                      id: SortKey;
-                      label: string;
-                    }[]).map(
-                      (o) => (
-                        <button
-                          key={o.id}
-                          onClick={() =>
-                            setSortBy(
-                              o.id,
-                            )
-                          }
-                          aria-pressed={
-                            sortBy ===
-                            o.id
-                          }
-                          className={`rounded-full border px-2.5 py-1 text-[12px] transition ${
-                            sortBy ===
-                            o.id
-                              ? "border-primary bg-[color:var(--brand-soft)] text-primary"
-                              : "border-border text-muted-foreground hover:border-primary/40"
-                          }`}
-                        >
-                          {o.label}
-                        </button>
-                      ),
-                    )}
+                        aiInterpretation
+                      }
+                    </Badge>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-[12px] text-muted-foreground">
+                      {isHotel
+                        ? "Hotel prices update based on location, room type, dates and demand."
+                        : `Fares update live with distance (${km} km), class and demand (×${demand}).`}
+                    </p>
+
+                    <div
+                      className="flex flex-wrap items-center gap-1.5"
+                      data-a11y="optional"
+                    >
+                      <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                        Sort
+                      </span>
+
+                      {(
+                        [
+                          {
+                            id: "recommended",
+                            label: "Recommended",
+                          },
+                          {
+                            id: "rating",
+                            label: "Top rated",
+                          },
+                          {
+                            id: "price",
+                            label: "Cheapest",
+                          },
+                          {
+                            id: "duration",
+                            label: "Fastest",
+                          },
+                        ] as {
+                          id: SortKey;
+                          label: string;
+                        }[]
+                      ).map(
+                        (o) => (
+                          <button
+                            key={
+                              o.id
+                            }
+                            onClick={() =>
+                              setSortBy(
+                                o.id,
+                              )
+                            }
+                            aria-pressed={
+                              sortBy ===
+                              o.id
+                            }
+                            className={`rounded-full border px-2.5 py-1 text-[12px] transition ${
+                              sortBy ===
+                              o.id
+                                ? "border-primary bg-[color:var(--brand-soft)] text-primary"
+                                : "border-border text-muted-foreground hover:border-primary/40"
+                            }`}
+                          >
+                            {
+                              o.label
+                            }
+                          </button>
+                        ),
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {sortedResults.map(
-                  (seg) => {
-                    const disruption =
-                      serviceDisruption(
-                        seg.id,
-                      );
-
-                    const alternatives =
-                      sortedResults
-                        .filter(
-                          (s) =>
-                            s.id !==
-                            seg.id,
-                        )
-                        .slice(
-                          0,
-                          2,
+                  {sortedResults.map(
+                    (seg) => {
+                      const disruption =
+                        serviceDisruption(
+                          seg.id,
                         );
 
-                    return (
-                      <Card
-                        key={seg.id}
-                        className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex min-w-0 items-start gap-3">
-                            <ServicePreview
-                              mode={m}
-                              seed={
-                                seg.code
-                              }
-                              alt={`${seg.name} preview`}
-                              className="w-20 shrink-0 sm:w-32"
-                              ratio="aspect-[4/3]"
-                            />
+                      const alternatives =
+                        sortedResults
+                          .filter(
+                            (s) =>
+                              s.id !==
+                              seg.id,
+                          )
+                          .slice(
+                            0,
+                            2,
+                          );
 
-                            <div className="min-w-0 flex-1">
-                              <div
-                                className="truncate text-sm font-semibold leading-snug"
-                                title={
-                                  seg.name
-                                }
-                              >
-                                {
-                                  seg.name
-                                }
-                              </div>
-
-                              <div className="truncate text-[12px] leading-snug text-muted-foreground">
-                                {
+                      return (
+                        <Card
+                          key={
+                            seg.id
+                          }
+                          className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex min-w-0 items-start gap-3">
+                              <ServicePreview
+                                mode={m}
+                                seed={
                                   seg.code
                                 }
-                                {seg.operator
-                                  ? ` · ${seg.operator}`
-                                  : ""}
-                              </div>
+                                alt={`${seg.name} preview`}
+                                className="w-20 shrink-0 sm:w-32"
+                                ratio="aspect-[4/3]"
+                              />
 
-                              <div className="mt-1.5">
-                                <RateDialog
-                                  ratingKey={serviceRatingKey(
-                                    m,
-                                    seg.code,
-                                  )}
+                              <div className="min-w-0 flex-1">
+                                <div
+                                  className="truncate text-sm font-semibold leading-snug"
                                   title={
                                     seg.name
                                   }
-                                  subtitle="Rate this service so other travellers can pick the best option on this route."
-                                  compact
-                                />
+                                >
+                                  {
+                                    seg.name
+                                  }
+                                </div>
+
+                                <div className="truncate text-[12px] leading-snug text-muted-foreground">
+                                  {
+                                    seg.code
+                                  }
+                                  {seg.operator
+                                    ? ` · ${seg.operator}`
+                                    : ""}
+                                </div>
+
+                                <div className="mt-1.5">
+                                  <RateDialog
+                                    ratingKey={serviceRatingKey(
+                                      m,
+                                      seg.code,
+                                    )}
+                                    title={
+                                      seg.name
+                                    }
+                                    subtitle="Rate this service so other travellers can pick the best option on this route."
+                                    compact
+                                  />
+                                </div>
                               </div>
                             </div>
+
+                            {(disruption.cancelled ||
+                              disruption.delayMins >
+                                0) && (
+                              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                {disruption.cancelled ? (
+                                  <Badge className="rounded-full border-none bg-destructive text-[11px] text-white">
+                                    Cancelled
+                                  </Badge>
+                                ) : (
+                                  <Badge
+                                    variant="outline"
+                                    className="max-w-full whitespace-normal rounded-full border-[color:var(--accent-orange)]/40 text-[11px] leading-snug text-[color:var(--accent-orange)]"
+                                  >
+                                    Delayed
+                                    by{" "}
+                                    {
+                                      disruption.delayMins
+                                    }{" "}
+                                    minutes
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+
+                            {seg.tags
+                              .length >
+                              0 && (
+                              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                {seg.tags.map(
+                                  (
+                                    tg,
+                                  ) => (
+                                    <Badge
+                                      key={
+                                        tg
+                                      }
+                                      variant="outline"
+                                      className="max-w-full whitespace-normal rounded-full text-[10px] leading-snug"
+                                    >
+                                      {
+                                        tg
+                                      }
+                                    </Badge>
+                                  ),
+                                )}
+                              </div>
+                            )}
                           </div>
 
-                          {(disruption.cancelled ||
-                            disruption.delayMins >
-                              0) && (
-                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                              {disruption.cancelled ? (
-                                <Badge className="rounded-full border-none bg-destructive text-[11px] text-white">
-                                  Cancelled
-                                </Badge>
-                              ) : (
-                                <Badge
-                                  variant="outline"
-                                  className="max-w-full whitespace-normal rounded-full border-[color:var(--accent-orange)]/40 text-[11px] leading-snug text-[color:var(--accent-orange)]"
-                                >
-                                  Delayed
-                                  by{" "}
+                          <div className="mt-3">
+                            {isHotel ? (
+                              <div className="rounded-xl border border-border bg-background/50 p-3">
+                                <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                                  Hotel stay
+                                </div>
+
+                                <div className="mt-1 text-sm font-medium">
                                   {
-                                    disruption.delayMins
+                                    state
+                                      .from
+                                      .city
+                                  }
+                                </div>
+
+                                <div className="mt-1 text-sm text-muted-foreground">
+                                  Check-in{" "}
+                                  {
+                                    seg.depart
                                   }{" "}
-                                  minutes
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-
-                          {seg.tags.length >
-                            0 && (
-                            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                              {seg.tags.map(
-                                (
-                                  tg,
-                                ) => (
-                                  <Badge
-                                    key={
-                                      tg
-                                    }
-                                    variant="outline"
-                                    className="max-w-full whitespace-normal rounded-full text-[10px] leading-snug"
-                                  >
-                                    {
-                                      tg
-                                    }
-                                  </Badge>
-                                ),
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-3">
-                          {isHotel ? (
-                            <div className="rounded-xl border border-border bg-background/50 p-3">
-                              <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                                Hotel stay
+                                  ·
+                                  Check-out{" "}
+                                  {
+                                    seg.arrive
+                                  }{" "}
+                                  ·{" "}
+                                  {
+                                    seg.duration
+                                  }
+                                </div>
                               </div>
-
-                              <div className="mt-1 text-sm font-medium">
-                                {state.from.city}
-                              </div>
-
-                              <div className="mt-1 text-sm text-muted-foreground">
-                                Check-in{" "}
-                                {
+                            ) : (
+                              /*
+                               * IMPORTANT FIX:
+                               * Use the actual route of this
+                               * result, not the search state.
+                               */
+                              <RouteLine
+                                depart={
                                   seg.depart
-                                }{" "}
-                                ·
-                                Check-out{" "}
-                                {
+                                }
+                                arrive={
                                   seg.arrive
-                                }{" "}
-                                ·{" "}
-                                {
+                                }
+                                duration={
                                   seg.duration
                                 }
-                              </div>
-                            </div>
-                          ) : (
-                            <RouteLine
-                              depart={
-                                seg.depart
+                              />
+                            )}
+                          </div>
+
+                          /*
+                           * IMPORTANT FIX:
+                           * RoutePreview now receives the
+                           * actual Segment route.
+                           *
+                           * This prevents every transport
+                           * mode/result from visually showing
+                           * the same state.from → state.to.
+                           */
+                          {!isHotel && (
+                            <RoutePreview
+                              mode={m}
+                              origin={
+                                seg.from ??
+                                state
+                                  .from
+                                  .city
                               }
-                              arrive={
-                                seg.arrive
+                              destination={
+                                seg.to ??
+                                state
+                                  .to
+                                  .city
                               }
-                              duration={
-                                seg.duration
+                              km={
+                                seg.distanceKm
+                              }
+                              totalMins={
+                                seg.durationMins
+                              }
+                              seed={
+                                seg.id
                               }
                             />
                           )}
-                        </div>
 
-                        /*
-                         * IMPORTANT:
-                         * Hotels do not show a route preview.
-                         * Train/bus/flight/metro/ferry do.
-                         */
-                        {!isHotel && (
-                          <RoutePreview
-                            mode={m}
-                            origin={
-                              state
-                                .from
-                                .city
-                            }
-                            destination={
-                              state
-                                .to
-                                .city
-                            }
-                            km={
-                              seg.distanceKm
-                            }
-                            totalMins={
-                              seg.durationMins
-                            }
-                            seed={
-                              seg.id
-                            }
-                          />
-                        )}
+                          <Separator className="my-3" />
 
-                        <Separator className="my-3" />
+                          {disruption.cancelled ? (
+                            <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
+                              <div className="flex items-center gap-2 text-[13px] font-medium text-destructive">
+                                <AlertTriangle className="h-4 w-4" />
+                                Service
+                                cancelled
+                                —
+                                {
+                                  disruption.reason
+                                }
+                              </div>
 
-                        {disruption.cancelled ? (
-                          <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
-                            <div className="flex items-center gap-2 text-[13px] font-medium text-destructive">
-                              <AlertTriangle className="h-4 w-4" />
-                              Service
-                              cancelled
-                              —
-                              {
-                                disruption.reason
-                              }
-                            </div>
+                              <p className="text-[12px] text-muted-foreground">
+                                Full refund is automatically eligible if you had already booked this service. Try one of these instead:
+                              </p>
 
-                            <p className="text-[12px] text-muted-foreground">
-                              Full refund is automatically eligible if you had already booked this service. Try one of these instead:
-                            </p>
-
-                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                              {alternatives.map(
-                                (
-                                  alt,
-                                ) => (
-                                  <div
-                                    key={
-                                      alt.id
-                                    }
-                                    className="rounded-xl border border-border bg-background/70 p-2.5 text-[12px]"
-                                  >
-                                    <div className="font-medium">
-                                      {
-                                        alt.name
+                              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                {alternatives.map(
+                                  (
+                                    alt,
+                                  ) => (
+                                    <div
+                                      key={
+                                        alt.id
                                       }
-                                    </div>
+                                      className="rounded-xl border border-border bg-background/70 p-2.5 text-[12px]"
+                                    >
+                                      <div className="font-medium">
+                                        {
+                                          alt.name
+                                        }
+                                      </div>
 
-                                    <div className="text-muted-foreground">
-                                      {
-                                        alt.depart
-                                      }{" "}
-                                      →
-                                      {
-                                        alt.arrive
-                                      }
+                                      <div className="text-muted-foreground">
+                                        {
+                                          alt.depart
+                                        }{" "}
+                                        →
+                                        {
+                                          alt.arrive
+                                        }
+                                      </div>
                                     </div>
-                                  </div>
-                                ),
-                              )}
+                                  ),
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            {seg.options.map(
-                              (o) => {
-                                const st =
-                                  seatFor(
-                                    seg,
-                                    o.code,
-                                    o.available,
-                                  );
+                          ) : (
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              {seg.options.map(
+                                (o) => {
+                                  const st =
+                                    seatFor(
+                                      seg,
+                                      o.code,
+                                      o.available,
+                                    );
 
-                                const toneClass =
-                                  st.tone ===
-                                  "sold"
-                                    ? "text-destructive"
-                                    : st.tone ===
-                                        "wl"
+                                  const toneClass =
+                                    st.tone ===
+                                    "sold"
                                       ? "text-destructive"
                                       : st.tone ===
-                                          "rac"
-                                        ? "text-[color:var(--accent-orange)]"
+                                          "wl"
+                                        ? "text-destructive"
                                         : st.tone ===
-                                            "low"
+                                            "rac"
                                           ? "text-[color:var(--accent-orange)]"
-                                          : "text-[color:var(--success)]";
+                                          : st.tone ===
+                                              "low"
+                                            ? "text-[color:var(--accent-orange)]"
+                                            : "text-[color:var(--success)]";
 
-                                return (
-                                  <div
-                                    key={
-                                      o.code
-                                    }
-                                    role="button"
-                                    tabIndex={
-                                      st.tone ===
-                                      "sold"
-                                        ? -1
-                                        : 0
-                                    }
-                                    aria-disabled={
-                                      st.tone ===
-                                      "sold"
-                                    }
-                                    onClick={() =>
-                                      st.tone !==
-                                        "sold" &&
-                                      pickOption(
-                                        seg,
-                                        o.code,
-                                      )
-                                    }
-                                    onKeyDown={(
-                                      e,
-                                    ) => {
-                                      if (
+                                  return (
+                                    <div
+                                      key={
+                                        o.code
+                                      }
+                                      role="button"
+                                      tabIndex={
                                         st.tone ===
                                         "sold"
-                                      ) {
-                                        return;
+                                          ? -1
+                                          : 0
                                       }
-
-                                      if (
-                                        e.key ===
-                                          "Enter" ||
-                                        e.key ===
-                                          " "
-                                      ) {
-                                        e.preventDefault();
-
+                                      aria-disabled={
+                                        st.tone ===
+                                        "sold"
+                                      }
+                                      onClick={() =>
+                                        st.tone !==
+                                          "sold" &&
                                         pickOption(
                                           seg,
                                           o.code,
-                                        );
+                                        )
                                       }
-                                    }}
-                                    className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/40 ${
-                                      st.tone ===
-                                      "sold"
-                                        ? "pointer-events-none opacity-50"
-                                        : ""
-                                    }`}
-                                  >
-                                    <div className="min-w-0">
-                                      <div className="break-words text-[11px] uppercase tracking-widest text-muted-foreground">
-                                        {
-                                          o.label
+                                      onKeyDown={(
+                                        e,
+                                      ) => {
+                                        if (
+                                          st.tone ===
+                                          "sold"
+                                        ) {
+                                          return;
                                         }
-                                      </div>
 
-                                      <div className="text-base font-bold">
-                                        {formatCurrency(
-                                          o.fare,
-                                        )}
-                                      </div>
+                                        if (
+                                          e.key ===
+                                            "Enter" ||
+                                          e.key ===
+                                            " "
+                                        ) {
+                                          e.preventDefault();
 
-                                      <div
-                                        className={`text-[11px] font-medium ${toneClass}`}
-                                      >
-                                        {
-                                          st.label
+                                          pickOption(
+                                            seg,
+                                            o.code,
+                                          );
                                         }
-                                      </div>
-
-                                      <ProbabilityBar
-                                        probability={
-                                          o.probability
-                                        }
-                                        className="mt-1.5 w-full max-w-32"
-                                      />
-                                    </div>
-
-                                    <Button
-                                      size="sm"
-                                      className="shrink-0 rounded-full brand-gradient text-white"
-                                      disabled={
+                                      }}
+                                      className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/40 ${
                                         st.tone ===
                                         "sold"
-                                      }
+                                          ? "pointer-events-none opacity-50"
+                                          : ""
+                                      }`}
                                     >
-                                      {st.tone ===
-                                      "sold"
-                                        ? "Sold Out"
-                                        : "Book"}
-                                    </Button>
-                                  </div>
-                                );
-                              },
-                            )}
-                          </div>
-                        )}
-                      </Card>
-                    );
-                  },
-                )}
-              </div>
+                                      <div className="min-w-0">
+                                        <div className="break-words text-[11px] uppercase tracking-widest text-muted-foreground">
+                                          {
+                                            o.label
+                                          }
+                                        </div>
 
-              <div className="space-y-4">
-                {!isHotel && (
-                  <Card
-                    className="glass-card rounded-2xl p-4"
-                    data-a11y="optional"
-                  >
-                    <div className="flex items-center gap-2 text-sm font-semibold">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      Alternative travel
+                                        <div className="text-base font-bold">
+                                          {formatCurrency(
+                                            o.fare,
+                                          )}
+                                        </div>
+
+                                        <div
+                                          className={`text-[11px] font-medium ${toneClass}`}
+                                        >
+                                          {
+                                            st.label
+                                          }
+                                        </div>
+
+                                        <ProbabilityBar
+                                          probability={
+                                            o.probability
+                                          }
+                                          className="mt-1.5 w-full max-w-32"
+                                        />
+                                      </div>
+
+                                      <Button
+                                        size="sm"
+                                        className="shrink-0 rounded-full brand-gradient text-white"
+                                        disabled={
+                                          st.tone ===
+                                          "sold"
+                                        }
+                                      >
+                                        {st.tone ===
+                                        "sold"
+                                          ? "Sold Out"
+                                          : "Book"}
+                                      </Button>
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
+                          )}
+                        </Card>
+                      );
+                    },
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {!isHotel && (
+                    <Card
+                      className="glass-card rounded-2xl p-4"
+                      data-a11y="optional"
+                    >
+                      <div className="flex items-center gap-2 text-sm font-semibold">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        Alternative travel
+                      </div>
+
+                      <div className="mt-3 space-y-2">
+                        {[
+                          "bus",
+                          "metro",
+                        ]
+                          .filter(
+                            (alt) =>
+                              alt !==
+                              m,
+                          )
+                          .map(
+                            (
+                              alt,
+                            ) => (
+                              <div
+                                key={
+                                  alt
+                                }
+                                className="rounded-xl border border-border bg-background/70 p-3 text-[13px]"
+                              >
+                                <div className="font-medium capitalize">
+                                  {
+                                    alt
+                                  }{" "}
+                                  via{" "}
+                                  {
+                                    state
+                                      .from
+                                      .city
+                                  }{" "}
+                                  →
+                                  {
+                                    state
+                                      .to
+                                      .city
+                                  }
+                                </div>
+
+                                <div className="text-muted-foreground">
+                                  from{" "}
+                                  {formatCurrency(
+                                    computeFare(
+                                      km,
+                                      alt ===
+                                        "metro"
+                                        ? "TOKEN"
+                                        : "SEATER",
+                                      demand,
+                                      alt ===
+                                        "metro"
+                                        ? 1.4
+                                        : 0.5,
+                                    ),
+                                  )}{" "}
+                                  · cheaper option
+                                </div>
+                              </div>
+                            ),
+                          )}
+
+                        <div className="rounded-xl border border-dashed border-border p-3 text-[13px] text-muted-foreground">
+                          Metro + Bus combo: connect via nearest hub for a lower total fare.
+                        </div>
+                      </div>
+                    </Card>
+                  )}
+
+                  {m ===
+                    "train" && (
+                    <PreTatkalCard
+                      segments={
+                        sortedResults
+                      }
+                      fromCode={
+                        state
+                          .from
+                          .code
+                      }
+                      toCode={
+                        state.to.code
+                      }
+                      date={state.date
+                        .toISOString()
+                        .slice(
+                          0,
+                          10,
+                        )}
+                      onProceedToPayment={
+                        proceedFromTatkalDraft
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+            </motion.section>
+          )}
+
+          {step ===
+            "waitlist" &&
+            segment &&
+            option &&
+            currentSeatState && (
+              <motion.section
+                key="waitlist"
+                initial={{
+                  opacity: 0,
+                  y: 12,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -8,
+                }}
+              >
+                <BackButton
+                  onClick={() =>
+                    setStep(
+                      "results",
+                    )
+                  }
+                />
+
+                <Card className="mx-auto max-w-xl rounded-2xl p-6">
+                  <div className="flex items-center gap-2 text-[color:var(--accent-orange)]">
+                    <Clock className="h-5 w-5" />
+
+                    <span className="min-w-0 break-words text-sm font-semibold">
+                      {
+                        currentSeatState.label
+                      }{" "}
+                      on{" "}
+                      {
+                        segment.name
+                      }
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-[13px] text-muted-foreground">
+                    {currentSeatState.tone ===
+                    "rac"
+                      ? "RAC (Reservation Against Cancellation) confirms a shared berth now, and may upgrade to a full berth before departure."
+                      : "This class is currently waitlisted. Waitlisted tickets confirm automatically as seats free up before charting; they're auto-cancelled if not confirmed by chart preparation."}
+                  </p>
+
+                  <div className="mt-4 space-y-2">
+                    <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                      Alternative departures on this route
                     </div>
 
-                    <div className="mt-3 space-y-2">
-                      {[
-                        "bus",
-                        "metro",
-                      ]
-                        .filter(
-                          (alt) =>
-                            alt !==
-                            m,
-                        )
-                        .map(
-                          (alt) => (
-                            <div
-                              key={
-                                alt
-                              }
-                              className="rounded-xl border border-border bg-background/70 p-3 text-[13px]"
-                            >
-                              <div className="font-medium capitalize">
+                    {sortedResults
+                      .filter(
+                        (s) =>
+                          s.id !==
+                          segment.id,
+                      )
+                      .slice(
+                        0,
+                        3,
+                      )
+                      .map(
+                        (
+                          alt,
+                        ) => (
+                          <div
+                            key={
+                              alt.id
+                            }
+                            className="flex items-center justify-between rounded-xl border border-border bg-background/70 p-3 text-[13px]"
+                          >
+                            <div>
+                              <div className="font-medium">
                                 {
-                                  alt
-                                }{" "}
-                                via{" "}
-                                {
-                                  state
-                                    .from
-                                    .city
-                                }{" "}
-                                →
-                                {
-                                  state
-                                    .to
-                                    .city
+                                  alt.name
                                 }
                               </div>
 
                               <div className="text-muted-foreground">
-                                from{" "}
-                                {formatCurrency(
-                                  computeFare(
-                                    km,
-                                    alt ===
-                                      "metro"
-                                      ? "TOKEN"
-                                      : "SEATER",
-                                    demand,
-                                    alt ===
-                                      "metro"
-                                      ? 1.4
-                                      : 0.5,
-                                  ),
-                                )}{" "}
-                                · cheaper option
+                                {
+                                  alt.depart
+                                }{" "}
+                                →
+                                {
+                                  alt.arrive
+                                }
                               </div>
                             </div>
-                          ),
-                        )}
 
-                      <div className="rounded-xl border border-dashed border-border p-3 text-[13px] text-muted-foreground">
-                        Metro + Bus combo: connect via nearest hub for a lower total fare.
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-full"
+                              onClick={() =>
+                                pickOption(
+                                  alt,
+                                  alt
+                                    .options[0]
+                                    .code,
+                                )
+                              }
+                            >
+                              View
+                            </Button>
+                          </div>
+                        ),
+                      )}
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={() =>
+                        setStep(
+                          "results",
+                        )
+                      }
+                    >
+                      Try another date
+                    </Button>
+
+                    <Button
+                      className="rounded-full brand-gradient text-white"
+                      onClick={() =>
+                        setStep(
+                          "passengers",
+                        )
+                      }
+                    >
+                      Continue with{" "}
+                      {
+                        currentSeatState.label
+                      }
+                    </Button>
+
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className="rounded-full"
+                    >
+                      <Link to="/">
+                        Back to home
+                      </Link>
+                    </Button>
+                  </div>
+                </Card>
+              </motion.section>
+            )}
+
+          {step ===
+            "passengers" &&
+            segment &&
+            option && (
+              <motion.section
+                key="passengers"
+                initial={{
+                  opacity: 0,
+                  y: 12,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -8,
+                }}
+              >
+                <BackButton
+                  onClick={() =>
+                    setStep(
+                      "results",
+                    )
+                  }
+                />
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+                  <Card className="rounded-2xl p-5">
+                    <div className="text-sm font-semibold">
+                      Select or add passengers
+                    </div>
+
+                    <p className="mt-1 text-[13px] text-muted-foreground">
+                      {
+                        segment.name
+                      }{" "}
+                      ·{" "}
+                      {
+                        option.label
+                      }{" "}
+                      ·{" "}
+                      {formatDate(
+                        state.date,
+                      )}
+                    </p>
+
+                    {currentSeatState &&
+                      (
+                        currentSeatState.tone ===
+                          "rac" ||
+                        currentSeatState.tone ===
+                          "wl"
+                      ) && (
+                        <Badge
+                          variant="outline"
+                          className="mt-2 rounded-full border-[color:var(--accent-orange)]/40 text-[10px] text-[color:var(--accent-orange)]"
+                        >
+                          Booking as{" "}
+                          {
+                            currentSeatState.label
+                          }
+                        </Badge>
+                      )}
+
+                    <div className="mt-4">
+                      <PassengerPicker
+                        selected={
+                          selectedPax
+                        }
+                        onToggle={
+                          togglePax
+                        }
+                      />
+                    </div>
+
+                    <Separator className="my-5" />
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                          Contact email
+                        </Label>
+
+                        <Input
+                          type="email"
+                          value={
+                            contactEmail
+                          }
+                          onChange={(
+                            e,
+                          ) =>
+                            setContactEmail(
+                              e.target
+                                .value,
+                            )
+                          }
+                          placeholder="you@example.com"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                          Contact mobile
+                        </Label>
+
+                        <Input
+                          value={
+                            contactMobile
+                          }
+                          onChange={(
+                            e,
+                          ) =>
+                            setContactMobile(
+                              e.target
+                                .value,
+                            )
+                          }
+                          placeholder="98xxxxxxx"
+                        />
                       </div>
                     </div>
-                  </Card>
-                )}
 
-                {m === "train" && (
-                  <PreTatkalCard
-                    segments={
-                      sortedResults
+                    <Button
+                      disabled={
+                        selectedPax.length ===
+                        0
+                      }
+                      onClick={() =>
+                        setStep(
+                          showMeals
+                            ? "meals"
+                            : "payment",
+                        )
+                      }
+                      className="mt-5 w-full rounded-full brand-gradient text-white disabled:opacity-50"
+                    >
+                      Continue
+                    </Button>
+                  </Card>
+
+                  <FareSidebar
+                    lines={
+                      fareLines
                     }
-                    fromCode={
-                      state.from.code
-                    }
-                    toCode={
-                      state.to.code
-                    }
-                    date={state.date
-                      .toISOString()
-                      .slice(
-                        0,
-                        10,
-                      )}
-                    onProceedToPayment={
-                      proceedFromTatkalDraft
+                    total={total}
+                    note={
+                      isHotel
+                        ? "Hotel price is based on location, room type, stay dates and current demand."
+                        : "Base fare scales with distance, class multiplier and current demand."
                     }
                   />
-                )}
-              </div>
-            </div>
-          </motion.section>
-        )}
+                </div>
+              </motion.section>
+            )}
 
-        {step === "waitlist" &&
-          segment &&
-          option &&
-          currentSeatState && (
+          {step ===
+            "meals" &&
+            segment &&
+            option && (
+              <motion.section
+                key="meals"
+                initial={{
+                  opacity: 0,
+                  y: 12,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -8,
+                }}
+              >
+                <BackButton
+                  onClick={() =>
+                    setStep(
+                      "passengers",
+                    )
+                  }
+                />
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+                  <Card className="rounded-2xl p-5">
+                    <div className="text-sm font-semibold">
+                      Add meals (optional)
+                    </div>
+
+                    <div className="mt-4">
+                      <MealPicker
+                        quantities={
+                          mealQty
+                        }
+                        passengerCount={Math.max(
+                          1,
+                          chosenPassengers.length,
+                        )}
+                        onChange={(
+                          id,
+                          qty,
+                        ) =>
+                          setMealQty(
+                            (m2) => ({
+                              ...m2,
+                              [id]:
+                                qty,
+                            }),
+                          )
+                        }
+                      />
+                    </div>
+
+                    <Button
+                      onClick={
+                        goPayment
+                      }
+                      className="mt-5 w-full rounded-full brand-gradient text-white"
+                    >
+                      Continue to payment
+                    </Button>
+                  </Card>
+
+                  <FareSidebar
+                    lines={
+                      fareLines
+                    }
+                    total={total}
+                  />
+                </div>
+              </motion.section>
+            )}
+
+          {step ===
+            "payment" && (
             <motion.section
-              key="waitlist"
+              key="payment"
               initial={{
                 opacity: 0,
                 y: 12,
@@ -1613,488 +2361,132 @@ function BookPage() {
                 y: -8,
               }}
             >
-              <BackButton
-                onClick={() =>
-                  setStep(
-                    "results",
-                  )
-                }
-              />
+              {!isTatkalFlow && (
+                <BackButton
+                  onClick={() =>
+                    setStep(
+                      showMeals
+                        ? "meals"
+                        : "passengers",
+                    )
+                  }
+                />
+              )}
 
-              <Card className="mx-auto max-w-xl rounded-2xl p-6">
-                <div className="flex items-center gap-2 text-[color:var(--accent-orange)]">
-                  <Clock className="h-5 w-5" />
-                  <span className="min-w-0 break-words text-sm font-semibold">
-                    {
-                      currentSeatState.label
-                    }{" "}
-                    on{" "}
-                    {
-                      segment.name
+              <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-[1fr_280px]">
+                <PaymentFlow
+                  total={total}
+                  walletBalance={
+                    walletBalance
+                  }
+                  paymentMethods={
+                    paymentMethods
+                  }
+                  onSuccess={
+                    onPaymentSuccess
+                  }
+                />
+
+                <div className="space-y-4">
+                  <RewardRedeemCard
+                    rewards={
+                      availableRewards
                     }
+                    mode={m}
+                    hasMeals={
+                      mealsTotal >
+                      0
+                    }
+                    total={
+                      grossTotal
+                    }
+                    selectedId={
+                      activeReward?.id ??
+                      null
+                    }
+                    onSelect={
+                      setSelectedRewardId
+                    }
+                  />
+
+                  <FareSidebar
+                    lines={
+                      fareLines
+                    }
+                    total={total}
+                    sticky={false}
+                  />
+
+                  <CoinRedeemCard
+                    coins={coins}
+                    total={
+                      preCoinTotal
+                    }
+                    applied={
+                      appliedCoins
+                    }
+                    onApply={
+                      setAppliedCoins
+                    }
+                  />
+
+                  <PointsRedeemCard
+                    points={
+                      points
+                    }
+                    total={Math.max(
+                      0,
+                      preCoinTotal -
+                        coinDiscount,
+                    )}
+                    applied={
+                      appliedPoints
+                    }
+                    onApply={
+                      setAppliedPoints
+                    }
+                  />
+                </div>
+              </div>
+            </motion.section>
+          )}
+
+          {step ===
+            "ticket" &&
+            booking && (
+              <motion.section
+                key="ticket"
+                initial={{
+                  opacity: 0,
+                  y: 12,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -8,
+                }}
+                className="mx-auto max-w-3xl"
+              >
+                <div className="mb-4 flex items-center gap-2 text-[color:var(--success)]">
+                  <CheckCircle2 className="h-5 w-5" />
+
+                  <span className="text-sm font-semibold">
+                    Booking confirmed
                   </span>
                 </div>
 
-                <p className="mt-2 text-[13px] text-muted-foreground">
-                  {currentSeatState.tone ===
-                  "rac"
-                    ? "RAC (Reservation Against Cancellation) confirms a shared berth now, and may upgrade to a full berth before departure."
-                    : "This class is currently waitlisted. Waitlisted tickets confirm automatically as seats free up before charting; they're auto-cancelled if not confirmed by chart preparation."}
-                </p>
-
-                <div className="mt-4 space-y-2">
-                  <div className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                    Alternative departures on this route
-                  </div>
-
-                  {sortedResults
-                    .filter(
-                      (s) =>
-                        s.id !==
-                        segment.id,
-                    )
-                    .slice(0, 3)
-                    .map(
-                      (alt) => (
-                        <div
-                          key={
-                            alt.id
-                          }
-                          className="flex items-center justify-between rounded-xl border border-border bg-background/70 p-3 text-[13px]"
-                        >
-                          <div>
-                            <div className="font-medium">
-                              {
-                                alt.name
-                              }
-                            </div>
-
-                            <div className="text-muted-foreground">
-                              {
-                                alt.depart
-                              }{" "}
-                              →
-                              {
-                                alt.arrive
-                              }
-                            </div>
-                          </div>
-
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-full"
-                            onClick={() =>
-                              pickOption(
-                                alt,
-                                alt
-                                  .options[0]
-                                  .code,
-                              )
-                            }
-                          >
-                            View
-                          </Button>
-                        </div>
-                      ),
-                    )}
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    className="rounded-full"
-                    onClick={() =>
-                      setStep(
-                        "results",
-                      )
-                    }
-                  >
-                    Try another date
-                  </Button>
-
-                  <Button
-                    className="rounded-full brand-gradient text-white"
-                    onClick={() =>
-                      setStep(
-                        "passengers",
-                      )
-                    }
-                  >
-                    Continue with{" "}
-                    {
-                      currentSeatState.label
-                    }
-                  </Button>
-
-                  <Button
-                    asChild
-                    variant="ghost"
-                    className="rounded-full"
-                  >
-                    <Link to="/">
-                      Back to home
-                    </Link>
-                  </Button>
-                </div>
-              </Card>
-            </motion.section>
-          )}
-
-        {step === "passengers" &&
-          segment &&
-          option && (
-            <motion.section
-              key="passengers"
-              initial={{
-                opacity: 0,
-                y: 12,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: -8,
-              }}
-            >
-              <BackButton
-                onClick={() =>
-                  setStep(
-                    "results",
-                  )
-                }
-              />
-
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-                <Card className="rounded-2xl p-5">
-                  <div className="text-sm font-semibold">
-                    Select or add passengers
-                  </div>
-
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    {segment.name} ·{" "}
-                    {option.label} ·{" "}
-                    {formatDate(
-                      state.date,
-                    )}
-                  </p>
-
-                  {currentSeatState &&
-                    (
-                      currentSeatState.tone ===
-                        "rac" ||
-                      currentSeatState.tone ===
-                        "wl"
-                    ) && (
-                      <Badge
-                        variant="outline"
-                        className="mt-2 rounded-full border-[color:var(--accent-orange)]/40 text-[10px] text-[color:var(--accent-orange)]"
-                      >
-                        Booking as{" "}
-                        {
-                          currentSeatState.label
-                        }
-                      </Badge>
-                    )}
-
-                  <div className="mt-4">
-                    <PassengerPicker
-                      selected={
-                        selectedPax
-                      }
-                      onToggle={
-                        togglePax
-                      }
-                    />
-                  </div>
-
-                  <Separator className="my-5" />
-
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                        Contact email
-                      </Label>
-
-                      <Input
-                        type="email"
-                        value={
-                          contactEmail
-                        }
-                        onChange={(
-                          e,
-                        ) =>
-                          setContactEmail(
-                            e.target
-                              .value,
-                          )
-                        }
-                        placeholder="you@example.com"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                        Contact mobile
-                      </Label>
-
-                      <Input
-                        value={
-                          contactMobile
-                        }
-                        onChange={(
-                          e,
-                        ) =>
-                          setContactMobile(
-                            e.target
-                              .value,
-                          )
-                        }
-                        placeholder="98xxxxxxx"
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    disabled={
-                      selectedPax.length ===
-                      0
-                    }
-                    onClick={() =>
-                      setStep(
-                        showMeals
-                          ? "meals"
-                          : "payment",
-                      )
-                    }
-                    className="mt-5 w-full rounded-full brand-gradient text-white disabled:opacity-50"
-                  >
-                    Continue
-                  </Button>
-                </Card>
-
-                <FareSidebar
-                  lines={fareLines}
-                  total={total}
-                  note={
-                    isHotel
-                      ? "Hotel price is based on location, room type, stay dates and current demand."
-                      : "Base fare scales with distance, class multiplier and current demand."
+                <TicketCard
+                  booking={
+                    booking
                   }
                 />
-              </div>
-            </motion.section>
-          )}
-
-        {step === "meals" &&
-          segment &&
-          option && (
-            <motion.section
-              key="meals"
-              initial={{
-                opacity: 0,
-                y: 12,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: -8,
-              }}
-            >
-              <BackButton
-                onClick={() =>
-                  setStep(
-                    "passengers",
-                  )
-                }
-              />
-
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-                <Card className="rounded-2xl p-5">
-                  <div className="text-sm font-semibold">
-                    Add meals (optional)
-                  </div>
-
-                  <div className="mt-4">
-                    <MealPicker
-                      quantities={
-                        mealQty
-                      }
-                      passengerCount={Math.max(
-                        1,
-                        chosenPassengers.length,
-                      )}
-                      onChange={(
-                        id,
-                        qty,
-                      ) =>
-                        setMealQty(
-                          (m2) => ({
-                            ...m2,
-                            [id]:
-                              qty,
-                          }),
-                        )
-                      }
-                    />
-                  </div>
-
-                  <Button
-                    onClick={
-                      goPayment
-                    }
-                    className="mt-5 w-full rounded-full brand-gradient text-white"
-                  >
-                    Continue to payment
-                  </Button>
-                </Card>
-
-                <FareSidebar
-                  lines={fareLines}
-                  total={total}
-                />
-              </div>
-            </motion.section>
-          )}
-
-        {step === "payment" && (
-          <motion.section
-            key="payment"
-            initial={{
-              opacity: 0,
-              y: 12,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              y: -8,
-            }}
-          >
-            {!isTatkalFlow && (
-              <BackButton
-                onClick={() =>
-                  setStep(
-                    showMeals
-                      ? "meals"
-                      : "passengers",
-                  )
-                }
-              />
+              </motion.section>
             )}
-
-            <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-[1fr_280px]">
-              <PaymentFlow
-                total={total}
-                walletBalance={
-                  walletBalance
-                }
-                paymentMethods={
-                  paymentMethods
-                }
-                onSuccess={
-                  onPaymentSuccess
-                }
-              />
-
-              <div className="space-y-4">
-                <RewardRedeemCard
-                  rewards={
-                    availableRewards
-                  }
-                  mode={m}
-                  hasMeals={
-                    mealsTotal > 0
-                  }
-                  total={
-                    grossTotal
-                  }
-                  selectedId={
-                    activeReward?.id ??
-                    null
-                  }
-                  onSelect={
-                    setSelectedRewardId
-                  }
-                />
-
-                <FareSidebar
-                  lines={fareLines}
-                  total={total}
-                  sticky={false}
-                />
-
-                <CoinRedeemCard
-                  coins={coins}
-                  total={
-                    preCoinTotal
-                  }
-                  applied={
-                    appliedCoins
-                  }
-                  onApply={
-                    setAppliedCoins
-                  }
-                />
-
-                <PointsRedeemCard
-                  points={points}
-                  total={Math.max(
-                    0,
-                    preCoinTotal -
-                      coinDiscount,
-                  )}
-                  applied={
-                    appliedPoints
-                  }
-                  onApply={
-                    setAppliedPoints
-                  }
-                />
-              </div>
-            </div>
-          </motion.section>
-        )}
-
-        {step === "ticket" &&
-          booking && (
-            <motion.section
-              key="ticket"
-              initial={{
-                opacity: 0,
-                y: 12,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: -8,
-              }}
-              className="mx-auto max-w-3xl"
-            >
-              <div className="mb-4 flex items-center gap-2 text-[color:var(--success)]">
-                <CheckCircle2 className="h-5 w-5" />
-
-                <span className="text-sm font-semibold">
-                  Booking confirmed
-                </span>
-              </div>
-
-              <TicketCard
-                booking={booking}
-              />
-            </motion.section>
-          )}
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
     </AppShell>
   );
 }
@@ -2105,12 +2497,13 @@ function BackButton({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={onClick}
-      className="mb-4 flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground"
+      className="mb-4 rounded-full"
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className="mr-2 h-4 w-4" />
       Back
-    </button>
+    </Button>
   );
 }
