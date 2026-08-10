@@ -17,11 +17,8 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/components/transit/AppShell";
-import {
-  SmartSearch,
-  stationByCode,
-  type SearchState,
-} from "@/components/transit/SmartSearch";
+import { SmartSearch, type SearchState } from "@/components/transit/SmartSearch";
+import { stationByCode } from "@/lib/dummy-data";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
