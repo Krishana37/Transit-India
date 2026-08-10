@@ -1,3 +1,10 @@
+export type TrainClass = {
+  code: string;
+  fare: number;
+  available: number;
+  probability: number;
+};
+
 export type Train = {
   id: string;
   name: string;
@@ -9,12 +16,7 @@ export type Train = {
   depart: string;
   arrive: string;
   duration: string;
-  classes: {
-    code: string;
-    fare: number;
-    available: number;
-    probability: number;
-  }[];
+  classes: TrainClass[];
   type: "Rajdhani" | "Shatabdi" | "Superfast" | "Express" | "Vande Bharat";
   tags?: string[];
 };
@@ -34,21 +36,10 @@ export const trains: Train[] = [
     type: "Vande Bharat",
     tags: ["Fastest", "Onboard catering"],
     classes: [
-      {
-        code: "CC",
-        fare: 1245,
-        available: 42,
-        probability: 98,
-      },
-      {
-        code: "EC",
-        fare: 2340,
-        available: 12,
-        probability: 96,
-      },
+      { code: "CC", fare: 1245, available: 42, probability: 98 },
+      { code: "EC", fare: 2340, available: 12, probability: 96 },
     ],
   },
-
   {
     id: "t2",
     name: "Ajmer Shatabdi",
@@ -63,26 +54,15 @@ export const trains: Train[] = [
     type: "Shatabdi",
     tags: ["AC", "Breakfast incl."],
     classes: [
-      {
-        code: "CC",
-        fare: 970,
-        available: 118,
-        probability: 99,
-      },
-      {
-        code: "EC",
-        fare: 1815,
-        available: 24,
-        probability: 97,
-      },
+      { code: "CC", fare: 970, available: 118, probability: 99 },
+      { code: "EC", fare: 1815, available: 24, probability: 97 },
     ],
   },
-
   {
     id: "t3",
     name: "Jaipur Double Decker",
     number: "12985",
-    from: "Delhi Sarai R.",
+    from: "Delhi Sarai Rohilla",
     fromCode: "DEE",
     to: "Jaipur Jn",
     toCode: "JP",
@@ -92,15 +72,9 @@ export const trains: Train[] = [
     type: "Superfast",
     tags: ["AC Chair Car"],
     classes: [
-      {
-        code: "CC",
-        fare: 720,
-        available: 6,
-        probability: 62,
-      },
+      { code: "CC", fare: 720, available: 6, probability: 62 },
     ],
   },
-
   {
     id: "t4",
     name: "Ashram Express",
@@ -115,24 +89,9 @@ export const trains: Train[] = [
     type: "Superfast",
     tags: ["Sleeper avail."],
     classes: [
-      {
-        code: "SL",
-        fare: 285,
-        available: 0,
-        probability: 34,
-      },
-      {
-        code: "3A",
-        fare: 755,
-        available: 3,
-        probability: 48,
-      },
-      {
-        code: "2A",
-        fare: 1080,
-        available: 0,
-        probability: 22,
-      },
+      { code: "SL", fare: 285, available: 0, probability: 34 },
+      { code: "3A", fare: 755, available: 3, probability: 48 },
+      { code: "2A", fare: 1080, available: 0, probability: 22 },
     ],
   },
 ];
@@ -197,9 +156,309 @@ export const savedPassengers: Passenger[] = [
 ];
 
 // ============================================================
+// BUS
+// IMPORTANT:
+// Bus has its own route data.
+// ============================================================
+
+export type Bus = {
+  id: string;
+  operator: string;
+  serviceName: string;
+  from: string;
+  to: string;
+  depart: string;
+  arrive: string;
+  duration: string;
+  busType: string;
+  price: number;
+  seatsAvailable: number;
+  rating: number;
+  tags?: string[];
+  amenities: string[];
+};
+
+export const buses: Bus[] = [
+  {
+    id: "bus1",
+    operator: "RSRTC",
+    serviceName: "Volvo Multi-Axle",
+    from: "Delhi",
+    to: "Jaipur",
+    depart: "22:00",
+    arrive: "07:10",
+    duration: "9h 10m",
+    busType: "Volvo AC Sleeper",
+    price: 899,
+    seatsAvailable: 14,
+    rating: 4.5,
+    tags: ["Popular", "AC"],
+    amenities: ["AC", "Wi-Fi", "Charging Point", "Water Bottle"],
+  },
+  {
+    id: "bus2",
+    operator: "IntrCity SmartBus",
+    serviceName: "SmartBus Delhi–Jaipur",
+    from: "Delhi",
+    to: "Jaipur",
+    depart: "21:15",
+    arrive: "07:15",
+    duration: "10h",
+    busType: "AC Seater",
+    price: 549,
+    seatsAvailable: 28,
+    rating: 4.4,
+    tags: ["Cheapest"],
+    amenities: ["AC", "Charging Point", "Live Tracking"],
+  },
+  {
+    id: "bus3",
+    operator: "Zingbus",
+    serviceName: "Zing Premium",
+    from: "Delhi",
+    to: "Jaipur",
+    depart: "23:00",
+    arrive: "07:30",
+    duration: "8h 30m",
+    busType: "AC Sleeper",
+    price: 799,
+    seatsAvailable: 9,
+    rating: 4.6,
+    tags: ["Premium", "Fast"],
+    amenities: ["AC", "Blanket", "Charging Point", "Live Tracking"],
+  },
+];
+
+// ============================================================
+// FLIGHT
+// ============================================================
+
+export type Flight = {
+  id: string;
+  airline: string;
+  flightNumber: string;
+  from: string;
+  fromCode: string;
+  to: string;
+  toCode: string;
+  depart: string;
+  arrive: string;
+  duration: string;
+  stops: number;
+  price: number;
+  seatsAvailable: number;
+  cabin: "Economy" | "Premium Economy" | "Business";
+  tags?: string[];
+};
+
+export const flights: Flight[] = [
+  {
+    id: "f1",
+    airline: "IndiGo",
+    flightNumber: "6E 2134",
+    from: "New Delhi",
+    fromCode: "DEL",
+    to: "Mumbai",
+    toCode: "BOM",
+    depart: "06:30",
+    arrive: "08:40",
+    duration: "2h 10m",
+    stops: 0,
+    price: 4899,
+    seatsAvailable: 18,
+    cabin: "Economy",
+    tags: ["Non-stop", "Popular"],
+  },
+  {
+    id: "f2",
+    airline: "Air India",
+    flightNumber: "AI 864",
+    from: "New Delhi",
+    fromCode: "DEL",
+    to: "Mumbai",
+    toCode: "BOM",
+    depart: "09:15",
+    arrive: "11:25",
+    duration: "2h 10m",
+    stops: 0,
+    price: 5699,
+    seatsAvailable: 24,
+    cabin: "Economy",
+    tags: ["Non-stop"],
+  },
+  {
+    id: "f3",
+    airline: "Akasa Air",
+    flightNumber: "QP 1407",
+    from: "New Delhi",
+    fromCode: "DEL",
+    to: "Bengaluru",
+    toCode: "BLR",
+    depart: "18:20",
+    arrive: "21:05",
+    duration: "2h 45m",
+    stops: 0,
+    price: 5299,
+    seatsAvailable: 12,
+    cabin: "Economy",
+    tags: ["Best value"],
+  },
+];
+
+// ============================================================
+// FERRY
+// IMPORTANT:
+// Ferry uses its own ports and routes.
+// ============================================================
+
+export type Ferry = {
+  id: string;
+  operator: string;
+  vessel: string;
+  from: string;
+  to: string;
+  depart: string;
+  arrive: string;
+  duration: string;
+  ferryType: "Passenger Ferry" | "Fast Ferry" | "Cruise Ferry";
+  price: number;
+  seatsAvailable: number;
+  rating: number;
+  amenities: string[];
+};
+
+export const ferries: Ferry[] = [
+  {
+    id: "fy1",
+    operator: "Makruzz",
+    vessel: "Makruzz Gold",
+    from: "Port Blair",
+    to: "Swaraj Dweep",
+    depart: "08:00",
+    arrive: "10:15",
+    duration: "2h 15m",
+    ferryType: "Fast Ferry",
+    price: 1850,
+    seatsAvailable: 42,
+    rating: 4.7,
+    amenities: ["Air Conditioning", "Reserved Seating", "Refreshments"],
+  },
+  {
+    id: "fy2",
+    operator: "Green Ocean",
+    vessel: "Green Ocean 1",
+    from: "Port Blair",
+    to: "Swaraj Dweep",
+    depart: "09:30",
+    arrive: "12:00",
+    duration: "2h 30m",
+    ferryType: "Passenger Ferry",
+    price: 1550,
+    seatsAvailable: 68,
+    rating: 4.5,
+    amenities: ["Air Conditioning", "Reserved Seating"],
+  },
+  {
+    id: "fy3",
+    operator: "Nautika",
+    vessel: "Nautika",
+    from: "Swaraj Dweep",
+    to: "Shaheed Dweep",
+    depart: "13:00",
+    arrive: "14:00",
+    duration: "1h",
+    ferryType: "Fast Ferry",
+    price: 950,
+    seatsAvailable: 35,
+    rating: 4.6,
+    amenities: ["Air Conditioning", "Reserved Seating"],
+  },
+];
+
+// ============================================================
+// METRO
+// IMPORTANT:
+// Metro routes are separate from train routes.
+// ============================================================
+
+export type Metro = {
+  id: string;
+  operator: string;
+  line: string;
+  from: string;
+  to: string;
+  depart: string;
+  arrive: string;
+  duration: string;
+  interchanges: number;
+  fare: number;
+  frequency: string;
+  tags?: string[];
+};
+
+export const metros: Metro[] = [
+  {
+    id: "m1",
+    operator: "Delhi Metro",
+    line: "Yellow Line",
+    from: "Samaypur Badli",
+    to: "Huda City Centre",
+    depart: "06:00",
+    arrive: "07:05",
+    duration: "1h 05m",
+    interchanges: 0,
+    fare: 50,
+    frequency: "3–5 min",
+    tags: ["Direct", "Popular"],
+  },
+  {
+    id: "m2",
+    operator: "Delhi Metro",
+    line: "Blue Line",
+    from: "Dwarka Sector 21",
+    to: "Noida Electronic City",
+    depart: "07:10",
+    arrive: "08:35",
+    duration: "1h 25m",
+    interchanges: 0,
+    fare: 60,
+    frequency: "3–5 min",
+    tags: ["Direct"],
+  },
+  {
+    id: "m3",
+    operator: "Delhi Metro",
+    line: "Airport Express",
+    from: "New Delhi",
+    to: "IGI Airport",
+    depart: "08:00",
+    arrive: "08:20",
+    duration: "20m",
+    interchanges: 0,
+    fare: 60,
+    frequency: "10 min",
+    tags: ["Airport", "Fast"],
+  },
+  {
+    id: "m4",
+    operator: "Mumbai Metro",
+    line: "Line 1",
+    from: "Versova",
+    to: "Ghatkopar",
+    depart: "08:15",
+    arrive: "09:00",
+    duration: "45m",
+    interchanges: 0,
+    fare: 40,
+    frequency: "5 min",
+    tags: ["Direct"],
+  },
+];
+
+// ============================================================
 // HOTEL
 // IMPORTANT:
-// Hotel does NOT use train-style from/to fields.
+// Hotel DOES NOT use train-style from/to fields.
 // ============================================================
 
 export type Hotel = {
@@ -243,7 +502,6 @@ export const hotels: Hotel[] = [
     refundable: true,
     breakfastIncluded: true,
   },
-
   {
     id: "h2",
     name: "Jaipur Palace Hotel",
@@ -266,7 +524,6 @@ export const hotels: Hotel[] = [
     refundable: true,
     breakfastIncluded: true,
   },
-
   {
     id: "h3",
     name: "Mumbai Central Residency",
@@ -287,7 +544,6 @@ export const hotels: Hotel[] = [
     refundable: true,
     breakfastIncluded: false,
   },
-
   {
     id: "h4",
     name: "Bengaluru Tech Suites",
@@ -309,80 +565,6 @@ export const hotels: Hotel[] = [
     roomType: "Studio Suite",
     refundable: true,
     breakfastIncluded: true,
-  },
-];
-
-// ============================================================
-// CAB
-// IMPORTANT:
-// Cab is separate from train/hotel.
-// Do NOT use hotel/train from/to fields here.
-// ============================================================
-
-export type Cab = {
-  id: string;
-  name: string;
-  vehicle: string;
-  category: "Mini" | "Sedan" | "SUV" | "Premium";
-  price: number;
-  estimatedTime: string;
-  seats: number;
-  luggage: number;
-  rating: number;
-  features: string[];
-};
-
-export const cabs: Cab[] = [
-  {
-    id: "cab1",
-    name: "Transit Mini",
-    vehicle: "WagonR / similar",
-    category: "Mini",
-    price: 249,
-    estimatedTime: "18 min",
-    seats: 4,
-    luggage: 2,
-    rating: 4.5,
-    features: ["AC", "Free cancellation"],
-  },
-
-  {
-    id: "cab2",
-    name: "Transit Sedan",
-    vehicle: "Dzire / similar",
-    category: "Sedan",
-    price: 349,
-    estimatedTime: "20 min",
-    seats: 4,
-    luggage: 3,
-    rating: 4.6,
-    features: ["AC", "Free cancellation", "Top rated"],
-  },
-
-  {
-    id: "cab3",
-    name: "Transit SUV",
-    vehicle: "Ertiga / similar",
-    category: "SUV",
-    price: 549,
-    estimatedTime: "22 min",
-    seats: 6,
-    luggage: 4,
-    rating: 4.7,
-    features: ["AC", "Extra luggage", "Free cancellation"],
-  },
-
-  {
-    id: "cab4",
-    name: "Transit Premium",
-    vehicle: "Camry / similar",
-    category: "Premium",
-    price: 899,
-    estimatedTime: "24 min",
-    seats: 4,
-    luggage: 3,
-    rating: 4.8,
-    features: ["Premium", "AC", "Professional driver"],
   },
 ];
 
@@ -528,18 +710,6 @@ export const stations: Station[] = [
     city: "Mysuru",
     state: "Karnataka",
   },
-  {
-    name: "Hubballi Junction",
-    code: "UBL",
-    city: "Hubballi",
-    state: "Karnataka",
-  },
-  {
-    name: "Mangaluru Central",
-    code: "MAQ",
-    city: "Mangaluru",
-    state: "Karnataka",
-  },
 
   {
     name: "MGR Chennai Central",
@@ -559,24 +729,6 @@ export const stations: Station[] = [
     city: "Coimbatore",
     state: "Tamil Nadu",
   },
-  {
-    name: "Madurai Junction",
-    code: "MDU",
-    city: "Madurai",
-    state: "Tamil Nadu",
-  },
-  {
-    name: "Tiruchirappalli Junction",
-    code: "TPJ",
-    city: "Trichy",
-    state: "Tamil Nadu",
-  },
-  {
-    name: "Salem Junction",
-    code: "SA",
-    city: "Salem",
-    state: "Tamil Nadu",
-  },
 
   {
     name: "Howrah Junction",
@@ -588,24 +740,6 @@ export const stations: Station[] = [
     name: "Sealdah",
     code: "SDAH",
     city: "Kolkata",
-    state: "West Bengal",
-  },
-  {
-    name: "Kolkata",
-    code: "KOAA",
-    city: "Kolkata",
-    state: "West Bengal",
-  },
-  {
-    name: "New Jalpaiguri",
-    code: "NJP",
-    city: "Siliguri",
-    state: "West Bengal",
-  },
-  {
-    name: "Asansol Junction",
-    code: "ASN",
-    city: "Asansol",
     state: "West Bengal",
   },
 
@@ -620,68 +754,6 @@ export const stations: Station[] = [
     code: "HYB",
     city: "Hyderabad",
     state: "Telangana",
-  },
-  {
-    name: "Kacheguda",
-    code: "KCG",
-    city: "Hyderabad",
-    state: "Telangana",
-  },
-  {
-    name: "Warangal",
-    code: "WL",
-    city: "Warangal",
-    state: "Telangana",
-  },
-
-  {
-    name: "Visakhapatnam",
-    code: "VSKP",
-    city: "Visakhapatnam",
-    state: "Andhra Pradesh",
-  },
-  {
-    name: "Vijayawada Junction",
-    code: "BZA",
-    city: "Vijayawada",
-    state: "Andhra Pradesh",
-  },
-  {
-    name: "Tirupati",
-    code: "TPTY",
-    city: "Tirupati",
-    state: "Andhra Pradesh",
-  },
-  {
-    name: "Guntur Junction",
-    code: "GNT",
-    city: "Guntur",
-    state: "Andhra Pradesh",
-  },
-
-  {
-    name: "Thiruvananthapuram Central",
-    code: "TVC",
-    city: "Thiruvananthapuram",
-    state: "Kerala",
-  },
-  {
-    name: "Ernakulam Junction",
-    code: "ERS",
-    city: "Kochi",
-    state: "Kerala",
-  },
-  {
-    name: "Kozhikode",
-    code: "CLT",
-    city: "Kozhikode",
-    state: "Kerala",
-  },
-  {
-    name: "Kannur",
-    code: "CAN",
-    city: "Kannur",
-    state: "Kerala",
   },
 
   {
@@ -700,12 +772,6 @@ export const stations: Station[] = [
     name: "Vadodara Junction",
     code: "BRC",
     city: "Vadodara",
-    state: "Gujarat",
-  },
-  {
-    name: "Rajkot Junction",
-    code: "RJT",
-    city: "Rajkot",
     state: "Gujarat",
   },
 
@@ -733,18 +799,6 @@ export const stations: Station[] = [
     city: "Ajmer",
     state: "Rajasthan",
   },
-  {
-    name: "Kota Junction",
-    code: "KOTA",
-    city: "Kota",
-    state: "Rajasthan",
-  },
-  {
-    name: "Bikaner Junction",
-    code: "BKN",
-    city: "Bikaner",
-    state: "Rajasthan",
-  },
 
   {
     name: "Lucknow NR",
@@ -765,27 +819,9 @@ export const stations: Station[] = [
     state: "Uttar Pradesh",
   },
   {
-    name: "Prayagraj Junction",
-    code: "PRYJ",
-    city: "Prayagraj",
-    state: "Uttar Pradesh",
-  },
-  {
     name: "Agra Cantt",
     code: "AGC",
     city: "Agra",
-    state: "Uttar Pradesh",
-  },
-  {
-    name: "Gorakhpur Junction",
-    code: "GKP",
-    city: "Gorakhpur",
-    state: "Uttar Pradesh",
-  },
-  {
-    name: "Mathura Junction",
-    code: "MTJ",
-    city: "Mathura",
     state: "Uttar Pradesh",
   },
 
@@ -801,12 +837,6 @@ export const stations: Station[] = [
     city: "Gaya",
     state: "Bihar",
   },
-  {
-    name: "Muzaffarpur Junction",
-    code: "MFP",
-    city: "Muzaffarpur",
-    state: "Bihar",
-  },
 
   {
     name: "Bhubaneswar",
@@ -818,12 +848,6 @@ export const stations: Station[] = [
     name: "Puri",
     code: "PURI",
     city: "Puri",
-    state: "Odisha",
-  },
-  {
-    name: "Cuttack",
-    code: "CTC",
-    city: "Cuttack",
     state: "Odisha",
   },
 
@@ -839,18 +863,6 @@ export const stations: Station[] = [
     city: "Indore",
     state: "Madhya Pradesh",
   },
-  {
-    name: "Jabalpur",
-    code: "JBP",
-    city: "Jabalpur",
-    state: "Madhya Pradesh",
-  },
-  {
-    name: "Gwalior Junction",
-    code: "GWL",
-    city: "Gwalior",
-    state: "Madhya Pradesh",
-  },
 
   {
     name: "Chandigarh",
@@ -862,18 +874,6 @@ export const stations: Station[] = [
     name: "Amritsar Junction",
     code: "ASR",
     city: "Amritsar",
-    state: "Punjab",
-  },
-  {
-    name: "Ludhiana Junction",
-    code: "LDH",
-    city: "Ludhiana",
-    state: "Punjab",
-  },
-  {
-    name: "Jalandhar City",
-    code: "JUC",
-    city: "Jalandhar",
     state: "Punjab",
   },
 
@@ -915,19 +915,6 @@ export const stations: Station[] = [
     city: "Jammu",
     state: "J&K",
   },
-  {
-    name: "Srinagar",
-    code: "SINA",
-    city: "Srinagar",
-    state: "J&K",
-  },
-
-  {
-    name: "Shimla",
-    code: "SML",
-    city: "Shimla",
-    state: "Himachal Pradesh",
-  },
 
   {
     name: "Guwahati",
@@ -940,13 +927,6 @@ export const stations: Station[] = [
     code: "DBRG",
     city: "Dibrugarh",
     state: "Assam",
-  },
-
-  {
-    name: "Agartala",
-    code: "AGTL",
-    city: "Agartala",
-    state: "Tripura",
   },
 
   {
@@ -999,6 +979,11 @@ export const suggestions = [
   "Overnight sleeper from Bengaluru to Chennai",
   "Fastest train Delhi → Lucknow under ₹1500",
   "Tatkal 3A from Patna to Howrah for Monday",
+  "Cheapest bus from Delhi to Jaipur",
+  "Non-stop flight from Delhi to Mumbai",
+  "Fastest metro route in Delhi",
+  "Ferry from Port Blair to Swaraj Dweep",
+  "Best hotel in Jaipur",
 ];
 
 // ============================================================
@@ -1006,34 +991,13 @@ export const suggestions = [
 // ============================================================
 
 export const travelClasses = [
-  {
-    code: "ALL",
-    label: "All classes",
-  },
-  {
-    code: "SL",
-    label: "Sleeper",
-  },
-  {
-    code: "3A",
-    label: "AC 3-Tier",
-  },
-  {
-    code: "2A",
-    label: "AC 2-Tier",
-  },
-  {
-    code: "1A",
-    label: "AC First",
-  },
-  {
-    code: "CC",
-    label: "AC Chair",
-  },
-  {
-    code: "EC",
-    label: "Exec. Chair",
-  },
+  { code: "ALL", label: "All classes" },
+  { code: "SL", label: "Sleeper" },
+  { code: "3A", label: "AC 3-Tier" },
+  { code: "2A", label: "AC 2-Tier" },
+  { code: "1A", label: "AC First" },
+  { code: "CC", label: "AC Chair" },
+  { code: "EC", label: "Exec. Chair" },
 ];
 
 // ============================================================
