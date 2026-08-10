@@ -173,10 +173,11 @@ function convertTrain(segment: Segment): Train {
 }
 
 /*
- * All train inventory.
- *
- * Route count comes directly from dummy-data.ts.
- */
+All train inventory.
+
+Route count comes directly from dummy-data.ts.
+*/
+
 export const trains: Train[] =
   generateInventoryResults("train").map(convertTrain);
 
@@ -292,7 +293,9 @@ function convertBus(
 }
 
 export const busRoutes: BusRoute[] =
-  generateInventoryResults("bus").map(convertBus);
+  generateInventoryResults("bus").map(
+    convertBus,
+  );
 
 /* ============================================================
 FLIGHT INVENTORY
@@ -891,6 +894,28 @@ export function searchStations(
 }
 
 /* ============================================================
+MEAL HELPERS
+============================================================ */
+
+/*
+Meal categories are derived from dummy-data.ts.
+
+This prevents maintaining a second duplicate meal-category
+database in inventory.ts.
+*/
+
+export type MealCategory =
+  (typeof meals)[number]["category"];
+
+export const mealCategories: MealCategory[] = [
+  ...new Set(
+    meals.map(
+      (meal) => meal.category,
+    ),
+  ),
+];
+
+/* ============================================================
 ROUTE COUNTS
 ============================================================ */
 
@@ -901,6 +926,193 @@ export const routeCounts = {
   metro: modeRoutes.metro.length,
   ferry: modeRoutes.ferry.length,
 };
+
+/*
+Returns the number of routes for a transport mode.
+
+Hotels are location/property based, so for hotel this returns
+the number of available hotel properties rather than a route count.
+*/
+
+export function routeCountFor(
+  mode: TransportMode,
+): number {
+  if (mode === "hotel") {
+    return hotels.length;
+  }
+
+  return routeCounts[mode];
+}
+
+/* ============================================================
+ROUTE PREVIEW
+============================================================ */
+
+export type RoutePreviewMode =
+  Exclude<TransportMode, "hotel">;
+
+export type RoutePreviewStop = {
+  name: string;
+  at: string;
+  km: number;
+  halt?: string;
+};
+
+export type RoutePreview = {
+  networkName: string;
+  distanceKm: number;
+  duration: string;
+  stops: RoutePreviewStop[];
+  note: string;
+};
+
+function formatRouteDuration(
+  totalMins: number,
+): string {
+  const mins =
+    Math.max(
+      0,
+      Math.round(totalMins),
+    );
+
+  const hours =
+    Math.floor(mins / 60);
+
+  const remaining =
+    mins % 60;
+
+  if (hours === 0) {
+    return `${remaining} min`;
+  }
+
+  if (remaining === 0) {
+    return `${hours} hr`;
+  }
+
+  return `${hours} hr ${remaining} min`;
+}
+
+/*
+Builds a deterministic route preview for the booking UI.
+
+The actual route catalog remains owned by dummy-data.ts.
+This function only converts route information into the
+display structure expected by RoutePreview.tsx.
+*/
+
+export function buildRoutePreview(
+  mode: RoutePreviewMode,
+  origin: string,
+  destination: string,
+  km: number,
+  totalMins: number,
+  seed: string,
+): RoutePreview {
+  const networkNames: Record<
+    RoutePreviewMode,
+    string
+  > = {
+    train: "Indian Rail Network",
+    bus: "Bharat Bus Network",
+    flight: "Indian Air Network",
+    metro: "Metro Network",
+    ferry: "Coastal Ferry Network",
+  };
+
+  const safeKm =
+    Math.max(
+      0,
+      Math.round(km),
+    );
+
+  const safeMins =
+    Math.max(
+      0,
+      Math.round(totalMins),
+    );
+
+  /*
+   * Keep previews simple for short routes and add
+   * intermediate points only for longer journeys.
+   */
+  const intermediateCount =
+    safeKm >= 900
+      ? 2
+      : safeKm >= 450
+        ? 1
+        : 0;
+
+  const stops: RoutePreviewStop[] = [
+    {
+      name: origin,
+      at: "Departure",
+      km: 0,
+    },
+  ];
+
+  for (
+    let i = 1;
+    i <= intermediateCount;
+    i++
+  ) {
+    const progress =
+      i /
+      (intermediateCount + 1);
+
+    const stopKm =
+      Math.round(
+        safeKm * progress,
+      );
+
+    const stopMins =
+      Math.round(
+        safeMins * progress,
+      );
+
+    stops.push({
+      name:
+        mode === "metro"
+          ? `Metro Point ${i}`
+          : `Transit Point ${i}`,
+
+      at:
+        `${stopMins} min`,
+
+      km:
+        stopKm,
+
+      halt:
+        mode === "train"
+          ? "2 min halt"
+          : undefined,
+    });
+  }
+
+  stops.push({
+    name: destination,
+    at: "Arrival",
+    km: safeKm,
+  });
+
+  return {
+    networkName:
+      networkNames[mode],
+
+    distanceKm:
+      safeKm,
+
+    duration:
+      formatRouteDuration(
+        safeMins,
+      ),
+
+    stops,
+
+    note:
+      `Route preview generated for ${origin} → ${destination}. ` +
+      `Preview seed: ${seed}.`,
+  };
+}
 
 /* ============================================================
 ROUTE ARRAYS — DIRECT ACCESS
@@ -1001,9 +1213,10 @@ export const routeIntegrity = {
 };
 
 /*
- * Returns true when the same exact directed route
- * is NOT shared by two different transport modes.
- */
+Returns true when the same exact directed route
+is shared by two different transport modes.
+*/
+
 export function hasCrossModeRouteDuplicate(): boolean {
   const modes: Exclude<
     TransportMode,
@@ -1059,4 +1272,7 @@ export default {
   popularStationCodes,
   routeCounts,
   inventorySummary,
+  mealCategories,
+  routeCountFor,
+  buildRoutePreview,
 };
