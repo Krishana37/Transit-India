@@ -1,4 +1,4 @@
-/*
+{/*
 IMPORTANT:
 This file is now an adapter around dummy-data.ts.
 
@@ -14,12 +14,20 @@ Therefore:
 - No transport mode shares another mode's route
 
 Do NOT maintain duplicate route arrays here.
-*/
+*/}
 
 import {
-  stations,
+  trainStations,
+  busStands,
+  airports,
+  metroStations,
+  seaports,
   type Station,
-  modeRoutes,
+  trainRoutes as trainRouteCatalog,
+  busRoutes as busRouteCatalog,
+  flightRoutes as flightRouteCatalog,
+  metroRoutes as metroRouteCatalog,
+  ferryRoutes as ferryRouteCatalog,
   famousHotelDestinations,
   allHotels,
   generateResults,
@@ -54,25 +62,27 @@ COMMON HELPERS
 
 const DEMO_DATE = new Date("2026-08-20T00:00:00");
 
-const DEFAULT_FROM =
-  stations.find((s) => s.code === "NDLS") ?? stations[0];
-
-const DEFAULT_TO =
-  stations.find((s) => s.code === "JP") ??
-  stations.find((s) => s.code !== DEFAULT_FROM.code) ??
-  stations[1];
-
 function generateInventoryResults(
   mode: Exclude<TransportMode, "hotel">,
 ): Segment[] {
-  return generateResults(
-    mode,
-    DEFAULT_FROM,
-    DEFAULT_TO,
-    DEMO_DATE,
-    "morning",
-    modeRoutes[mode].length,
-    `inventory-${mode}`,
+  const routes = {
+    train: trainRouteCatalog,
+    bus: busRouteCatalog,
+    flight: flightRouteCatalog,
+    metro: metroRouteCatalog,
+    ferry: ferryRouteCatalog,
+  }[mode];
+
+  return routes.flatMap((route, index) =>
+    generateResults(
+      mode,
+      route.from,
+      route.to,
+      DEMO_DATE,
+      "morning",
+      1,
+      `inventory-${mode}-${index}-${route.from.code}-${route.to.code}`,
+    ),
   );
 }
 
