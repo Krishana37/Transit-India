@@ -23,10 +23,30 @@ import {
   famousHotelDestinations,
   allHotels,
   generateResults,
+  allocateSeats,
+  computeFare,
+  demandIndex,
+  distanceKm,
+  meals,
+  seatState,
+  serviceDisruption,
+  transportModes,
   type Segment,
   type TransportMode,
   type HotelProperty,
 } from "./dummy-data";
+
+export {
+  allocateSeats,
+  computeFare,
+  demandIndex,
+  distanceKm,
+  generateResults,
+  meals,
+  seatState,
+  serviceDisruption,
+  transportModes,
+};
 
 /* ============================================================
 COMMON HELPERS
