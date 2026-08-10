@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Sparkles, X } from "lucide-react";
 import { useState } from "react";
+import yatraAIIcon from "@/assets/brand/yatra-ai-chatbot.png";
 
 export function AIChat() {
   const [open, setOpen] = useState(false);
@@ -11,13 +12,18 @@ export function AIChat() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-50 grid h-14 w-14 place-items-center rounded-full text-white shadow-2xl brand-gradient pulse-ring"
+        className="fixed bottom-6 right-6 z-50 grid h-16 w-16 place-items-center overflow-hidden rounded-full bg-white shadow-2xl ring-2 ring-primary/20 pulse-ring"
         aria-label="Open Yatra AI assistant"
       >
         {open ? (
-          <X className="h-6 w-6" />
+          <X className="h-6 w-6 text-foreground" />
         ) : (
-          <Bot className="h-6 w-6" />
+          <img
+            src={yatraAIIcon}
+            alt="Yatra AI"
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
         )}
       </motion.button>
 
@@ -36,8 +42,13 @@ export function AIChat() {
           >
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-border/60 px-4 py-3">
-              <div className="grid h-9 w-9 place-items-center rounded-full text-white brand-gradient">
-                <Sparkles className="h-4 w-4" />
+              <div className="h-9 w-9 overflow-hidden rounded-full bg-white">
+                <img
+                  src={yatraAIIcon}
+                  alt="Yatra AI"
+                  className="h-full w-full object-cover"
+                  draggable={false}
+                />
               </div>
 
               <div>
@@ -54,8 +65,13 @@ export function AIChat() {
             {/* Content */}
             <div className="flex flex-1 items-center justify-center px-6">
               <div className="text-center">
-                <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full brand-gradient text-white shadow-lg">
-                  <Bot className="h-8 w-8" />
+                <div className="mx-auto mb-4 h-20 w-20 overflow-hidden rounded-full bg-white shadow-lg ring-1 ring-border/60">
+                  <img
+                    src={yatraAIIcon}
+                    alt="Yatra AI"
+                    className="h-full w-full object-cover"
+                    draggable={false}
+                  />
                 </div>
 
                 <h3 className="text-lg font-semibold">
