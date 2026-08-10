@@ -1,22 +1,20 @@
-/* ============================================================
-   TRANSIT INDIA — INVENTORY
-   ============================================================
+/*
+IMPORTANT:
+This file is now an adapter around dummy-data.ts.
 
-   IMPORTANT:
-   This file is now an adapter around dummy-data.ts.
+Route generation is handled centrally by dummy-data.ts.
+Therefore:
 
-   Route generation is handled centrally by dummy-data.ts.
-   Therefore:
-   - Train routes are separate
-   - Bus routes are separate
-   - Flight routes are separate
-   - Metro routes are separate
-   - Ferry routes are separate
-   - Hotel is location based
-   - No transport mode shares another mode's route
+- Train routes are separate
+- Bus routes are separate
+- Flight routes are separate
+- Metro routes are separate
+- Ferry routes are separate
+- Hotel is location based
+- No transport mode shares another mode's route
 
-   Do NOT maintain duplicate route arrays here.
-============================================================ */
+Do NOT maintain duplicate route arrays here.
+*/
 
 import {
   stations,
@@ -31,7 +29,7 @@ import {
 } from "./dummy-data";
 
 /* ============================================================
-   COMMON HELPERS
+COMMON HELPERS
 ============================================================ */
 
 const DEMO_DATE = new Date("2026-08-20T00:00:00");
@@ -59,7 +57,7 @@ function generateInventoryResults(
 }
 
 /* ============================================================
-   TRAIN INVENTORY
+TRAIN INVENTORY
 ============================================================ */
 
 export type TrainClass = {
@@ -128,7 +126,6 @@ function convertTrain(segment: Segment): Train {
     id: segment.id,
 
     name: segment.name,
-
     number: segment.code,
 
     from: segment.from ?? "",
@@ -164,7 +161,7 @@ export const trains: Train[] =
   generateInventoryResults("train").map(convertTrain);
 
 /* ============================================================
-   BUS INVENTORY
+BUS INVENTORY
 ============================================================ */
 
 export type BusRoute = {
@@ -197,8 +194,12 @@ export type BusRoute = {
   amenities: string[];
 };
 
-function getBusType(segment: Segment): BusRoute["busType"] {
-  const tags = segment.tags.map((tag) => tag.toLowerCase());
+function getBusType(
+  segment: Segment,
+): BusRoute["busType"] {
+  const tags = segment.tags.map((tag) =>
+    tag.toLowerCase(),
+  );
 
   if (
     tags.some((tag) =>
@@ -227,7 +228,9 @@ function getBusType(segment: Segment): BusRoute["busType"] {
   return "Non-AC Seater";
 }
 
-function convertBus(segment: Segment): BusRoute {
+function convertBus(
+  segment: Segment,
+): BusRoute {
   const cheapest =
     segment.options.reduce(
       (best, current) =>
@@ -272,7 +275,7 @@ export const busRoutes: BusRoute[] =
   generateInventoryResults("bus").map(convertBus);
 
 /* ============================================================
-   FLIGHT INVENTORY
+FLIGHT INVENTORY
 ============================================================ */
 
 export type FlightRoute = {
@@ -391,7 +394,7 @@ export const flightRoutes: FlightRoute[] =
   );
 
 /* ============================================================
-   METRO INVENTORY
+METRO INVENTORY
 ============================================================ */
 
 export type MetroRoute = {
@@ -463,7 +466,9 @@ function convertMetro(
     frequency:
       segment.tags.find(
         (tag) =>
-          tag.toLowerCase().includes("every"),
+          tag
+            .toLowerCase()
+            .includes("every"),
       ) ??
       "Every 5 min",
 
@@ -477,7 +482,7 @@ export const metroRoutes: MetroRoute[] =
   );
 
 /* ============================================================
-   FERRY INVENTORY
+FERRY INVENTORY
 ============================================================ */
 
 export type FerryRoute = {
@@ -583,7 +588,7 @@ export const ferryRoutes: FerryRoute[] =
   );
 
 /* ============================================================
-   HOTEL INVENTORY
+HOTEL INVENTORY
 ============================================================ */
 
 export type Hotel = {
@@ -630,11 +635,13 @@ function hotelToLegacy(
   ];
 
   const roomType =
-    roomTypes[index % roomTypes.length];
+    roomTypes[
+      index % roomTypes.length
+    ];
 
   const originalPrice =
     Math.round(
-      hotel.priceFrom * 1.25 / 50,
+      (hotel.priceFrom * 1.25) / 50,
     ) * 50;
 
   return {
@@ -697,7 +704,7 @@ export const hotels: Hotel[] =
   );
 
 /* ============================================================
-   HOTEL DESTINATIONS
+HOTEL DESTINATIONS
 ============================================================ */
 
 export const hotelDestinations =
@@ -715,7 +722,7 @@ export const hotelDestinations =
   );
 
 /* ============================================================
-   PASSENGERS
+PASSENGERS
 ============================================================ */
 
 export type Passenger = {
@@ -745,62 +752,59 @@ export type Passenger = {
 
 export const savedPassengers:
   Passenger[] = [
-    {
-      id: "p1",
-      name: "Aarav Sharma",
-      age: 32,
-      gender: "M",
-      berth: "Lower",
-      idType: "Aadhaar",
-      idNumber: "XXXX-1234",
-    },
+  {
+    id: "p1",
+    name: "Aarav Sharma",
+    age: 32,
+    gender: "M",
+    berth: "Lower",
+    idType: "Aadhaar",
+    idNumber: "XXXX-1234",
+  },
 
-    {
-      id: "p2",
-      name: "Priya Iyer",
-      age: 29,
-      gender: "F",
-      berth: "Side Lower",
-      idType: "Aadhaar",
-      idNumber: "XXXX-5581",
-    },
+  {
+    id: "p2",
+    name: "Priya Iyer",
+    age: 29,
+    gender: "F",
+    berth: "Side Lower",
+    idType: "Aadhaar",
+    idNumber: "XXXX-5581",
+  },
 
-    {
-      id: "p3",
-      name: "Rohan Mehta",
-      age: 8,
-      gender: "M",
-      berth: "No Preference",
-      idType: "Birth Cert.",
-      idNumber: "BC-2017-9921",
-    },
+  {
+    id: "p3",
+    name: "Rohan Mehta",
+    age: 8,
+    gender: "M",
+    berth: "No Preference",
+    idType: "Birth Cert.",
+    idNumber: "BC-2017-9921",
+  },
 
-    {
-      id: "p4",
-      name: "Ananya Rao",
-      age: 67,
-      gender: "F",
-      berth: "Lower",
-      idType: "Sr. Citizen",
-      idNumber: "SC-1958-7712",
-    },
-  ];
+  {
+    id: "p4",
+    name: "Ananya Rao",
+    age: 67,
+    gender: "F",
+    berth: "Lower",
+    idType: "Sr. Citizen",
+    idNumber: "SC-1958-7712",
+  },
+];
 
-/* ============================================================
-   STATIONS
-   ============================================================
+/*
+Re-export stations from dummy-data.ts so old imports such as:
 
-   Re-export stations from dummy-data.ts so old imports such as:
+import { stations } from "./inventory";
 
-   import { stations } from "./inventory";
-
-   continue working.
-============================================================ */
+continue working.
+*/
 
 export { stations };
 
 /* ============================================================
-   POPULAR STATIONS
+POPULAR STATIONS
 ============================================================ */
 
 export const popularStationCodes = [
@@ -817,7 +821,7 @@ export const popularStationCodes = [
 ];
 
 /* ============================================================
-   SEARCH HELPERS
+SEARCH HELPERS
 ============================================================ */
 
 export function findStation(
@@ -867,7 +871,7 @@ export function searchStations(
 }
 
 /* ============================================================
-   ROUTE COUNTS
+ROUTE COUNTS
 ============================================================ */
 
 export const routeCounts = {
@@ -879,7 +883,7 @@ export const routeCounts = {
 };
 
 /* ============================================================
-   ROUTE ARRAYS — DIRECT ACCESS
+ROUTE ARRAYS — DIRECT ACCESS
 ============================================================ */
 
 export const trainRoutes =
@@ -901,7 +905,7 @@ export const uniqueFerryRoutes =
   modeRoutes.ferry;
 
 /* ============================================================
-   MODE SUMMARY
+MODE SUMMARY
 ============================================================ */
 
 export const inventorySummary = {
@@ -913,21 +917,27 @@ export const inventorySummary = {
   hotels: hotels.length,
 
   routes: {
-    train: modeRoutes.train.length,
-    bus: modeRoutes.bus.length,
-    flight: modeRoutes.flight.length,
-    metro: modeRoutes.metro.length,
-    ferry: modeRoutes.ferry.length,
+    train:
+      modeRoutes.train.length,
+
+    bus:
+      modeRoutes.bus.length,
+
+    flight:
+      modeRoutes.flight.length,
+
+    metro:
+      modeRoutes.metro.length,
+
+    ferry:
+      modeRoutes.ferry.length,
   },
 };
 
-/* ============================================================
-   SAFETY CHECK
-============================================================
-
-   These checks make accidental duplicate route reuse
-   between transport modes visible during development.
-============================================================ */
+/*
+These checks make accidental duplicate route reuse
+between transport modes visible during development.
+*/
 
 function routeKey(
   fromCode: string,
@@ -937,7 +947,10 @@ function routeKey(
 }
 
 function getRouteKeys(
-  mode: Exclude<TransportMode, "hotel">,
+  mode: Exclude<
+    TransportMode,
+    "hotel"
+  >,
 ): Set<string> {
   return new Set(
     modeRoutes[mode].map(
@@ -951,11 +964,20 @@ function getRouteKeys(
 }
 
 export const routeIntegrity = {
-  train: getRouteKeys("train"),
-  bus: getRouteKeys("bus"),
-  flight: getRouteKeys("flight"),
-  metro: getRouteKeys("metro"),
-  ferry: getRouteKeys("ferry"),
+  train:
+    getRouteKeys("train"),
+
+  bus:
+    getRouteKeys("bus"),
+
+  flight:
+    getRouteKeys("flight"),
+
+  metro:
+    getRouteKeys("metro"),
+
+  ferry:
+    getRouteKeys("ferry"),
 };
 
 /*
@@ -1002,7 +1024,7 @@ export function hasCrossModeRouteDuplicate(): boolean {
 }
 
 /* ============================================================
-   DEFAULT EXPORT
+DEFAULT EXPORT
 ============================================================ */
 
 export default {
