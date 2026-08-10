@@ -1,7 +1,8 @@
 import { stations, type Station } from "./dummy-data";
 
 /* =========================================================
-TRANSPORT MODES
+   TRANSPORT MODES
+   CAB IS NOT PART OF NORMAL TRANSPORT SEARCH
 ========================================================= */
 
 export type TransportMode =
@@ -10,8 +11,7 @@ export type TransportMode =
   | "flight"
   | "hotel"
   | "metro"
-  | "ferry"
-  | "cab";
+  | "ferry";
 
 export const transportModes: {
   id: TransportMode;
@@ -48,18 +48,13 @@ export const transportModes: {
     label: "Ferry",
     blurb: "Coastal and island crossings",
   },
-  {
-    id: "cab",
-    label: "Cabber",
-    blurb: "Door-to-door city and intercity rides",
-  },
 ];
 
 /* =========================================================
-DETERMINISTIC PSEUDO-RANDOMNESS
+   DETERMINISTIC PSEUDO-RANDOMNESS
 ========================================================= */
 
-function hash(str: string) {
+function hash(str: string): number {
   let h = 2166136261;
 
   for (let i = 0; i < str.length; i++) {
@@ -70,51 +65,62 @@ function hash(str: string) {
   return Math.abs(h);
 }
 
-function rand(seed: string, min: number, max: number) {
+function rand(
+  seed: string,
+  min: number,
+  max: number,
+): number {
   const h = hash(seed);
   return min + ((h % 10000) / 10000) * (max - min);
 }
 
+/* FIXED: generic type added here */
 function pick<T>(seed: string, arr: T[]): T {
-  if (!arr.length) {
-    throw new Error("Cannot pick from an empty array");
-  }
-
   return arr[hash(seed) % arr.length];
 }
 
 /* =========================================================
-DISTANCE
+   DISTANCE
 ========================================================= */
 
-export function distanceKm(from: Station, to: Station) {
+export function distanceKm(
+  from: Station,
+  to: Station,
+): number {
   if (from.code === to.code) return 0;
 
-  const key = [from.code, to.code].sort().join("-");
+  const key = [from.code, to.code]
+    .sort()
+    .join("-");
 
-  return Math.round(rand(key, 140, 2100));
+  return Math.round(
+    rand(key, 140, 2100),
+  );
 }
 
 /* =========================================================
-DEMAND
+   DEMAND
 ========================================================= */
 
 export function demandIndex(
   from: Station,
   to: Station,
   date: Date,
-) {
+): number {
   const day = date.getDay();
 
   const weekend =
-    day === 0 || day === 5 || day === 6
+    day === 0 ||
+    day === 5 ||
+    day === 6
       ? 0.12
       : 0;
 
   const daysAway = Math.max(
     0,
-    Math.floor(
-      (date.getTime() - Date.now()) / 86400000,
+    Math.round(
+      (date.getTime() - Date.now()) /
+        86400000,
     ),
   );
 
@@ -140,7 +146,7 @@ export function demandIndex(
 }
 
 /* =========================================================
-FARE MULTIPLIERS
+   FARE MULTIPLIERS
 ========================================================= */
 
 export const classMultiplier: Record<
@@ -185,38 +191,35 @@ export const classMultiplier: Record<
   /* Ferry */
   DECK: 1,
   CABIN: 2.2,
-
-  /* Cab */
-  MINI: 0.85,
-  SEDAN: 1.1,
-  SUV: 1.5,
-  CAB_PREMIUM: 1.9,
 };
 
 /* =========================================================
-FESTIVAL
+   FESTIVAL
 ========================================================= */
 
-export function festivalBoost(date: Date) {
+export function festivalBoost(
+  date: Date,
+): number {
   const month = date.getMonth() + 1;
   const day = date.getDate();
 
-  /*
-   * Synthetic festival periods for prototype pricing.
-   * This is intentionally deterministic.
-   */
+  const festiveMonths = [
+    3,
+    8,
+    10,
+    11,
+    12,
+  ];
+
   const festive =
-    (month === 3 && day >= 1 && day <= 5) ||
-    (month === 8 && day >= 10 && day <= 15) ||
-    (month === 10 && day >= 20 && day <= 31) ||
-    (month === 11 && day >= 1 && day <= 15) ||
-    (month === 12 && day >= 20 && day <= 31);
+    festiveMonths.includes(month) &&
+    day % 7 < 3;
 
   return festive ? 1.16 : 1;
 }
 
 /* =========================================================
-DYNAMIC PRICE FACTORS
+   DYNAMIC PRICE FACTORS
 ========================================================= */
 
 export function priceFactors(opts: {
@@ -224,7 +227,7 @@ export function priceFactors(opts: {
   departHour?: number;
   seatShare?: number;
   seed: string;
-}) {
+}): number {
   const {
     date,
     departHour = 9,
@@ -235,25 +238,30 @@ export function priceFactors(opts: {
   const day = date.getDay();
 
   const weekend =
-    day === 0 || day === 5 || day === 6
+    day === 0 ||
+    day === 5 ||
+    day === 6
       ? 1.08
       : 1;
 
   const peak =
-    (departHour >= 7 && departHour <= 10) ||
-    (departHour >= 17 && departHour <= 21)
+    (departHour >= 7 &&
+      departHour <= 10) ||
+    (departHour >= 17 &&
+      departHour <= 21)
       ? 1.12
       : departHour <= 5
         ? 0.9
         : 1;
 
-  const safeSeatShare = Math.max(
-    0,
-    Math.min(1, seatShare),
-  );
-
   const scarcity =
-    1 + (1 - safeSeatShare) * 0.18;
+    1 +
+    (1 -
+      Math.max(
+        0,
+        Math.min(1, seatShare),
+      )) *
+      0.18;
 
   const jitter =
     0.95 + rand(seed, 0, 0.12);
@@ -270,7 +278,7 @@ export function priceFactors(opts: {
 }
 
 /* =========================================================
-FARE CALCULATION
+   FARE
 ========================================================= */
 
 export function computeFare(
@@ -279,7 +287,7 @@ export function computeFare(
   demand: number,
   base = 0.62,
   factor = 1,
-) {
+): number {
   const mult =
     classMultiplier[classCode] ?? 1;
 
@@ -289,14 +297,11 @@ export function computeFare(
     demand *
     factor;
 
-  return Math.max(
-    10,
-    Math.round(raw / 5) * 5,
-  );
+  return Math.round(raw / 5) * 5;
 }
 
 /* =========================================================
-OPERATORS
+   OPERATORS
 ========================================================= */
 
 const trainPrefix = [
@@ -376,28 +381,8 @@ const ferryOperators = [
   "Coastal Bharat",
 ];
 
-const cabOperators = [
-  "Transit Cabber",
-  "CityRide Cabber",
-  "GoTransit",
-  "Bharat Cabber",
-  "UrbanRide",
-  "QuickMove",
-];
-
 /* =========================================================
-BERTH CLASSES
-========================================================= */
-
-const berthClasses = [
-  "SL",
-  "3A",
-  "2A",
-  "1A",
-];
-
-/* =========================================================
-RESULT TYPE
+   RESULT TYPE
 ========================================================= */
 
 export type Segment = {
@@ -430,10 +415,12 @@ export type Segment = {
 };
 
 /* =========================================================
-UTILITIES
+   UTILITIES
 ========================================================= */
 
-function fmtDuration(mins: number) {
+function fmtDuration(
+  mins: number,
+): string {
   return `${Math.floor(mins / 60)}h ${String(
     mins % 60,
   ).padStart(2, "0")}m`;
@@ -442,7 +429,7 @@ function fmtDuration(mins: number) {
 function addMinutes(
   hhmm: string,
   mins: number,
-) {
+): string {
   const [h, m] = hhmm
     .split(":")
     .map(Number);
@@ -464,12 +451,12 @@ const slotStart: Record<
   early: 2,
   morning: 6,
   afternoon: 13,
-  evening: 17,
   night: 19,
 };
 
 /* =========================================================
-CLASS LADDERS
+   CLASS LADDERS
+   CAB REMOVED
 ========================================================= */
 
 export const classLadder: Record<
@@ -577,29 +564,10 @@ export const classLadder: Record<
       label: "Cabin",
     },
   ],
-
-  cab: [
-    {
-      code: "MINI",
-      label: "Mini",
-    },
-    {
-      code: "SEDAN",
-      label: "Sedan",
-    },
-    {
-      code: "SUV",
-      label: "SUV",
-    },
-    {
-      code: "CAB_PREMIUM",
-      label: "Premium",
-    },
-  ],
 };
 
 /* =========================================================
-RAC / WL
+   RAC / WL
 ========================================================= */
 
 export const racWlClasses = [
@@ -612,7 +580,7 @@ export const racWlClasses = [
 export function supportsRacWl(
   mode: string,
   classCode: string,
-) {
+): boolean {
   return (
     mode === "train" &&
     racWlClasses.includes(
@@ -622,7 +590,7 @@ export function supportsRacWl(
 }
 
 /* =========================================================
-DEMO ROUTE
+   ROUTE TYPES
 ========================================================= */
 
 type DemoRoute = {
@@ -645,14 +613,11 @@ function route(
   if (!from || !to) return null;
   if (from.code === to.code) return null;
 
-  return {
-    from,
-    to,
-  };
+  return { from, to };
 }
 
 /* =========================================================
-SAFE UNIQUE ROUTE BUILDER
+   GUARANTEED UNIQUE ROUTES
 ========================================================= */
 
 function buildUniqueRoutes(
@@ -671,66 +636,41 @@ function buildUniqueRoutes(
 
   for (const from of shuffled) {
     for (const to of shuffled) {
-      if (result.length >= count) {
+      if (result.length >= count)
         break;
-      }
 
-      if (from.code === to.code) {
+      if (from.code === to.code)
         continue;
-      }
 
-      const key =
-        `${from.code}-${to.code}`;
+      const key = `${from.code}-${to.code}`;
 
-      if (used.has(key)) {
+      if (used.has(key))
         continue;
-      }
 
-      if (excluded.has(key)) {
+      if (excluded.has(key))
         continue;
-      }
 
       used.add(key);
-
       result.push({
         from,
         to,
       });
     }
 
-    if (result.length >= count) {
+    if (result.length >= count)
       break;
-    }
   }
 
   return result;
 }
 
-/* =========================================================
-INDEPENDENT ROUTE NETWORKS
-========================================================= */
-
-/*
- * IMPORTANT:
- * Every mode gets its own route pool.
- *
- * Train routes != Bus routes
- * Bus routes != Flight routes
- * Flight routes != Metro routes
- * Metro routes != Ferry routes
- * Ferry routes != Cab routes
- */
-
-const allUsedRoutes = new Set<string>();
+const allUsedRoutes =
+  new Set<string>();
 
 function getModeRoutes(
   mode: TransportMode,
   count = 30,
 ): DemoRoute[] {
-  if (mode === "hotel") {
-    return [];
-  }
-
   const routes =
     buildUniqueRoutes(
       `Transit-India-${mode}`,
@@ -762,33 +702,8 @@ export const uniqueMetroRoutes =
 export const uniqueFerryRoutes =
   getModeRoutes("ferry", 30);
 
-export const uniqueCabRoutes =
-  getModeRoutes("cab", 30);
-
 /* =========================================================
-BACKWARD-COMPATIBLE NAMED ROUTES
-========================================================= */
-
-export const trainRoutes =
-  uniqueTrainRoutes;
-
-export const busRoutes =
-  uniqueBusRoutes;
-
-export const flightRoutes =
-  uniqueFlightRoutes;
-
-export const metroRoutes =
-  uniqueMetroRoutes;
-
-export const ferryRoutes =
-  uniqueFerryRoutes;
-
-export const cabRoutes =
-  uniqueCabRoutes;
-
-/* =========================================================
-HOTEL DESTINATIONS
+   HOTEL DESTINATIONS
 ========================================================= */
 
 export type HotelDestination = {
@@ -829,7 +744,8 @@ export const famousHotelDestinations: HotelDestination[] =
       id: "hotel-varanasi",
       city: "Varanasi",
       state: "Uttar Pradesh",
-      landmark: "Dashashwamedh Ghat",
+      landmark:
+        "Dashashwamedh Ghat",
       description:
         "Historic spiritual destination on the banks of the Ganga.",
     },
@@ -884,7 +800,7 @@ export const famousHotelDestinations: HotelDestination[] =
   ];
 
 /* =========================================================
-ROUTE POOL
+   ROUTE SELECTION
 ========================================================= */
 
 function routePoolFor(
@@ -906,16 +822,13 @@ function routePoolFor(
     case "ferry":
       return uniqueFerryRoutes;
 
-    case "cab":
-      return uniqueCabRoutes;
-
     default:
       return uniqueTrainRoutes;
   }
 }
 
 /* =========================================================
-RESULT GENERATOR
+   RESULT GENERATOR
 ========================================================= */
 
 export function generateResults(
@@ -924,12 +837,12 @@ export function generateResults(
   to: Station,
   date: Date,
   slot = "morning",
-  count = mode === "hotel" ? 1 : 30,
+  count = mode === "hotel"
+    ? 1
+    : 30,
   nonce = "",
 ): Segment[] {
-  /* =======================================================
-     HOTEL
-     ======================================================= */
+  /* HOTEL */
 
   if (mode === "hotel") {
     const destination =
@@ -945,52 +858,63 @@ export function generateResults(
         .toISOString()
         .slice(0, 10)}`;
 
+    const demand = 1;
+
     const ladder =
       classLadder.hotel;
 
+    const depart = "14:00";
+
     const options =
-      ladder.map(({ code, label }) => {
-        const available =
-          2 +
-          (hash(seed + code) % 12);
+      ladder.map(
+        ({ code, label }) => {
+          const available =
+            2 +
+            (hash(seed + code) %
+              12);
 
-        const factor =
-          priceFactors({
-            date,
-            departHour: 14,
-            seatShare:
-              available / 15,
-            seed: seed + code,
-          });
+          const factor =
+            priceFactors({
+              date,
+              departHour: 14,
+              seatShare:
+                available / 15,
+              seed:
+                seed + code,
+            });
 
-        return {
-          code,
-          label,
-          fare: computeFare(
-            60,
+          return {
             code,
-            1,
-            12,
-            factor,
-          ),
-          available,
-          probability:
-            92 +
-            (hash(seed + code) % 8),
-        };
-      });
+            label,
+            fare: computeFare(
+              60,
+              code,
+              demand,
+              12,
+              factor,
+            ),
+            available,
+            probability:
+              92 +
+              (hash(seed + code) %
+                8),
+          };
+        },
+      );
 
     return [
       {
         id: seed,
         mode: "hotel",
+
         name: `${pick(
           seed,
           hotelNames,
         )} — ${destination.landmark}`,
 
         code: `HTL-${
-          1000 + (hash(seed) % 8000)
+          1000 +
+          (hash(seed) % 8000)
         }`,
 
         operator:
@@ -1002,10 +926,10 @@ export function generateResults(
         to: destination.city,
         toCode: undefined,
 
-        depart: "14:00",
+        depart,
         arrive: "11:00",
 
-        durationMins: 1440,
+        durationMins: 1260,
         duration: "1 night",
 
         distanceKm:
@@ -1031,22 +955,15 @@ export function generateResults(
     ];
   }
 
-  /* =======================================================
-     TRANSPORT ROUTES
-     ======================================================= */
+  /* ALL OTHER NORMAL TRANSPORT */
 
   const routes =
     routePoolFor(mode);
 
-  if (!routes.length) {
-    return [];
-  }
-
-  const actualCount =
-    Math.min(
-      Math.max(count, 1),
-      routes.length,
-    );
+  const actualCount = Math.min(
+    Math.max(count, 1),
+    routes.length,
+  );
 
   const dayKey = date
     .toISOString()
@@ -1059,7 +976,9 @@ export function generateResults(
     length: actualCount,
   }).map((_, i) => {
     const selectedRoute =
-      routes[i % routes.length];
+      routes[
+        i % routes.length
+      ];
 
     const routeFrom =
       selectedRoute.from;
@@ -1081,7 +1000,9 @@ export function generateResults(
 
     const seed =
       `${mode}-${routeFrom.code}-${routeTo.code}-${dayKey}-${i}${
-        nonce ? `-${nonce}` : ""
+        nonce
+          ? `-${nonce}`
+          : ""
       }`;
 
     const depart =
@@ -1106,23 +1027,28 @@ export function generateResults(
     const ladder =
       classLadder[mode];
 
-    const buildOptions = (opts: {
-      fareKm: number;
-      base: number;
-      capacity: (
-        code: string,
-      ) => number;
-      probability: (
-        code: string,
-        available: number,
-      ) => number;
-    }) =>
+    const buildOptions = (
+      opts: {
+        fareKm: number;
+        base: number;
+        capacity: (
+          code: string,
+        ) => number;
+        probability: (
+          code: string,
+          available: number,
+        ) => number;
+      },
+    ) =>
       ladder.map(
         ({ code, label }) => {
           const available =
+            opts.capacity(code);
+
+          const cap =
             Math.max(
-              0,
-              opts.capacity(code),
+              available,
+              1,
             );
 
           const factor =
@@ -1133,7 +1059,7 @@ export function generateResults(
                 Math.min(
                   1,
                   available /
-                    (available + 20),
+                    (cap + 20),
                 ),
               seed:
                 seed + code,
@@ -1142,7 +1068,6 @@ export function generateResults(
           return {
             code,
             label,
-
             fare: computeFare(
               opts.fareKm,
               code,
@@ -1150,9 +1075,7 @@ export function generateResults(
               opts.base,
               factor,
             ),
-
             available,
-
             probability:
               opts.probability(
                 code,
@@ -1164,7 +1087,7 @@ export function generateResults(
 
     /* =====================================================
        FLIGHT
-       ===================================================== */
+    ===================================================== */
 
     if (mode === "flight") {
       const mins =
@@ -1172,25 +1095,29 @@ export function generateResults(
           km / 12 + 45,
         );
 
-      const airline =
-        pick(seed, airlines);
+      const airline = pick(
+        seed,
+        airlines,
+      );
 
       return {
         id: seed,
-        mode: "flight",
+        mode,
 
         name: airline,
 
         code: `${airline
           .slice(0, 2)
           .toUpperCase()}-${
-          300 + (hash(seed) % 600)
+          300 +
+          (hash(seed) % 600)
         }`,
 
         operator: airline,
 
         from: routeFrom.city,
-        fromCode: routeFrom.code,
+        fromCode:
+          routeFrom.code,
 
         to: routeTo.city,
         toCode: routeTo.code,
@@ -1220,33 +1147,34 @@ export function generateResults(
           ],
         ),
 
-        options:
-          buildOptions({
-            fareKm: km,
-            base: 0.42,
+        options: buildOptions({
+          fareKm: km,
+          base: 0.42,
 
-            capacity: (c) =>
-              2 +
-              (hash(seed + c) %
-                (c === "BUSINESS"
-                  ? 12
-                  : 40)),
+          capacity: (c) =>
+            2 +
+            (hash(seed + c) %
+              (c === "BUSINESS"
+                ? 12
+                : 40)),
 
-            probability: (c) =>
-              90 +
-              (hash(seed + c) %
-                10),
-          }),
+          probability: (c) =>
+            90 +
+            (hash(seed + c) %
+              10),
+        }),
       };
     }
 
     /* =====================================================
        METRO
-       ===================================================== */
+    ===================================================== */
 
     if (mode === "metro") {
-      const line =
-        pick(seed, metroLines);
+      const line = pick(
+        seed,
+        metroLines,
+      );
 
       const mins =
         18 +
@@ -1254,16 +1182,18 @@ export function generateResults(
 
       return {
         id: seed,
-        mode: "metro",
+        mode,
 
         name: `${line} · ${routeFrom.city} Metro`,
 
         code: `MTR-${
-          10 + (hash(seed) % 80)
+          10 +
+          (hash(seed) % 80)
         }`,
 
         from: routeFrom.city,
-        fromCode: routeFrom.code,
+        fromCode:
+          routeFrom.code,
 
         to: routeTo.city,
         toCode: routeTo.code,
@@ -1280,7 +1210,8 @@ export function generateResults(
           fmtDuration(mins),
 
         distanceKm:
-          4 + (hash(seed) % 30),
+          4 +
+          (hash(seed) % 30),
 
         tags: [
           "Every 5 min",
@@ -1288,28 +1219,26 @@ export function generateResults(
           "City rapid transit",
         ],
 
-        options:
-          buildOptions({
-            fareKm: 20,
-            base: 1.4,
+        options: buildOptions({
+          fareKm: 20,
+          base: 1.4,
 
-            capacity: () => 400,
+          capacity: () => 400,
 
-            probability: () => 100,
-          }),
+          probability: () => 100,
+        }),
       };
     }
 
     /* =====================================================
        FERRY
-       ===================================================== */
+    ===================================================== */
 
     if (mode === "ferry") {
-      const operator =
-        pick(
-          seed,
-          ferryOperators,
-        );
+      const op = pick(
+        seed,
+        ferryOperators,
+      );
 
       const mins =
         60 +
@@ -1317,18 +1246,20 @@ export function generateResults(
 
       return {
         id: seed,
-        mode: "ferry",
+        mode,
 
-        name: `${operator} Crossing`,
+        name: `${op} Crossing`,
 
         code: `FRY-${
-          100 + (hash(seed) % 400)
+          100 +
+          (hash(seed) % 400)
         }`,
 
-        operator,
+        operator: op,
 
         from: routeFrom.city,
-        fromCode: routeFrom.code,
+        fromCode:
+          routeFrom.code,
 
         to: routeTo.city,
         toCode: routeTo.code,
@@ -1345,10 +1276,7 @@ export function generateResults(
           fmtDuration(mins),
 
         distanceKm:
-          Math.max(
-            10,
-            Math.round(km / 6),
-          ),
+          Math.round(km / 6),
 
         tags: [
           "Sea route",
@@ -1356,120 +1284,34 @@ export function generateResults(
           "Coastal service",
         ],
 
-        options:
-          buildOptions({
-            fareKm:
-              Math.max(
-                10,
-                Math.round(km / 6),
-              ),
+        options: buildOptions({
+          fareKm:
+            Math.round(km / 6),
 
-            base: 1.1,
+          base: 1.1,
 
-            capacity: (c) =>
-              10 +
-              (hash(seed + c) %
-                90),
+          capacity: (c) =>
+            10 +
+            (hash(seed + c) %
+              90),
 
-            probability: (c) =>
-              88 +
-              (hash(seed + c) %
-                12),
-          }),
-      };
-    }
-
-    /* =====================================================
-       CAB
-       ===================================================== */
-
-    if (mode === "cab") {
-      const operator =
-        pick(
-          seed,
-          cabOperators,
-        );
-
-      const mins =
-        Math.round(
-          km / 0.9 + 15,
-        );
-
-      return {
-        id: seed,
-        mode: "cab",
-
-        name: operator,
-
-        code: `CAB-${
-          1000 + (hash(seed) % 9000)
-        }`,
-
-        operator,
-
-        from: routeFrom.city,
-        fromCode: routeFrom.code,
-
-        to: routeTo.city,
-        toCode: routeTo.code,
-
-        depart,
-
-        arrive: addMinutes(
-          depart,
-          mins,
-        ),
-
-        durationMins: mins,
-        duration:
-          fmtDuration(mins),
-
-        distanceKm: km,
-
-        tags: pick(
-          seed + "t",
-          [
-            [
-              "Live driver tracking",
-              "AC",
-            ],
-            [
-              "Fast pickup",
-              "GPS tracking",
-            ],
-            [
-              "Verified driver",
-              "Charging point",
-            ],
-            [
-              "Door-to-door",
-              "24×7 service",
-            ],
-          ],
-        ),
-
-        options:
-          buildOptions({
-            fareKm: km,
-            base: 0.8,
-
-            capacity: () => 1,
-
-            probability: () => 98,
-          }),
+          probability: (c) =>
+            88 +
+            (hash(seed + c) %
+              12),
+        }),
       };
     }
 
     /* =====================================================
        BUS
-       ===================================================== */
+    ===================================================== */
 
     if (mode === "bus") {
-      const operator =
-        pick(
-          seed,
-          busOperators,
-        );
+      const op = pick(
+        seed,
+        busOperators,
+      );
 
       const mins =
         Math.round(
@@ -1478,18 +1320,20 @@ export function generateResults(
 
       return {
         id: seed,
-        mode: "bus",
+        mode,
 
-        name: operator,
+        name: op,
 
         code: `BUS-${
-          1000 + (hash(seed) % 9000)
+          1000 +
+          (hash(seed) % 9000)
         }`,
 
-        operator,
+        operator: op,
 
         from: routeFrom.city,
-        fromCode: routeFrom.code,
+        fromCode:
+          routeFrom.code,
 
         to: routeTo.city,
         toCode: routeTo.code,
@@ -1519,31 +1363,27 @@ export function generateResults(
           ],
         ),
 
-        options:
-          buildOptions({
-            fareKm: km,
-            base: 0.5,
+        options: buildOptions({
+          fareKm: km,
+          base: 0.5,
 
-            capacity: (c) =>
-              4 +
-              (hash(seed + c) %
-                32),
+          capacity: (c) =>
+            4 +
+            (hash(seed + c) %
+              32),
 
-            probability: (
-              _c,
-              available,
-            ) =>
-              Math.min(
-                99,
-                55 + available,
-              ),
-          }),
+          probability: (c, a) =>
+            Math.min(
+              99,
+              55 + a,
+            ),
+        }),
       };
     }
 
     /* =====================================================
        TRAIN
-       ===================================================== */
+    ===================================================== */
 
     const mins =
       Math.round(
@@ -1571,7 +1411,8 @@ export function generateResults(
       ),
 
       from: routeFrom.city,
-      fromCode: routeFrom.code,
+      fromCode:
+        routeFrom.code,
 
       to: routeTo.city,
       toCode: routeTo.code,
@@ -1602,44 +1443,39 @@ export function generateResults(
         ],
       ),
 
-      options:
-        buildOptions({
-          fareKm: km,
-          base: 0.62,
+      options: buildOptions({
+        fareKm: km,
+        base: 0.62,
 
-          capacity: (c) =>
-            c === "GEN"
-              ? 60 +
+        capacity: (c) =>
+          c === "GEN"
+            ? 60 +
+              (hash(seed + c) %
+                120)
+            : c === "1A"
+              ? 4 +
                 (hash(seed + c) %
-                  120)
-              : c === "1A"
-                ? 4 +
-                  (hash(
-                    seed + c,
-                  ) % 14)
-                : hash(
-                      seed + c,
-                    ) % 46,
-
-          probability: (
-            c,
-            available,
-          ) =>
-            Math.min(
-              99,
-              30 +
-                available +
-                (hash(
+                  14)
+              : hash(
                   seed + c,
-                ) % 20),
-            ),
-        }),
+                ) % 46,
+
+        probability: (c, a) =>
+          Math.min(
+            99,
+            30 +
+              a +
+              (hash(
+                seed + c,
+              ) % 20),
+          ),
+      }),
     };
   });
 }
 
 /* =========================================================
-STATIONS
+   STATIONS
 ========================================================= */
 
 export function findStation(
@@ -1656,7 +1492,7 @@ export function searchStations(
   term: string,
   exclude?: string,
   limit = 30,
-) {
+): Station[] {
   const q =
     term.trim().toLowerCase();
 
@@ -1699,11 +1535,11 @@ export const popularStationCodes = [
 
 export const routeCountFor = (
   s: Station,
-) =>
+): number =>
   30 + (hash(s.code) % 20);
 
 /* =========================================================
-MEALS
+   MEALS
 ========================================================= */
 
 export const mealCategories = [
@@ -1996,7 +1832,7 @@ export const meals: Meal[] = [
     category: "Special",
     price: 210,
     veg: true,
-    note: "Prototype special-diet menu",
+    note: "Prototype special meal",
   },
   {
     id: "gluten-free",
@@ -2087,7 +1923,8 @@ export const meals: Meal[] = [
 ];
 
 /* =========================================================
-INDEPENDENT ROUTE NETWORKS
+   INDEPENDENT ROUTE NETWORKS
+   CAB REMAINS ONLY FOR SEPARATE CAB SECTION
 ========================================================= */
 
 export type RouteMode =
@@ -2227,15 +2064,11 @@ const networkNodes: Record<
   },
 };
 
-/* =========================================================
-PICK MANY
-========================================================= */
-
 function pickMany(
   seed: string,
   arr: string[],
   n: number,
-) {
+): string[] {
   const out: string[] = [];
 
   let h = hash(seed);
@@ -2252,23 +2085,17 @@ function pickMany(
       16777619,
     );
 
-    const index =
-      Math.abs(h) % pool.length;
-
-    const selected =
-      pool.splice(index, 1)[0];
-
-    if (selected) {
-      out.push(selected);
-    }
+    out.push(
+      pool.splice(
+        Math.abs(h) %
+          pool.length,
+        1,
+      )[0],
+    );
   }
 
   return out;
 }
-
-/* =========================================================
-TERMINAL NAME
-========================================================= */
 
 export function terminalName(
   mode: RouteMode,
@@ -2276,7 +2103,7 @@ export function terminalName(
   role:
     | "origin"
     | "destination" = "origin",
-) {
+): string {
   switch (mode) {
     case "metro":
       return `${city} Central Metro Station`;
@@ -2306,10 +2133,6 @@ export function terminalName(
       return `${city} Junction`;
   }
 }
-
-/* =========================================================
-ROUTE STYLE
-========================================================= */
 
 export const routeStyle: Record<
   RouteMode,
@@ -2354,10 +2177,6 @@ export const routeStyle: Record<
   },
 };
 
-/* =========================================================
-ROUTE PREVIEW
-========================================================= */
-
 export function buildRoutePreview(
   mode: RouteMode,
   origin: string,
@@ -2378,14 +2197,14 @@ export function buildRoutePreview(
           ? 6
           : 4;
 
-  const count =
-    Math.max(
-      1,
-      1 +
-        (hash(
-          seed + mode,
-        ) % maxStops),
-    );
+  const count = Math.max(
+    1,
+    1 +
+      (hash(
+        seed + mode,
+      ) %
+        maxStops),
+  );
 
   const mids = pickMany(
     seed + mode,
@@ -2421,10 +2240,9 @@ export function buildRoutePreview(
           (i + 1) /
           (mids.length + 1);
 
-        const m =
-          Math.round(
-            totalMins * frac,
-          );
+        const m = Math.round(
+          totalMins * frac,
+        );
 
         return {
           name,
@@ -2444,9 +2262,7 @@ export function buildRoutePreview(
               ? "Overfly"
               : mode === "metro"
                 ? "1 min"
-                : `${2 + (hash(
-                    seed + name,
-                  ) % 8)} min`,
+                : `${2 + (hash(seed + name) % 8)} min`,
         };
       },
     ),
@@ -2491,7 +2307,7 @@ export function buildRoutePreview(
 }
 
 /* =========================================================
-SEAT / ROOM ALLOCATION
+   SEAT / ROOM ALLOCATION
 ========================================================= */
 
 export function allocateSeats(
@@ -2508,8 +2324,6 @@ export function allocateSeats(
   const cls =
     classCode.split(" ")[0];
 
-  /* HOTEL */
-
   if (mode === "hotel") {
     return Array.from(
       { length: n },
@@ -2522,8 +2336,6 @@ export function allocateSeats(
     );
   }
 
-  /* METRO */
-
   if (mode === "metro") {
     return Array.from(
       { length: n },
@@ -2532,21 +2344,7 @@ export function allocateSeats(
     );
   }
 
-  /* CAB */
-
-  if (mode === "cab") {
-    return Array.from(
-      { length: n },
-      () => "Cab seat",
-    );
-  }
-
-  /* GENERAL TRAIN */
-
-  if (
-    mode === "train" &&
-    cls === "GEN"
-  ) {
+  if (cls === "GEN") {
     return Array.from(
       { length: n },
       () => "Unreserved",
@@ -2580,7 +2378,8 @@ export function allocateSeats(
             berths[
               (hash(
                 seed + num,
-              ) + i) %
+              ) +
+                i) %
                 berths.length
             ]
           }`
@@ -2590,14 +2389,12 @@ export function allocateSeats(
 }
 
 /* =========================================================
-SEAT STATE
+   SEAT STATE
 ========================================================= */
 
 export type SeatState = {
   available: number;
-
   label: string;
-
   tone:
     | "ok"
     | "low"
@@ -2620,13 +2417,9 @@ export function seatState(
   const left = Math.max(
     0,
     base -
-      Math.floor(
-        minutes,
-      ) *
+      Math.floor(minutes) *
         perMinute,
   );
-
-  /* Plenty available */
 
   if (left > 12) {
     return {
@@ -2636,8 +2429,6 @@ export function seatState(
     };
   }
 
-  /* Low availability */
-
   if (left > 4) {
     return {
       available: left,
@@ -2645,8 +2436,6 @@ export function seatState(
       tone: "low",
     };
   }
-
-  /* No RAC/WL for this mode/class */
 
   if (!opts.racWl) {
     if (left > 0) {
@@ -2664,8 +2453,6 @@ export function seatState(
     };
   }
 
-  /* RAC */
-
   if (left > 0) {
     return {
       available: left,
@@ -2674,31 +2461,27 @@ export function seatState(
     };
   }
 
-  /* Waiting List */
-
   const wl =
     1 +
     (hash(
       seed + "wl",
     ) % 48);
 
-  if (wl > 40) {
-    return {
-      available: 0,
-      label: "Sold Out",
-      tone: "sold",
-    };
-  }
-
-  return {
-    available: 0,
-    label: `WL ${wl}`,
-    tone: "wl",
-  };
+  return wl > 40
+    ? {
+        available: 0,
+        label: "Sold Out",
+        tone: "sold",
+      }
+    : {
+        available: 0,
+        label: `WL ${wl}`,
+        tone: "wl",
+      };
 }
 
 /* =========================================================
-SERVICE DISRUPTIONS
+   SERVICE DISRUPTIONS
 ========================================================= */
 
 export const cancellationReasons = [
@@ -2740,7 +2523,3 @@ export function serviceDisruption(
         ],
   };
 }
-
-/* =========================================================
-END OF TRANSIT INDIA DUMMY DATA
-========================================================= */
