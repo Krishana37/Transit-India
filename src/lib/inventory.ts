@@ -1,9 +1,8 @@
-import { stations, type Station } from "./dummy-data";
+import { stations } from "./dummy-data";
 
 /* =========================================================
-   TRANSPORT MODES
-   CAB IS NOT PART OF NORMAL TRANSPORT SEARCH
-========================================================= */
+   TRANSIT INDIA — INVENTORY
+   ========================================================= */
 
 export type TransportMode =
   | "train"
@@ -13,46 +12,42 @@ export type TransportMode =
   | "metro"
   | "ferry";
 
-export const transportModes: {
-  id: TransportMode;
-  label: string;
-  blurb: string;
-}[] = [
+export const transportModes = [
   {
-    id: "train",
+    id: "train" as TransportMode,
     label: "Trains",
-    blurb: "Long-distance rail across the country",
+    blurb: "Long-distance rail across India",
   },
   {
-    id: "bus",
+    id: "bus" as TransportMode,
     label: "Buses",
     blurb: "Sleeper, Volvo and seater coaches",
   },
   {
-    id: "flight",
+    id: "flight" as TransportMode,
     label: "Flights",
-    blurb: "Domestic hops between metros",
+    blurb: "Domestic flights between Indian cities",
   },
   {
-    id: "hotel",
+    id: "hotel" as TransportMode,
     label: "Hotels",
-    blurb: "Stays near your destination",
+    blurb: "Hotels near popular destinations",
   },
   {
-    id: "metro",
+    id: "metro" as TransportMode,
     label: "Metro",
-    blurb: "City rapid transit day passes",
+    blurb: "Urban rapid transit networks",
   },
   {
-    id: "ferry",
+    id: "ferry" as TransportMode,
     label: "Ferry",
     blurb: "Coastal and island crossings",
   },
 ];
 
 /* =========================================================
-   DETERMINISTIC PSEUDO-RANDOMNESS
-========================================================= */
+   DETERMINISTIC RANDOM
+   ========================================================= */
 
 function hash(str: string): number {
   let h = 2166136261;
@@ -70,49 +65,45 @@ function rand(
   min: number,
   max: number,
 ): number {
-  const h = hash(seed);
-  return min + ((h % 10000) / 10000) * (max - min);
+  return min + ((hash(seed) % 10000) / 10000) * (max - min);
 }
 
-/* FIXED: generic type added here */
 function pick<T>(seed: string, arr: T[]): T {
   return arr[hash(seed) % arr.length];
 }
 
 /* =========================================================
    DISTANCE
-========================================================= */
+   ========================================================= */
 
 export function distanceKm(
-  from: Station,
-  to: Station,
+  from: any,
+  to: any,
 ): number {
   if (from.code === to.code) return 0;
 
-  const key = [from.code, to.code]
-    .sort()
-    .join("-");
-
   return Math.round(
-    rand(key, 140, 2100),
+    rand(
+      `${from.code}-${to.code}`,
+      120,
+      2200,
+    ),
   );
 }
 
 /* =========================================================
    DEMAND
-========================================================= */
+   ========================================================= */
 
 export function demandIndex(
-  from: Station,
-  to: Station,
+  from: any,
+  to: any,
   date: Date,
 ): number {
   const day = date.getDay();
 
   const weekend =
-    day === 0 ||
-    day === 5 ||
-    day === 6
+    day === 0 || day === 5 || day === 6
       ? 0.12
       : 0;
 
@@ -135,7 +126,7 @@ export function demandIndex(
     (
       0.9 +
       rand(
-        from.code + to.code + day,
+        `${from.code}${to.code}${day}`,
         0,
         0.18,
       ) +
@@ -147,13 +138,12 @@ export function demandIndex(
 
 /* =========================================================
    FARE MULTIPLIERS
-========================================================= */
+   ========================================================= */
 
 export const classMultiplier: Record<
   string,
   number
 > = {
-  /* Train */
   GEN: 0.45,
   SL: 1,
   "3A": 2.6,
@@ -162,7 +152,6 @@ export const classMultiplier: Record<
   CC: 3.1,
   EC: 5.6,
 
-  /* Bus */
   ORDINARY: 0.75,
   SEATER: 0.9,
   DELUXE_BUS: 1.25,
@@ -171,12 +160,10 @@ export const classMultiplier: Record<
   LUXURY: 2.3,
   VOLVO: 1.8,
 
-  /* Flight */
   ECONOMY: 9,
   PREMIUM_ECONOMY: 13,
   BUSINESS: 22,
 
-  /* Hotel */
   BUDGET: 0.7,
   STANDARD: 1,
   DELUXE: 1.6,
@@ -184,18 +171,16 @@ export const classMultiplier: Record<
   SUITE: 2.8,
   LUXURY_STAY: 3.4,
 
-  /* Metro */
   TOKEN: 1,
   DAYPASS: 1.4,
 
-  /* Ferry */
   DECK: 1,
   CABIN: 2.2,
 };
 
 /* =========================================================
    FESTIVAL
-========================================================= */
+   ========================================================= */
 
 export function festivalBoost(
   date: Date,
@@ -211,16 +196,15 @@ export function festivalBoost(
     12,
   ];
 
-  const festive =
-    festiveMonths.includes(month) &&
-    day % 7 < 3;
-
-  return festive ? 1.16 : 1;
+  return festiveMonths.includes(month) &&
+    day % 7 < 3
+    ? 1.16
+    : 1;
 }
 
 /* =========================================================
-   DYNAMIC PRICE FACTORS
-========================================================= */
+   PRICE FACTORS
+   ========================================================= */
 
 export function priceFactors(opts: {
   date: Date;
@@ -238,17 +222,13 @@ export function priceFactors(opts: {
   const day = date.getDay();
 
   const weekend =
-    day === 0 ||
-    day === 5 ||
-    day === 6
+    day === 0 || day === 5 || day === 6
       ? 1.08
       : 1;
 
   const peak =
-    (departHour >= 7 &&
-      departHour <= 10) ||
-    (departHour >= 17 &&
-      departHour <= 21)
+    (departHour >= 7 && departHour <= 10) ||
+    (departHour >= 17 && departHour <= 21)
       ? 1.12
       : departHour <= 5
         ? 0.9
@@ -263,23 +243,20 @@ export function priceFactors(opts: {
       )) *
       0.18;
 
-  const jitter =
-    0.95 + rand(seed, 0, 0.12);
-
   return Number(
     (
       weekend *
       peak *
       festivalBoost(date) *
       scarcity *
-      jitter
+      (0.95 + rand(seed, 0, 0.12))
     ).toFixed(3),
   );
 }
 
 /* =========================================================
    FARE
-========================================================= */
+   ========================================================= */
 
 export function computeFare(
   km: number,
@@ -297,12 +274,15 @@ export function computeFare(
     demand *
     factor;
 
-  return Math.round(raw / 5) * 5;
+  return Math.max(
+    20,
+    Math.round(raw / 5) * 5,
+  );
 }
 
 /* =========================================================
    OPERATORS
-========================================================= */
+   ========================================================= */
 
 const trainPrefix = [
   "Sapphire",
@@ -315,15 +295,18 @@ const trainPrefix = [
   "Deccan",
   "Sundari",
   "Gangetic",
+  "Himalayan",
+  "Rajdhani",
 ];
 
 const trainSuffix = [
   "Superfast",
   "Rapid",
-  "Sampark",
+  "Sampark Express",
   "Express",
   "Vega Express",
   "Tejas Express",
+  "Intercity",
 ];
 
 const busOperators = [
@@ -335,6 +318,8 @@ const busOperators = [
   "Royal Bharat Travels",
   "CityLink Coaches",
   "Highway Star",
+  "Redline Travels",
+  "National Coachways",
 ];
 
 const airlines = [
@@ -346,19 +331,6 @@ const airlines = [
   "Bharat Air",
   "Horizon India",
   "Aero Bharat",
-];
-
-const hotelNames = [
-  "The Marigold House",
-  "Aster Grand",
-  "Nilaya Residency",
-  "Copperleaf Suites",
-  "Serai Court",
-  "The Royal Orchid",
-  "Blue Lotus Residency",
-  "Heritage Grand",
-  "The Imperial Stay",
-  "Regal Palace",
 ];
 
 const metroLines = [
@@ -383,7 +355,7 @@ const ferryOperators = [
 
 /* =========================================================
    RESULT TYPE
-========================================================= */
+   ========================================================= */
 
 export type Segment = {
   id: string;
@@ -394,11 +366,13 @@ export type Segment = {
 
   from?: string;
   fromCode?: string;
+
   to?: string;
   toCode?: string;
 
   depart: string;
   arrive: string;
+
   durationMins: number;
   duration: string;
   distanceKm: number;
@@ -416,7 +390,7 @@ export type Segment = {
 
 /* =========================================================
    UTILITIES
-========================================================= */
+   ========================================================= */
 
 function fmtDuration(
   mins: number,
@@ -451,13 +425,13 @@ const slotStart: Record<
   early: 2,
   morning: 6,
   afternoon: 13,
+  evening: 17,
   night: 19,
 };
 
 /* =========================================================
    CLASS LADDERS
-   CAB REMOVED
-========================================================= */
+   ========================================================= */
 
 export const classLadder: Record<
   TransportMode,
@@ -546,18 +520,18 @@ export const classLadder: Record<
   metro: [
     {
       code: "TOKEN",
-      label: "Single token",
+      label: "Single Token",
     },
     {
       code: "DAYPASS",
-      label: "Day pass",
+      label: "Day Pass",
     },
   ],
 
   ferry: [
     {
       code: "DECK",
-      label: "Deck seat",
+      label: "Deck Seat",
     },
     {
       code: "CABIN",
@@ -568,7 +542,7 @@ export const classLadder: Record<
 
 /* =========================================================
    RAC / WL
-========================================================= */
+   ========================================================= */
 
 export const racWlClasses = [
   "GEN",
@@ -590,67 +564,59 @@ export function supportsRacWl(
 }
 
 /* =========================================================
-   ROUTE TYPES
-========================================================= */
+   ROUTES
+   EACH MODE GETS ITS OWN ROUTE POOL
+   ========================================================= */
 
 type DemoRoute = {
-  from: Station;
-  to: Station;
+  from: any;
+  to: any;
 };
 
-function route(
-  fromCode: string,
-  toCode: string,
-): DemoRoute | null {
-  const from = stations.find(
-    (s) => s.code === fromCode,
-  );
-
-  const to = stations.find(
-    (s) => s.code === toCode,
-  );
-
-  if (!from || !to) return null;
-  if (from.code === to.code) return null;
-
-  return { from, to };
-}
-
-/* =========================================================
-   GUARANTEED UNIQUE ROUTES
-========================================================= */
-
-function buildUniqueRoutes(
-  seed: string,
-  count: number,
-  excluded: Set<string> = new Set(),
+function buildModeRoutes(
+  mode: TransportMode,
+  count = 30,
 ): DemoRoute[] {
   const result: DemoRoute[] = [];
-  const used = new Set<string>();
 
-  const shuffled = [...stations].sort(
-    (a, b) =>
+  const seed =
+    `TRANSIT-${mode}`;
+
+  const ordered = [...stations].sort(
+    (a: any, b: any) =>
       hash(seed + a.code) -
       hash(seed + b.code),
   );
 
-  for (const from of shuffled) {
-    for (const to of shuffled) {
+  const used = new Set<string>();
+
+  for (let i = 0; i < ordered.length; i++) {
+    for (
+      let j = ordered.length - 1;
+      j >= 0;
+      j--
+    ) {
       if (result.length >= count)
         break;
 
-      if (from.code === to.code)
+      const from = ordered[i];
+      const to = ordered[j];
+
+      if (!from || !to) continue;
+
+      if (
+        from.code === to.code
+      )
         continue;
 
-      const key = `${from.code}-${to.code}`;
+      const key =
+        `${from.code}-${to.code}`;
 
       if (used.has(key))
         continue;
 
-      if (excluded.has(key))
-        continue;
-
       used.add(key);
+
       result.push({
         from,
         to,
@@ -664,47 +630,39 @@ function buildUniqueRoutes(
   return result;
 }
 
-const allUsedRoutes =
-  new Set<string>();
-
-function getModeRoutes(
-  mode: TransportMode,
-  count = 30,
-): DemoRoute[] {
-  const routes =
-    buildUniqueRoutes(
-      `Transit-India-${mode}`,
-      count,
-      allUsedRoutes,
-    );
-
-  routes.forEach((r) => {
-    allUsedRoutes.add(
-      `${r.from.code}-${r.to.code}`,
-    );
-  });
-
-  return routes;
-}
-
 export const uniqueTrainRoutes =
-  getModeRoutes("train", 30);
+  buildModeRoutes(
+    "train",
+    30,
+  );
 
 export const uniqueBusRoutes =
-  getModeRoutes("bus", 30);
+  buildModeRoutes(
+    "bus",
+    30,
+  );
 
 export const uniqueFlightRoutes =
-  getModeRoutes("flight", 30);
+  buildModeRoutes(
+    "flight",
+    30,
+  );
 
 export const uniqueMetroRoutes =
-  getModeRoutes("metro", 30);
+  buildModeRoutes(
+    "metro",
+    30,
+  );
 
 export const uniqueFerryRoutes =
-  getModeRoutes("ferry", 30);
+  buildModeRoutes(
+    "ferry",
+    30,
+  );
 
 /* =========================================================
-   HOTEL DESTINATIONS
-========================================================= */
+   HOTEL DESTINATIONS — 50
+   ========================================================= */
 
 export type HotelDestination = {
   id: string;
@@ -722,7 +680,7 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Goa",
       landmark: "Baga Beach",
       description:
-        "Popular beach destination with nightlife and coastal attractions.",
+        "Beach destination with coastal attractions and nightlife.",
     },
     {
       id: "hotel-jaipur",
@@ -730,7 +688,7 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Rajasthan",
       landmark: "Amber Fort",
       description:
-        "Historic destination known for forts, palaces and heritage streets.",
+        "Historic city of forts and palaces.",
     },
     {
       id: "hotel-agra",
@@ -738,16 +696,15 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Uttar Pradesh",
       landmark: "Taj Mahal",
       description:
-        "Famous heritage destination and home of the Taj Mahal.",
+        "Historic destination famous for the Taj Mahal.",
     },
     {
       id: "hotel-varanasi",
       city: "Varanasi",
       state: "Uttar Pradesh",
-      landmark:
-        "Dashashwamedh Ghat",
+      landmark: "Dashashwamedh Ghat",
       description:
-        "Historic spiritual destination on the banks of the Ganga.",
+        "Historic spiritual destination on the Ganga.",
     },
     {
       id: "hotel-udaipur",
@@ -755,7 +712,7 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Rajasthan",
       landmark: "Lake Pichola",
       description:
-        "Famous lake city with palaces and scenic views.",
+        "Lake city famous for palaces and scenic views.",
     },
     {
       id: "hotel-manali",
@@ -763,15 +720,15 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Himachal Pradesh",
       landmark: "Solang Valley",
       description:
-        "Mountain destination surrounded by Himalayan landscapes.",
+        "Mountain destination in the Himalayas.",
     },
     {
       id: "hotel-srinagar",
       city: "Srinagar",
-      state: "J&K",
+      state: "Jammu & Kashmir",
       landmark: "Dal Lake",
       description:
-        "Famous Kashmir destination known for Dal Lake and houseboats.",
+        "Kashmir destination known for Dal Lake.",
     },
     {
       id: "hotel-kochi",
@@ -779,7 +736,7 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Kerala",
       landmark: "Fort Kochi",
       description:
-        "Coastal heritage destination with historic streets and beaches.",
+        "Coastal heritage destination in Kerala.",
     },
     {
       id: "hotel-mysuru",
@@ -787,7 +744,7 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Karnataka",
       landmark: "Mysore Palace",
       description:
-        "Heritage city famous for its palace and cultural attractions.",
+        "Heritage city famous for its royal palace.",
     },
     {
       id: "hotel-amritsar",
@@ -795,13 +752,537 @@ export const famousHotelDestinations: HotelDestination[] =
       state: "Punjab",
       landmark: "Golden Temple",
       description:
-        "Major cultural destination centred around the Golden Temple.",
+        "Major cultural and heritage destination.",
+    },
+    {
+      id: "hotel-delhi",
+      city: "Delhi",
+      state: "Delhi",
+      landmark: "India Gate",
+      description:
+        "Capital city with major monuments and museums.",
+    },
+    {
+      id: "hotel-mumbai",
+      city: "Mumbai",
+      state: "Maharashtra",
+      landmark: "Gateway of India",
+      description:
+        "Major financial and coastal city.",
+    },
+    {
+      id: "hotel-bengaluru",
+      city: "Bengaluru",
+      state: "Karnataka",
+      landmark: "Cubbon Park",
+      description:
+        "Technology hub with parks and cultural attractions.",
+    },
+    {
+      id: "hotel-chennai",
+      city: "Chennai",
+      state: "Tamil Nadu",
+      landmark: "Marina Beach",
+      description:
+        "Major coastal city in South India.",
+    },
+    {
+      id: "hotel-kolkata",
+      city: "Kolkata",
+      state: "West Bengal",
+      landmark: "Victoria Memorial",
+      description:
+        "Cultural capital with colonial heritage.",
+    },
+    {
+      id: "hotel-hyderabad",
+      city: "Hyderabad",
+      state: "Telangana",
+      landmark: "Charminar",
+      description:
+        "Historic city famous for food and monuments.",
+    },
+    {
+      id: "hotel-pune",
+      city: "Pune",
+      state: "Maharashtra",
+      landmark: "Shaniwar Wada",
+      description:
+        "Educational and cultural destination.",
+    },
+    {
+      id: "hotel-ahmedabad",
+      city: "Ahmedabad",
+      state: "Gujarat",
+      landmark: "Sabarmati Ashram",
+      description:
+        "Historic city with cultural attractions.",
+    },
+    {
+      id: "hotel-rishikesh",
+      city: "Rishikesh",
+      state: "Uttarakhand",
+      landmark: "Laxman Jhula",
+      description:
+        "Riverfront and adventure destination.",
+    },
+    {
+      id: "hotel-mussoorie",
+      city: "Mussoorie",
+      state: "Uttarakhand",
+      landmark: "Mall Road",
+      description:
+        "Popular Himalayan hill station.",
+    },
+    {
+      id: "hotel-shimla",
+      city: "Shimla",
+      state: "Himachal Pradesh",
+      landmark: "The Ridge",
+      description:
+        "Classic Himalayan hill station.",
+    },
+    {
+      id: "hotel-dharamshala",
+      city: "Dharamshala",
+      state: "Himachal Pradesh",
+      landmark: "McLeod Ganj",
+      description:
+        "Mountain destination surrounded by Himalayan scenery.",
+    },
+    {
+      id: "hotel-jodhpur",
+      city: "Jodhpur",
+      state: "Rajasthan",
+      landmark: "Mehrangarh Fort",
+      description:
+        "Blue city famous for its fort and old town.",
+    },
+    {
+      id: "hotel-jaisalmer",
+      city: "Jaisalmer",
+      state: "Rajasthan",
+      landmark: "Jaisalmer Fort",
+      description:
+        "Desert city with golden sandstone architecture.",
+    },
+    {
+      id: "hotel-ranthambore",
+      city: "Ranthambore",
+      state: "Rajasthan",
+      landmark: "Ranthambore National Park",
+      description:
+        "Wildlife destination in Rajasthan.",
+    },
+    {
+      id: "hotel-pushkar",
+      city: "Pushkar",
+      state: "Rajasthan",
+      landmark: "Pushkar Lake",
+      description:
+        "Historic pilgrimage and cultural destination.",
+    },
+    {
+      id: "hotel-khajuraho",
+      city: "Khajuraho",
+      state: "Madhya Pradesh",
+      landmark: "Khajuraho Temples",
+      description:
+        "Heritage destination known for temple architecture.",
+    },
+    {
+      id: "hotel-bhopal",
+      city: "Bhopal",
+      state: "Madhya Pradesh",
+      landmark: "Upper Lake",
+      description:
+        "Central Indian city with lakes and museums.",
+    },
+    {
+      id: "hotel-indore",
+      city: "Indore",
+      state: "Madhya Pradesh",
+      landmark: "Rajwada Palace",
+      description:
+        "Major central Indian food and culture destination.",
+    },
+    {
+      id: "hotel-nashik",
+      city: "Nashik",
+      state: "Maharashtra",
+      landmark: "Godavari Ghats",
+      description:
+        "Historic city surrounded by vineyards.",
+    },
+    {
+      id: "hotel-aurangabad",
+      city: "Aurangabad",
+      state: "Maharashtra",
+      landmark: "Bibi Ka Maqbara",
+      description:
+        "Gateway to major heritage sites.",
+    },
+    {
+      id: "hotel-vadodara",
+      city: "Vadodara",
+      state: "Gujarat",
+      landmark: "Laxmi Vilas Palace",
+      description:
+        "Cultural and heritage city in Gujarat.",
+    },
+    {
+      id: "hotel-surat",
+      city: "Surat",
+      state: "Gujarat",
+      landmark: "Dumas Beach",
+      description:
+        "Major commercial city near the Arabian Sea.",
+    },
+    {
+      id: "hotel-dwarka",
+      city: "Dwarka",
+      state: "Gujarat",
+      landmark: "Dwarkadhish Temple",
+      description:
+        "Important coastal pilgrimage destination.",
+    },
+    {
+      id: "hotel-somnath",
+      city: "Somnath",
+      state: "Gujarat",
+      landmark: "Somnath Temple",
+      description:
+        "Historic coastal pilgrimage destination.",
+    },
+    {
+      id: "hotel-kovalam",
+      city: "Kovalam",
+      state: "Kerala",
+      landmark: "Lighthouse Beach",
+      description:
+        "Popular beach destination in Kerala.",
+    },
+    {
+      id: "hotel-munnar",
+      city: "Munnar",
+      state: "Kerala",
+      landmark: "Tea Gardens",
+      description:
+        "Hill destination famous for tea plantations.",
+    },
+    {
+      id: "hotel-alleppey",
+      city: "Alleppey",
+      state: "Kerala",
+      landmark: "Backwaters",
+      description:
+        "Famous Kerala backwater destination.",
+    },
+    {
+      id: "hotel-ooty",
+      city: "Ooty",
+      state: "Tamil Nadu",
+      landmark: "Ooty Lake",
+      description:
+        "Popular Nilgiri hill station.",
+    },
+    {
+      id: "hotel-coorg",
+      city: "Coorg",
+      state: "Karnataka",
+      landmark: "Abbey Falls",
+      description:
+        "Green hill destination known for coffee plantations.",
+    },
+    {
+      id: "hotel-hampi",
+      city: "Hampi",
+      state: "Karnataka",
+      landmark: "Virupaksha Temple",
+      description:
+        "UNESCO heritage destination with ancient ruins.",
+    },
+    {
+      id: "hotel-vijayawada",
+      city: "Vijayawada",
+      state: "Andhra Pradesh",
+      landmark: "Prakasam Barrage",
+      description:
+        "Major riverfront city in Andhra Pradesh.",
+    },
+    {
+      id: "hotel-visakhapatnam",
+      city: "Visakhapatnam",
+      state: "Andhra Pradesh",
+      landmark: "RK Beach",
+      description:
+        "Coastal city with beaches and hills.",
+    },
+    {
+      id: "hotel-bhubaneswar",
+      city: "Bhubaneswar",
+      state: "Odisha",
+      landmark: "Lingaraj Temple",
+      description:
+        "Historic temple city of Odisha.",
+    },
+    {
+      id: "hotel-puri",
+      city: "Puri",
+      state: "Odisha",
+      landmark: "Jagannath Temple",
+      description:
+        "Major pilgrimage and beach destination.",
+    },
+    {
+      id: "hotel-darjeeling",
+      city: "Darjeeling",
+      state: "West Bengal",
+      landmark: "Tiger Hill",
+      description:
+        "Mountain destination famous for tea and views.",
+    },
+    {
+      id: "hotel-gangtok",
+      city: "Gangtok",
+      state: "Sikkim",
+      landmark: "MG Marg",
+      description:
+        "Himalayan destination with mountain scenery.",
+    },
+    {
+      id: "hotel-guwahati",
+      city: "Guwahati",
+      state: "Assam",
+      landmark: "Kamakhya Temple",
+      description:
+        "Gateway to Northeast India.",
+    },
+    {
+      id: "hotel-shillong",
+      city: "Shillong",
+      state: "Meghalaya",
+      landmark: "Ward's Lake",
+      description:
+        "Hill city known for waterfalls and greenery.",
+    },
+    {
+      id: "hotel-portblair",
+      city: "Port Blair",
+      state: "Andaman & Nicobar Islands",
+      landmark: "Cellular Jail",
+      description:
+        "Island destination and gateway to Andaman beaches.",
+    },
+    {
+      id: "hotel-mahabaleshwar",
+      city: "Mahabaleshwar",
+      state: "Maharashtra",
+      landmark: "Venna Lake",
+      description:
+        "Popular Western Ghats hill station.",
+    },
+    {
+      id: "hotel-mountabu",
+      city: "Mount Abu",
+      state: "Rajasthan",
+      landmark: "Nakki Lake",
+      description:
+        "Rajasthan's famous hill station.",
     },
   ];
 
 /* =========================================================
-   ROUTE SELECTION
-========================================================= */
+   4 HOTELS FOR EVERY DESTINATION
+   = 200 HOTEL RECORDS
+   ========================================================= */
+
+export type Hotel = {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  landmark: string;
+  category:
+    | "Budget"
+    | "Standard"
+    | "Premium"
+    | "Luxury";
+  rating: number;
+  distanceKm: number;
+  pricePerNight: number;
+  image: string;
+  amenities: string[];
+  refundable: boolean;
+};
+
+const hotelPrefixes = [
+  "The",
+  "Grand",
+  "Royal",
+  "Urban",
+  "Heritage",
+  "Regal",
+];
+
+const hotelSuffixes = [
+  "Residency",
+  "Heights",
+  "Palace",
+  "Suites",
+  "Inn",
+  "Retreat",
+];
+
+const hotelImages = [
+  "/preview/hotel-1.jpg",
+  "/preview/hotel-2.jpg",
+  "/preview/hotel-3.jpg",
+  "/preview/hotel-4.jpg",
+];
+
+export const hotels: Hotel[] =
+  famousHotelDestinations.flatMap(
+    (destination, destinationIndex) =>
+      [
+        "Budget",
+        "Standard",
+        "Premium",
+        "Luxury",
+      ].map(
+        (category, hotelIndex) => {
+          const seed =
+            `${destination.id}-${hotelIndex}`;
+
+          const priceBase =
+            category === "Budget"
+              ? 1200
+              : category === "Standard"
+                ? 2400
+                : category === "Premium"
+                  ? 4500
+                  : 8500;
+
+          return {
+            id: `HTL-${destinationIndex + 1}-${hotelIndex + 1}`,
+
+            name:
+              `${pick(
+                seed,
+                hotelPrefixes,
+              )} ${destination.city} ${pick(
+                seed + "-suffix",
+                hotelSuffixes,
+              )}`,
+
+            city: destination.city,
+            state: destination.state,
+            landmark:
+              destination.landmark,
+
+            category:
+              category as Hotel["category"],
+
+            rating: Number(
+              (
+                3.8 +
+                rand(
+                  seed + "-rating",
+                  0,
+                  1.1,
+                )
+              ).toFixed(1),
+            ),
+
+            distanceKm: Number(
+              (
+                0.4 +
+                rand(
+                  seed + "-distance",
+                  0,
+                  5.5,
+                )
+              ).toFixed(1),
+            ),
+
+            pricePerNight:
+              Math.round(
+                (priceBase +
+                  rand(
+                    seed + "-price",
+                    0,
+                    priceBase * 0.35,
+                  )) /
+                  100,
+              ) * 100,
+
+            image:
+              hotelImages[
+                hotelIndex %
+                  hotelImages.length
+              ],
+
+            amenities: pick(
+              seed + "-amenities",
+              [
+                [
+                  "Wi-Fi",
+                  "Breakfast",
+                  "Parking",
+                ],
+                [
+                  "Wi-Fi",
+                  "Pool",
+                  "Restaurant",
+                ],
+                [
+                  "Breakfast",
+                  "Airport Transfer",
+                  "Parking",
+                ],
+                [
+                  "Wi-Fi",
+                  "Pool",
+                  "Spa",
+                  "Restaurant",
+                ],
+              ],
+            ),
+
+            refundable:
+              hotelIndex !== 2,
+          };
+        },
+      ),
+  );
+
+/* =========================================================
+   HOTEL HELPERS
+   ========================================================= */
+
+export function hotelsNearDestination(
+ city: string,
+): Hotel[] {
+  return hotels.filter(
+    (hotel) =>
+      hotel.city.toLowerCase() ===
+      city.toLowerCase(),
+  );
+}
+
+export function getHotelDestination(
+ city: string,
+): HotelDestination | undefined {
+  return famousHotelDestinations.find(
+    (destination) =>
+      destination.city.toLowerCase() ===
+      city.toLowerCase(),
+  );
+}
+
+/* =========================================================
+   ROUTE POOL
+   ========================================================= */
 
 function routePoolFor(
   mode: TransportMode,
@@ -829,23 +1310,31 @@ function routePoolFor(
 
 /* =========================================================
    RESULT GENERATOR
-========================================================= */
+   ========================================================= */
 
 export function generateResults(
   mode: TransportMode,
-  from: Station,
-  to: Station,
+  from: any,
+  to: any,
   date: Date,
   slot = "morning",
   count = mode === "hotel"
-    ? 1
+    ? 4
     : 30,
   nonce = "",
 ): Segment[] {
-  /* HOTEL */
+  /* =====================================================
+     HOTEL
+     ===================================================== */
 
   if (mode === "hotel") {
     const destination =
+      famousHotelDestinations.find(
+        (d) =>
+          d.city.toLowerCase() ===
+          (to?.city ?? "")
+            .toLowerCase(),
+      ) ??
       famousHotelDestinations[
         hash(
           `${date.toISOString()}-${nonce}`,
@@ -853,121 +1342,119 @@ export function generateResults(
           famousHotelDestinations.length
       ];
 
-    const seed =
-      `hotel-${destination.id}-${date
-        .toISOString()
-        .slice(0, 10)}`;
-
-    const demand = 1;
-
-    const ladder =
-      classLadder.hotel;
-
-    const depart = "14:00";
-
-    const options =
-      ladder.map(
-        ({ code, label }) => {
-          const available =
-            2 +
-            (hash(seed + code) %
-              12);
-
-          const factor =
-            priceFactors({
-              date,
-              departHour: 14,
-              seatShare:
-                available / 15,
-              seed:
-                seed + code,
-            });
-
-          return {
-            code,
-            label,
-            fare: computeFare(
-              60,
-              code,
-              demand,
-              12,
-              factor,
-            ),
-            available,
-            probability:
-              92 +
-              (hash(seed + code) %
-                8),
-          };
-        },
+    const nearby =
+      hotelsNearDestination(
+        destination.city,
       );
 
-    return [
-      {
-        id: seed,
-        mode: "hotel",
+    return nearby.map(
+      (hotel, index) => {
+        const seed =
+          `hotel-${hotel.id}-${date
+            .toISOString()
+            .slice(0, 10)}`;
 
-        name: `${pick(
-          seed,
-          hotelNames,
-        )} — ${destination.landmark}`,
+        const optionCode =
+          hotel.category === "Budget"
+            ? "BUDGET"
+            : hotel.category ===
+                "Standard"
+              ? "STANDARD"
+              : hotel.category ===
+                  "Premium"
+                ? "PREMIUM"
+                : "LUXURY_STAY";
 
-        code: `HTL-${
-          1000 +
-          (hash(seed) % 8000)
-        }`,
+        const factor =
+          priceFactors({
+            date,
+            departHour: 14,
+            seatShare: 0.7,
+            seed,
+          });
 
-        operator:
-          destination.city,
+        return {
+          id: hotel.id,
+          mode: "hotel",
 
-        from: undefined,
-        fromCode: undefined,
+          name: hotel.name,
 
-        to: destination.city,
-        toCode: undefined,
+          code: hotel.id,
 
-        depart,
-        arrive: "11:00",
+          operator:
+            destination.city,
 
-        durationMins: 1260,
-        duration: "1 night",
+          from: undefined,
+          fromCode: undefined,
 
-        distanceKm:
-          1 + (hash(seed) % 9),
+          to: destination.city,
+          toCode: undefined,
 
-        tags: [
-          destination.city,
-          destination.state,
-          destination.landmark,
-          pick(
-            seed + "tag",
-            [
-              "Breakfast included",
-              "Free cancellation",
-              "Near famous attraction",
-              "Wi-Fi included",
-            ],
-          ),
-        ],
+          depart: "14:00",
+          arrive: "11:00",
 
-        options,
+          durationMins: 1260,
+          duration: "1 night",
+
+          distanceKm:
+            hotel.distanceKm,
+
+          tags: [
+            hotel.category,
+            `${hotel.rating}★`,
+            `${hotel.distanceKm} km from ${destination.landmark}`,
+            ...hotel.amenities,
+            hotel.refundable
+              ? "Free cancellation"
+              : "Non-refundable",
+          ],
+
+          options: [
+            {
+              code: optionCode,
+              label:
+                hotel.category,
+              fare: Math.round(
+                hotel.pricePerNight *
+                  factor /
+                  50,
+              ) * 50,
+              available:
+                2 +
+                (hash(
+                  seed + index,
+                ) %
+                  10),
+              probability:
+                90 +
+                (hash(
+                  seed + "prob",
+                ) %
+                  10),
+            },
+          ],
+        };
       },
-    ];
+    );
   }
 
-  /* ALL OTHER NORMAL TRANSPORT */
+  /* =====================================================
+     NORMAL TRANSPORT
+     ===================================================== */
 
   const routes =
     routePoolFor(mode);
 
-  const actualCount = Math.min(
-    Math.max(count, 1),
-    routes.length,
-  );
+  const actualCount =
+    Math.min(
+      Math.max(count, 1),
+      routes.length,
+    );
 
-  const dayKey = date
-    .toISOString()
-    .slice(0, 10);
+  const dayKey =
+    date
+      .toISOString()
+      .slice(0, 10);
 
   const startHour =
     slotStart[slot] ?? 6;
@@ -977,7 +1464,11 @@ export function generateResults(
   }).map((_, i) => {
     const selectedRoute =
       routes[
-        i % routes.length
+        (i +
+          hash(
+            `${from?.code ?? ""}-${to?.code ?? ""}-${mode}`,
+          )) %
+          routes.length
       ];
 
     const routeFrom =
@@ -986,10 +1477,11 @@ export function generateResults(
     const routeTo =
       selectedRoute.to;
 
-    const km = distanceKm(
-      routeFrom,
-      routeTo,
-    );
+    const km =
+      distanceKm(
+        routeFrom,
+        routeTo,
+      );
 
     const demand =
       demandIndex(
@@ -999,17 +1491,14 @@ export function generateResults(
       );
 
     const seed =
-      `${mode}-${routeFrom.code}-${routeTo.code}-${dayKey}-${i}${
-        nonce
-          ? `-${nonce}`
-          : ""
-      }`;
+      `${mode}-${routeFrom.code}-${routeTo.code}-${dayKey}-${i}-${nonce}`;
 
     const depart =
       `${String(
-        (startHour + i * 2) % 24,
+        (startHour + i * 2) %
+          24,
       ).padStart(2, "0")}:${pick(
-        seed + "min",
+        seed + "-minute",
         [
           "05",
           "10",
@@ -1028,28 +1517,16 @@ export function generateResults(
       classLadder[mode];
 
     const buildOptions = (
-      opts: {
-        fareKm: number;
-        base: number;
-        capacity: (
-          code: string,
-        ) => number;
-        probability: (
-          code: string,
-          available: number,
-        ) => number;
-      },
+      fareKm: number,
+      base: number,
+      capacity: (
+        code: string,
+      ) => number,
     ) =>
       ladder.map(
         ({ code, label }) => {
           const available =
-            opts.capacity(code);
-
-          const cap =
-            Math.max(
-              available,
-              1,
-            );
+            capacity(code);
 
           const factor =
             priceFactors({
@@ -1059,7 +1536,7 @@ export function generateResults(
                 Math.min(
                   1,
                   available /
-                    (cap + 20),
+                    100,
                 ),
               seed:
                 seed + code,
@@ -1068,26 +1545,34 @@ export function generateResults(
           return {
             code,
             label,
+
             fare: computeFare(
-              opts.fareKm,
+              fareKm,
               code,
               demand,
-              opts.base,
+              base,
               factor,
             ),
+
             available,
+
             probability:
-              opts.probability(
-                code,
-                available,
+              Math.min(
+                99,
+                60 +
+                  available +
+                  (hash(
+                    seed + code,
+                  ) %
+                    20),
               ),
           };
         },
       );
 
-    /* =====================================================
+    /* ===================================================
        FLIGHT
-    ===================================================== */
+       =================================================== */
 
     if (mode === "flight") {
       const mins =
@@ -1095,10 +1580,8 @@ export function generateResults(
           km / 12 + 45,
         );
 
-      const airline = pick(
-        seed,
-        airlines,
-      );
+      const airline =
+        pick(seed, airlines);
 
       return {
         id: seed,
@@ -1120,7 +1603,8 @@ export function generateResults(
           routeFrom.code,
 
         to: routeTo.city,
-        toCode: routeTo.code,
+        toCode:
+          routeTo.code,
 
         depart,
 
@@ -1136,45 +1620,46 @@ export function generateResults(
         distanceKm: km,
 
         tags: pick(
-          seed + "t",
+          seed + "-tags",
           [
             ["Non-stop"],
             [
               "Non-stop",
-              "Cabin bag only",
+              "Cabin bag included",
             ],
-            ["1 stop"],
+            [
+              "1 stop",
+            ],
           ],
         ),
 
-        options: buildOptions({
-          fareKm: km,
-          base: 0.42,
-
-          capacity: (c) =>
-            2 +
-            (hash(seed + c) %
-              (c === "BUSINESS"
-                ? 12
-                : 40)),
-
-          probability: (c) =>
-            90 +
-            (hash(seed + c) %
-              10),
-        }),
+        options:
+          buildOptions(
+            km,
+            0.42,
+            (code) =>
+              10 +
+              (hash(
+                seed + code,
+              ) %
+                (code ===
+                "BUSINESS"
+                  ? 15
+                  : 50)),
+          ),
       };
     }
 
-    /* =====================================================
+    /* ===================================================
        METRO
-    ===================================================== */
+       =================================================== */
 
     if (mode === "metro") {
-      const line = pick(
-        seed,
-        metroLines,
-      );
+      const line =
+        pick(
+          seed,
+          metroLines,
+        );
 
       const mins =
         18 +
@@ -1188,7 +1673,7 @@ export function generateResults(
 
         code: `MTR-${
           10 +
-          (hash(seed) % 80)
+          (hash(seed) % 90)
         }`,
 
         from: routeFrom.city,
@@ -1196,14 +1681,16 @@ export function generateResults(
           routeFrom.code,
 
         to: routeTo.city,
-        toCode: routeTo.code,
+        toCode:
+          routeTo.code,
 
         depart,
 
-        arrive: addMinutes(
-          depart,
-          mins,
-        ),
+        arrive:
+          addMinutes(
+            depart,
+            mins,
+          ),
 
         durationMins: mins,
         duration:
@@ -1219,26 +1706,25 @@ export function generateResults(
           "City rapid transit",
         ],
 
-        options: buildOptions({
-          fareKm: 20,
-          base: 1.4,
-
-          capacity: () => 400,
-
-          probability: () => 100,
-        }),
+        options:
+          buildOptions(
+            20,
+            1.4,
+            () => 400,
+          ),
       };
     }
 
-    /* =====================================================
+    /* ===================================================
        FERRY
-    ===================================================== */
+       =================================================== */
 
     if (mode === "ferry") {
-      const op = pick(
-        seed,
-        ferryOperators,
-      );
+      const operator =
+        pick(
+          seed,
+          ferryOperators,
+        );
 
       const mins =
         60 +
@@ -1248,28 +1734,31 @@ export function generateResults(
         id: seed,
         mode,
 
-        name: `${op} Crossing`,
+        name:
+          `${operator} Crossing`,
 
         code: `FRY-${
           100 +
           (hash(seed) % 400)
         }`,
 
-        operator: op,
+        operator,
 
         from: routeFrom.city,
         fromCode:
           routeFrom.code,
 
         to: routeTo.city,
-        toCode: routeTo.code,
+        toCode:
+          routeTo.code,
 
         depart,
 
-        arrive: addMinutes(
-          depart,
-          mins,
-        ),
+        arrive:
+          addMinutes(
+            depart,
+            mins,
+          ),
 
         durationMins: mins,
         duration:
@@ -1284,34 +1773,30 @@ export function generateResults(
           "Coastal service",
         ],
 
-        options: buildOptions({
-          fareKm:
+        options:
+          buildOptions(
             Math.round(km / 6),
-
-          base: 1.1,
-
-          capacity: (c) =>
-            10 +
-            (hash(seed + c) %
-              90),
-
-          probability: (c) =>
-            88 +
-            (hash(seed + c) %
-              12),
-        }),
+            1.1,
+            (code) =>
+              10 +
+              (hash(
+                seed + code,
+              ) %
+                90),
+          ),
       };
     }
 
-    /* =====================================================
+    /* ===================================================
        BUS
-    ===================================================== */
+       =================================================== */
 
     if (mode === "bus") {
-      const op = pick(
-        seed,
-        busOperators,
-      );
+      const operator =
+        pick(
+          seed,
+          busOperators,
+        );
 
       const mins =
         Math.round(
@@ -1322,28 +1807,30 @@ export function generateResults(
         id: seed,
         mode,
 
-        name: op,
+        name: operator,
 
         code: `BUS-${
           1000 +
           (hash(seed) % 9000)
         }`,
 
-        operator: op,
+        operator,
 
         from: routeFrom.city,
         fromCode:
           routeFrom.code,
 
         to: routeTo.city,
-        toCode: routeTo.code,
+        toCode:
+          routeTo.code,
 
         depart,
 
-        arrive: addMinutes(
-          depart,
-          mins,
-        ),
+        arrive:
+          addMinutes(
+            depart,
+            mins,
+          ),
 
         durationMins: mins,
         duration:
@@ -1352,9 +1839,9 @@ export function generateResults(
         distanceKm: km,
 
         tags: pick(
-          seed + "t",
+          seed + "-tags",
           [
-            ["A/C Sleeper"],
+            ["AC Sleeper"],
             ["Volvo Multi-Axle"],
             [
               "Live tracking",
@@ -1363,39 +1850,35 @@ export function generateResults(
           ],
         ),
 
-        options: buildOptions({
-          fareKm: km,
-          base: 0.5,
-
-          capacity: (c) =>
-            4 +
-            (hash(seed + c) %
-              32),
-
-          probability: (c, a) =>
-            Math.min(
-              99,
-              55 + a,
-            ),
-        }),
+        options:
+          buildOptions(
+            km,
+            0.5,
+            (code) =>
+              4 +
+              (hash(
+                seed + code,
+              ) %
+                32),
+          ),
       };
     }
 
-    /* =====================================================
+    /* ===================================================
        TRAIN
-    ===================================================== */
+       =================================================== */
 
     const mins =
       Math.round(
         km / 0.9 + 40,
       );
 
-    const name =
+    const trainName =
       `${pick(
         seed,
         trainPrefix,
       )} ${pick(
-        seed + "s",
+        seed + "-suffix",
         trainSuffix,
       )}`;
 
@@ -1403,7 +1886,7 @@ export function generateResults(
       id: seed,
       mode: "train",
 
-      name,
+      name: trainName,
 
       code: String(
         11000 +
@@ -1415,14 +1898,16 @@ export function generateResults(
         routeFrom.code,
 
       to: routeTo.city,
-      toCode: routeTo.code,
+      toCode:
+        routeTo.code,
 
       depart,
 
-      arrive: addMinutes(
-        depart,
-        mins,
-      ),
+      arrive:
+        addMinutes(
+          depart,
+          mins,
+        ),
 
       durationMins: mins,
       duration:
@@ -1431,7 +1916,7 @@ export function generateResults(
       distanceKm: km,
 
       tags: pick(
-        seed + "t",
+        seed + "-tags",
         [
           ["Pantry car"],
           ["Fastest on route"],
@@ -1443,47 +1928,42 @@ export function generateResults(
         ],
       ),
 
-      options: buildOptions({
-        fareKm: km,
-        base: 0.62,
-
-        capacity: (c) =>
-          c === "GEN"
-            ? 60 +
-              (hash(seed + c) %
-                120)
-            : c === "1A"
-              ? 4 +
-                (hash(seed + c) %
-                  14)
-              : hash(
-                  seed + c,
-                ) % 46,
-
-        probability: (c, a) =>
-          Math.min(
-            99,
-            30 +
-              a +
-              (hash(
-                seed + c,
-              ) % 20),
-          ),
-      }),
+      options:
+        buildOptions(
+          km,
+          0.62,
+          (code) =>
+            code === "GEN"
+              ? 60 +
+                (hash(
+                  seed + code,
+                ) %
+                  120)
+              : code === "1A"
+                ? 4 +
+                  (hash(
+                    seed + code,
+                  ) %
+                    14)
+                : hash(
+                    seed + code,
+                  ) % 46,
+        ),
     };
   });
 }
 
 /* =========================================================
-   STATIONS
-========================================================= */
+   STATION HELPERS
+   ========================================================= */
 
 export function findStation(
   code: string,
-): Station {
+): any {
   return (
     stations.find(
-      (s) => s.code === code,
+      (s: any) =>
+        s.code === code,
     ) ?? stations[0]
   );
 }
@@ -1492,17 +1972,17 @@ export function searchStations(
   term: string,
   exclude?: string,
   limit = 30,
-): Station[] {
+): any[] {
   const q =
     term.trim().toLowerCase();
 
   return stations
     .filter(
-      (s) =>
+      (s: any) =>
         s.code !== exclude,
     )
     .filter(
-      (s) =>
+      (s: any) =>
         !q ||
         s.name
           .toLowerCase()
@@ -1534,398 +2014,14 @@ export const popularStationCodes = [
 ];
 
 export const routeCountFor = (
-  s: Station,
+  station: any,
 ): number =>
-  30 + (hash(s.code) % 20);
-
-/* =========================================================
-   MEALS
-========================================================= */
-
-export const mealCategories = [
-  "Breakfast",
-  "Lunch",
-  "Dinner",
-  "Snacks",
-  "Regional",
-  "Healthy",
-  "Kids",
-  "Jain",
-  "Vegetarian",
-  "Non Vegetarian",
-  "Special",
-  "Beverages",
-  "Desserts",
-] as const;
-
-export type MealCategory =
-  (typeof mealCategories)[number];
-
-export type Meal = {
-  id: string;
-  name: string;
-  category: MealCategory;
-  price: number;
-  veg: boolean;
-  note?: string;
-};
-
-export const meals: Meal[] = [
-  {
-    id: "poha",
-    name: "Kanda Poha with Sev",
-    category: "Breakfast",
-    price: 90,
-    veg: true,
-  },
-  {
-    id: "idli",
-    name: "Idli Sambar (3 pcs)",
-    category: "Breakfast",
-    price: 110,
-    veg: true,
-  },
-  {
-    id: "paratha",
-    name: "Aloo Paratha & Curd",
-    category: "Breakfast",
-    price: 130,
-    veg: true,
-  },
-  {
-    id: "omelette",
-    name: "Masala Omelette & Toast",
-    category: "Breakfast",
-    price: 140,
-    veg: false,
-  },
-  {
-    id: "upma",
-    name: "Rava Upma",
-    category: "Breakfast",
-    price: 85,
-    veg: true,
-  },
-
-  {
-    id: "veg-thali",
-    name: "Veg Thali",
-    category: "Lunch",
-    price: 180,
-    veg: true,
-  },
-  {
-    id: "rajma-rice",
-    name: "Rajma Chawal Bowl",
-    category: "Lunch",
-    price: 160,
-    veg: true,
-  },
-  {
-    id: "chicken-thali",
-    name: "Chicken Thali",
-    category: "Lunch",
-    price: 260,
-    veg: false,
-  },
-  {
-    id: "dal-khichdi",
-    name: "Dal Khichdi & Kadhi",
-    category: "Lunch",
-    price: 150,
-    veg: true,
-  },
-
-  {
-    id: "paneer-dinner",
-    name: "Paneer Butter Masala & Roti",
-    category: "Dinner",
-    price: 230,
-    veg: true,
-  },
-  {
-    id: "chicken-curry",
-    name: "Chicken Curry & Rice",
-    category: "Dinner",
-    price: 250,
-    veg: false,
-  },
-  {
-    id: "veg-pulao",
-    name: "Veg Pulao & Raita",
-    category: "Dinner",
-    price: 170,
-    veg: true,
-  },
-
-  {
-    id: "samosa",
-    name: "Samosa (2 pcs)",
-    category: "Snacks",
-    price: 60,
-    veg: true,
-  },
-  {
-    id: "sandwich",
-    name: "Grilled Veg Sandwich",
-    category: "Snacks",
-    price: 110,
-    veg: true,
-  },
-  {
-    id: "cutlet",
-    name: "Chicken Cutlet",
-    category: "Snacks",
-    price: 130,
-    veg: false,
-  },
-  {
-    id: "bhel",
-    name: "Roasted Bhel Cup",
-    category: "Snacks",
-    price: 70,
-    veg: true,
-  },
-
-  {
-    id: "misal",
-    name: "Kolhapuri Misal Pav",
-    category: "Regional",
-    price: 140,
-    veg: true,
-  },
-  {
-    id: "litti",
-    name: "Litti Chokha (4 pcs)",
-    category: "Regional",
-    price: 150,
-    veg: true,
-  },
-  {
-    id: "dhokla",
-    name: "Khaman Dhokla Box",
-    category: "Regional",
-    price: 100,
-    veg: true,
-  },
-  {
-    id: "fish-curry",
-    name: "Coastal Fish Curry Meal",
-    category: "Regional",
-    price: 290,
-    veg: false,
-  },
-  {
-    id: "chettinad",
-    name: "Chettinad Veg Meal",
-    category: "Regional",
-    price: 200,
-    veg: true,
-  },
-
-  {
-    id: "salad",
-    name: "Sprout & Quinoa Salad",
-    category: "Healthy",
-    price: 160,
-    veg: true,
-  },
-  {
-    id: "millet",
-    name: "Millet Khichdi (low oil)",
-    category: "Healthy",
-    price: 170,
-    veg: true,
-  },
-  {
-    id: "grilled-chicken",
-    name: "Grilled Chicken & Greens",
-    category: "Healthy",
-    price: 280,
-    veg: false,
-  },
-  {
-    id: "soup",
-    name: "Clear Vegetable Soup",
-    category: "Healthy",
-    price: 90,
-    veg: true,
-  },
-
-  {
-    id: "kids-pasta",
-    name: "Kids Cheesy Pasta",
-    category: "Kids",
-    price: 150,
-    veg: true,
-  },
-  {
-    id: "kids-nuggets",
-    name: "Kids Nuggets & Fries",
-    category: "Kids",
-    price: 180,
-    veg: false,
-  },
-  {
-    id: "kids-combo",
-    name: "Kids Mini Meal Box",
-    category: "Kids",
-    price: 140,
-    veg: true,
-  },
-
-  {
-    id: "jain-thali",
-    name: "Jain Thali (no onion/garlic)",
-    category: "Jain",
-    price: 190,
-    veg: true,
-  },
-  {
-    id: "jain-paratha",
-    name: "Jain Paratha Combo",
-    category: "Jain",
-    price: 150,
-    veg: true,
-  },
-
-  {
-    id: "paneer-wrap",
-    name: "Paneer Kathi Wrap",
-    category: "Vegetarian",
-    price: 140,
-    veg: true,
-  },
-  {
-    id: "chole-bhature",
-    name: "Chole Bhature",
-    category: "Vegetarian",
-    price: 170,
-    veg: true,
-  },
-
-  {
-    id: "chicken-biryani",
-    name: "Chicken Biryani",
-    category: "Non Vegetarian",
-    price: 260,
-    veg: false,
-  },
-  {
-    id: "egg-curry",
-    name: "Egg Curry Rice",
-    category: "Non Vegetarian",
-    price: 190,
-    veg: false,
-  },
-  {
-    id: "mutton-biryani",
-    name: "Mutton Biryani",
-    category: "Non Vegetarian",
-    price: 320,
-    veg: false,
-  },
-
-  {
-    id: "diabetic",
-    name: "Low-GI Diabetic Meal",
-    category: "Special",
-    price: 210,
-    veg: true,
-    note: "Prototype special meal",
-  },
-  {
-    id: "gluten-free",
-    name: "Gluten-Free Meal Box",
-    category: "Special",
-    price: 230,
-    veg: true,
-  },
-  {
-    id: "festive",
-    name: "Festive Special Thali",
-    category: "Special",
-    price: 350,
-    veg: true,
-  },
-  {
-    id: "senior",
-    name: "Senior Citizen Soft Meal",
-    category: "Special",
-    price: 180,
-    veg: true,
-  },
-
-  {
-    id: "masala-chai",
-    name: "Masala Chai",
-    category: "Beverages",
-    price: 40,
-    veg: true,
-  },
-  {
-    id: "filter-coffee",
-    name: "Filter Coffee",
-    category: "Beverages",
-    price: 50,
-    veg: true,
-  },
-  {
-    id: "cold-coffee",
-    name: "Cold Coffee",
-    category: "Beverages",
-    price: 90,
-    veg: true,
-  },
-  {
-    id: "buttermilk",
-    name: "Spiced Buttermilk",
-    category: "Beverages",
-    price: 45,
-    veg: true,
-  },
-  {
-    id: "water",
-    name: "Packaged Water 1L",
-    category: "Beverages",
-    price: 20,
-    veg: true,
-  },
-
-  {
-    id: "gulab",
-    name: "Gulab Jamun (2 pcs)",
-    category: "Desserts",
-    price: 70,
-    veg: true,
-  },
-  {
-    id: "rasmalai",
-    name: "Rasmalai Cup",
-    category: "Desserts",
-    price: 90,
-    veg: true,
-  },
-  {
-    id: "icecream",
-    name: "Kulfi Falooda",
-    category: "Desserts",
-    price: 110,
-    veg: true,
-  },
-  {
-    id: "brownie",
-    name: "Walnut Brownie",
-    category: "Desserts",
-    price: 120,
-    veg: true,
-  },
-];
+  30 +
+  (hash(station.code) % 20);
 
 /* =========================================================
    INDEPENDENT ROUTE NETWORKS
-   CAB REMAINS ONLY FOR SEPARATE CAB SECTION
-========================================================= */
+   ========================================================= */
 
 export type RouteMode =
   | TransportMode
@@ -1973,7 +2069,7 @@ const networkNodes: Record<
       "Devnagar",
     ],
     note:
-      "Rail corridor with scheduled technical and commercial halts.",
+      "Rail corridor with scheduled commercial halts.",
   },
 
   bus: {
@@ -1990,7 +2086,7 @@ const networkNodes: Record<
       "Nandgaon Depot",
     ],
     note:
-      "Expressway coach route with driver-change and refreshment halts.",
+      "Expressway coach route with refreshment stops.",
   },
 
   flight: {
@@ -1999,12 +2095,12 @@ const networkNodes: Record<
     nodes: [
       "Waypoint ALFA-21",
       "Waypoint TARA-08",
-      "Sector Delta Handoff",
+      "Sector Delta",
       "Waypoint NOVA-14",
-      "Coastal Handoff Point",
+      "Coastal Handoff",
     ],
     note:
-      "Air corridor waypoints — no passenger boarding at intermediate points.",
+      "Air corridor waypoints — no intermediate boarding.",
   },
 
   metro: {
@@ -2021,7 +2117,7 @@ const networkNodes: Record<
       "Old Fort",
     ],
     note:
-      "Urban metro network with frequent city services.",
+      "Urban metro network with frequent services.",
   },
 
   ferry: {
@@ -2035,7 +2131,7 @@ const networkNodes: Record<
       "Palm Islet Dock",
     ],
     note:
-      "Sea lane with tide-dependent timings and jetty stops.",
+      "Sea lane with tide-dependent timings.",
   },
 
   cab: {
@@ -2070,10 +2166,9 @@ function pickMany(
   n: number,
 ): string[] {
   const out: string[] = [];
+  const pool = [...arr];
 
   let h = hash(seed);
-
-  const pool = [...arr];
 
   for (
     let i = 0;
@@ -2096,6 +2191,10 @@ function pickMany(
 
   return out;
 }
+
+/* =========================================================
+   TERMINALS
+   ========================================================= */
 
 export function terminalName(
   mode: RouteMode,
@@ -2177,6 +2276,10 @@ export const routeStyle: Record<
   },
 };
 
+/* =========================================================
+   ROUTE PREVIEW
+   ========================================================= */
+
 export function buildRoutePreview(
   mode: RouteMode,
   origin: string,
@@ -2240,9 +2343,10 @@ export function buildRoutePreview(
           (i + 1) /
           (mids.length + 1);
 
-        const m = Math.round(
-          totalMins * frac,
-        );
+        const m =
+          Math.round(
+            totalMins * frac,
+          );
 
         return {
           name,
@@ -2262,7 +2366,10 @@ export function buildRoutePreview(
               ? "Overfly"
               : mode === "metro"
                 ? "1 min"
-                : `${2 + (hash(seed + name) % 8)} min`,
+                : `${2 + (hash(
+                    seed + name,
+                  ) %
+                    8)} min`,
         };
       },
     ),
@@ -2292,7 +2399,6 @@ export function buildRoutePreview(
       `${start} → ${end}`,
 
     origin: start,
-
     destination: end,
 
     stops,
@@ -2308,7 +2414,7 @@ export function buildRoutePreview(
 
 /* =========================================================
    SEAT / ROOM ALLOCATION
-========================================================= */
+   ========================================================= */
 
 export function allocateSeats(
   seed: string,
@@ -2390,7 +2496,7 @@ export function allocateSeats(
 
 /* =========================================================
    SEAT STATE
-========================================================= */
+   ========================================================= */
 
 export type SeatState = {
   available: number;
@@ -2417,7 +2523,9 @@ export function seatState(
   const left = Math.max(
     0,
     base -
-      Math.floor(minutes) *
+      Math.floor(
+        minutes,
+      ) *
         perMinute,
   );
 
@@ -2438,19 +2546,17 @@ export function seatState(
   }
 
   if (!opts.racWl) {
-    if (left > 0) {
-      return {
-        available: left,
-        label: `${left} Available`,
-        tone: "low",
-      };
-    }
-
-    return {
-      available: 0,
-      label: "Sold Out",
-      tone: "sold",
-    };
+    return left > 0
+      ? {
+          available: left,
+          label: `${left} Available`,
+          tone: "low",
+        }
+      : {
+          available: 0,
+          label: "Sold Out",
+          tone: "sold",
+        };
   }
 
   if (left > 0) {
@@ -2482,7 +2588,7 @@ export function seatState(
 
 /* =========================================================
    SERVICE DISRUPTIONS
-========================================================= */
+   ========================================================= */
 
 export const cancellationReasons = [
   "Track maintenance block",
@@ -2523,3 +2629,192 @@ export function serviceDisruption(
         ],
   };
 }
+
+/* =========================================================
+   MEALS
+   ========================================================= */
+
+export const mealCategories = [
+  "Breakfast",
+  "Lunch",
+  "Dinner",
+  "Snacks",
+  "Regional",
+  "Healthy",
+  "Kids",
+  "Jain",
+  "Vegetarian",
+  "Non Vegetarian",
+  "Special",
+  "Beverages",
+  "Desserts",
+] as const;
+
+export type MealCategory =
+  (typeof mealCategories)[number];
+
+export type Meal = {
+  id: string;
+  name: string;
+  category: MealCategory;
+  price: number;
+  veg: boolean;
+  note?: string;
+};
+
+export const meals: Meal[] = [
+  {
+    id: "poha",
+    name: "Kanda Poha with Sev",
+    category: "Breakfast",
+    price: 90,
+    veg: true,
+  },
+  {
+    id: "idli",
+    name: "Idli Sambar",
+    category: "Breakfast",
+    price: 110,
+    veg: true,
+  },
+  {
+    id: "paratha",
+    name: "Aloo Paratha & Curd",
+    category: "Breakfast",
+    price: 130,
+    veg: true,
+  },
+  {
+    id: "omelette",
+    name: "Masala Omelette & Toast",
+    category: "Breakfast",
+    price: 140,
+    veg: false,
+  },
+  {
+    id: "veg-thali",
+    name: "Veg Thali",
+    category: "Lunch",
+    price: 180,
+    veg: true,
+  },
+  {
+    id: "rajma-rice",
+    name: "Rajma Chawal Bowl",
+    category: "Lunch",
+    price: 160,
+    veg: true,
+  },
+  {
+    id: "chicken-thali",
+    name: "Chicken Thali",
+    category: "Lunch",
+    price: 260,
+    veg: false,
+  },
+  {
+    id: "paneer-dinner",
+    name: "Paneer Butter Masala & Roti",
+    category: "Dinner",
+    price: 230,
+    veg: true,
+  },
+  {
+    id: "chicken-curry",
+    name: "Chicken Curry & Rice",
+    category: "Dinner",
+    price: 250,
+    veg: false,
+  },
+  {
+    id: "samosa",
+    name: "Samosa",
+    category: "Snacks",
+    price: 60,
+    veg: true,
+  },
+  {
+    id: "sandwich",
+    name: "Grilled Veg Sandwich",
+    category: "Snacks",
+    price: 110,
+    veg: true,
+  },
+  {
+    id: "misal",
+    name: "Kolhapuri Misal Pav",
+    category: "Regional",
+    price: 140,
+    veg: true,
+  },
+  {
+    id: "dhokla",
+    name: "Khaman Dhokla",
+    category: "Regional",
+    price: 100,
+    veg: true,
+  },
+  {
+    id: "salad",
+    name: "Sprout & Quinoa Salad",
+    category: "Healthy",
+    price: 160,
+    veg: true,
+  },
+  {
+    id: "kids-pasta",
+    name: "Kids Cheesy Pasta",
+    category: "Kids",
+    price: 150,
+    veg: true,
+  },
+  {
+    id: "jain-thali",
+    name: "Jain Thali",
+    category: "Jain",
+    price: 190,
+    veg: true,
+  },
+  {
+    id: "paneer-wrap",
+    name: "Paneer Kathi Wrap",
+    category: "Vegetarian",
+    price: 140,
+    veg: true,
+  },
+  {
+    id: "chicken-biryani",
+    name: "Chicken Biryani",
+    category: "Non Vegetarian",
+    price: 260,
+    veg: false,
+  },
+  {
+    id: "diabetic",
+    name: "Low-GI Meal",
+    category: "Special",
+    price: 210,
+    veg: true,
+  },
+  {
+    id: "masala-chai",
+    name: "Masala Chai",
+    category: "Beverages",
+    price: 40,
+    veg: true,
+  },
+  {
+    id: "filter-coffee",
+    name: "Filter Coffee",
+    category: "Beverages",
+    price: 50,
+    veg: true,
+  },
+  {
+    id: "gulab",
+    name: "Gulab Jamun",
+    category: "Desserts",
+    price: 70,
+    veg: true,
+  },
+];
