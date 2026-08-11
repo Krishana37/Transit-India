@@ -17,8 +17,11 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/components/transit/AppShell";
-import { SmartSearch, type SearchState } from "@/components/transit/SmartSearch";
-import { stationByCode } from "@/lib/dummy-data";
+import {
+  SmartSearch,
+  stationByCode,
+  type SearchState,
+} from "@/components/transit/SmartSearch";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,9 +49,10 @@ import {
   RouteLine,
 } from "@/components/booking/ProbabilityBar";
 import { RoutePreview } from "@/components/booking/RoutePreview";
+import { TicketCard } from "@/components/booking/TicketCard";
+
 import { ServicePreview } from "@/components/media/ServicePreview";
 import { RateDialog } from "@/components/common/RateDialog";
-import { TicketCard } from "@/components/booking/TicketCard";
 
 import {
   blendRating,
@@ -95,18 +99,22 @@ export const Route = createFileRoute("/book/$mode")({
       typeof search.from === "string"
         ? search.from
         : undefined,
+
     to:
       typeof search.to === "string"
         ? search.to
         : undefined,
+
     date:
       typeof search.date === "string"
         ? search.date
         : undefined,
+
     slot:
       typeof search.slot === "string"
         ? search.slot
         : undefined,
+
     q:
       typeof search.q === "string"
         ? search.q
@@ -120,7 +128,8 @@ export const Route = createFileRoute("/book/$mode")({
       },
       {
         name: "description",
-        content: `Search, compare and book ${params.mode} tickets with live fares, confirmation probability and Pre-Tatkal queueing.`,
+        content:
+          `Search, compare and book ${params.mode} tickets with live fares, confirmation probability and Pre-Tatkal queueing.`,
       },
     ],
   }),
@@ -128,7 +137,10 @@ export const Route = createFileRoute("/book/$mode")({
   component: BookPage,
 });
 
-const modeIcons: Record<TransportMode, typeof Train> = {
+const modeIcons: Record<
+  TransportMode,
+  typeof Train
+> = {
   train: Train,
   bus: Bus,
   flight: Plane,
@@ -152,17 +164,21 @@ type Step =
   | "ticket";
 
 function uid() {
-  return Math.random().toString(36).slice(2, 10);
+  return Math.random()
+    .toString(36)
+    .slice(2, 10);
 }
 
 function genPnr() {
-  let s = "";
+  let value = "";
 
   for (let i = 0; i < 10; i++) {
-    s += Math.floor(Math.random() * 10);
+    value += Math.floor(
+      Math.random() * 10,
+    );
   }
 
-  return s;
+  return value;
 }
 
 function BookPage() {
@@ -171,7 +187,6 @@ function BookPage() {
   const navigate = useNavigate();
 
   const {
-    t,
     formatCurrency,
     formatDate,
   } = useI18n();
@@ -197,7 +212,9 @@ function BookPage() {
   } = useStore();
 
   const m = (
-    transportModes.some((x) => x.id === mode)
+    transportModes.some(
+      (item) => item.id === mode,
+    )
       ? mode
       : "train"
   ) as TransportMode;
@@ -206,111 +223,169 @@ function BookPage() {
 
   /*
    * HOTEL:
-   * Hotel booking does not use From -> To.
-   * SmartSearch is shared, so internally from/to
-   * point to the same location.
+   * Hotel does not have a real From -> To journey.
+   * We keep from/to internally equal only because
+   * SmartSearch expects both fields.
    */
-  const [state, setState] = useState<SearchState>(() => {
-    const hotelLocation =
-      stationByCode(search.from) ??
-      stationByCode("NDLS");
+  const [state, setState] =
+    useState<SearchState>(() => {
+      const defaultLocation =
+        stationByCode(
+          search.from,
+        ) ??
+        stationByCode("NDLS");
 
-    if (isHotel) {
+      const tomorrow = () => {
+        const d = new Date();
+
+        d.setDate(
+          d.getDate() + 1,
+        );
+
+        return d;
+      };
+
+      if (isHotel) {
+        return {
+          from: defaultLocation,
+          to: defaultLocation,
+          date: search.date
+            ? new Date(search.date)
+            : tomorrow(),
+          slot:
+            search.slot ??
+            "morning",
+          query:
+            search.q ?? "",
+        };
+      }
+
       return {
-        from: hotelLocation,
-        to: hotelLocation,
+        from:
+          stationByCode(
+            search.from,
+          ),
+
+        to:
+          stationByCode(
+            search.to,
+            search.from === "JP"
+              ? "NDLS"
+              : "JP",
+          ),
+
         date: search.date
           ? new Date(search.date)
-          : (() => {
-              const d = new Date();
-              d.setDate(d.getDate() + 1);
-              return d;
-            })(),
-        slot: search.slot ?? "morning",
-        query: search.q ?? "",
-      };
-    }
+          : tomorrow(),
 
-    return {
-      from: stationByCode(search.from),
-      to: stationByCode(
-        search.to,
-        search.from === "JP" ? "NDLS" : "JP",
-      ),
-      date: search.date
-        ? new Date(search.date)
-        : (() => {
-            const d = new Date();
-            d.setDate(d.getDate() + 1);
-            return d;
-          })(),
-      slot: search.slot ?? "morning",
-      query: search.q ?? "",
-    };
-  });
+        slot:
+          search.slot ??
+          "morning",
+
+        query:
+          search.q ?? "",
+      };
+    });
 
   useEffect(() => {
-    if (hydrated && !account) {
+    if (
+      hydrated &&
+      !account
+    ) {
       navigate({
         to: "/auth",
       });
     }
-  }, [hydrated, account, navigate]);
+  }, [
+    hydrated,
+    account,
+    navigate,
+  ]);
 
-  const [step, setStep] = useState<Step>("results");
+  const [step, setStep] =
+    useState<Step>("results");
 
-  const [segment, setSegment] = useState<Segment | null>(null);
+  const [segment, setSegment] =
+    useState<Segment | null>(
+      null,
+    );
 
-  const [classCode, setClassCode] = useState("");
+  const [classCode, setClassCode] =
+    useState("");
 
-  const [selectedPax, setSelectedPax] = useState<string[]>([]);
+  const [selectedPax, setSelectedPax] =
+    useState<string[]>([]);
 
-  const [contactEmail, setContactEmail] = useState("");
+  const [contactEmail, setContactEmail] =
+    useState("");
 
-  const [contactMobile, setContactMobile] = useState("");
+  const [contactMobile, setContactMobile] =
+    useState("");
 
-  const [mealQty, setMealQty] = useState<Record<string, number>>({});
+  const [mealQty, setMealQty] =
+    useState<Record<string, number>>(
+      {},
+    );
 
-  const [booking, setBooking] = useState<Booking | null>(null);
+  const [booking, setBooking] =
+    useState<Booking | null>(null);
 
-  const [isTatkalFlow, setIsTatkalFlow] = useState(false);
+  const [isTatkalFlow, setIsTatkalFlow] =
+    useState(false);
 
   const [
     activeTatkalDraftId,
     setActiveTatkalDraftId,
-  ] = useState<string | null>(null);
+  ] =
+    useState<string | null>(
+      null,
+    );
 
-  const [appliedCoins, setAppliedCoins] = useState(0);
+  const [appliedCoins, setAppliedCoins] =
+    useState(0);
 
-  const [appliedPoints, setAppliedPoints] = useState(0);
+  const [appliedPoints, setAppliedPoints] =
+    useState(0);
 
   const [
     selectedRewardId,
     setSelectedRewardId,
-  ] = useState<string | null>(null);
+  ] =
+    useState<string | null>(
+      null,
+    );
 
-  const [searchNonce, setSearchNonce] = useState(() => uid());
+  const [searchNonce, setSearchNonce] =
+    useState(() => uid());
 
-  const [tick, setTick] = useState(0);
+  const [tick, setTick] =
+    useState(0);
 
   const [sortBy, setSortBy] =
-    useState<SortKey>("recommended");
+    useState<SortKey>(
+      "recommended",
+    );
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setTick((x) => x + 1);
-    }, 12000);
+    const id =
+      setInterval(() => {
+        setTick(
+          (value) =>
+            value + 1,
+        );
+      }, 12000);
 
-    return () => clearInterval(id);
+    return () =>
+      clearInterval(id);
   }, []);
 
   /*
-   * Generate results using the selected transport mode.
-   *
    * IMPORTANT:
-   * The result itself contains its own from/to route.
-   * Booking and RoutePreview use the Segment route,
-   * not only the search state.
+   *
+   * generateResults creates the actual Segment.
+   *
+   * We NEVER replace a selected Segment's
+   * route with the search state later.
    */
   const results = useMemo(
     () =>
@@ -333,104 +408,160 @@ function BookPage() {
     ],
   );
 
-  const aiInterpretation = useMemo(() => {
-    const q = state.query.toLowerCase();
+  const aiInterpretation =
+    useMemo(() => {
+      const q =
+        state.query.toLowerCase();
 
-    if (!q) return null;
+      if (!q) {
+        return null;
+      }
 
-    if (
-      q.includes("cheapest") ||
-      q.includes("budget")
-    ) {
-      return "Sorted by lowest fare";
-    }
+      if (
+        q.includes("cheapest") ||
+        q.includes("budget")
+      ) {
+        return "Sorted by lowest fare";
+      }
 
-    if (q.includes("fastest")) {
-      return "Sorted by shortest duration";
-    }
+      if (
+        q.includes("fastest")
+      ) {
+        return "Sorted by shortest duration";
+      }
 
-    if (q.includes("ac")) {
-      return "Filtered to AC classes only";
-    }
+      if (
+        q.includes("ac")
+      ) {
+        return "Filtered to AC classes only";
+      }
 
-    return null;
-  }, [state.query]);
+      return null;
+    }, [state.query]);
 
   const scoreOf = useCallback(
     (seg: Segment) =>
       blendRating(
         communityRating(
-          serviceRatingKey(m, seg.code),
+          serviceRatingKey(
+            m,
+            seg.code,
+          ),
         ),
         ratings[
-          serviceRatingKey(m, seg.code)
+          serviceRatingKey(
+            m,
+            seg.code,
+          )
         ]?.stars,
       ).stars,
     [m, ratings],
   );
 
-  const sortedResults = useMemo(() => {
-    let list = [...results];
+  const sortedResults =
+    useMemo(() => {
+      let list = [
+        ...results,
+      ];
 
-    const q = state.query.toLowerCase();
+      const q =
+        state.query.toLowerCase();
 
-    /*
-     * AC filter.
-     */
-    if (q.includes("ac")) {
-      list = list.filter((s) =>
-        s.options.some((o) =>
-          /A|AC|CC|EC|3A|2A|1A|VOLVO|DELUXE|SUITE/.test(
-            o.code,
-          ),
-        ),
-      );
-    }
+      /*
+       * AC filter.
+       */
+      if (
+        q.includes("ac")
+      ) {
+        list =
+          list.filter(
+            (item) =>
+              item.options.some(
+                (option) =>
+                  /A|AC|CC|EC|3A|2A|1A|VOLVO|DELUXE|SUITE/.test(
+                    option.code,
+                  ),
+              ),
+          );
+      }
 
-    const effective =
-      sortBy !== "recommended"
-        ? sortBy
-        : q.includes("cheapest") ||
-            q.includes("budget")
-          ? "price"
-          : q.includes("fastest")
-            ? "duration"
-            : q.includes("best") ||
-                q.includes("rated")
-              ? "rating"
-              : "recommended";
+      const effective =
+        sortBy !==
+        "recommended"
+          ? sortBy
+          : q.includes(
+                "cheapest",
+              ) ||
+              q.includes(
+                "budget",
+              )
+            ? "price"
+            : q.includes(
+                  "fastest",
+                )
+              ? "duration"
+              : q.includes(
+                    "best",
+                  ) ||
+                  q.includes(
+                    "rated",
+                  )
+                ? "rating"
+                : "recommended";
 
-    if (effective === "price") {
-      list.sort(
-        (a, b) =>
-          Math.min(
-            ...a.options.map((o) => o.fare),
-          ) -
-          Math.min(
-            ...b.options.map((o) => o.fare),
-          ),
-      );
-    } else if (effective === "duration") {
-      list.sort(
-        (a, b) =>
-          a.durationMins - b.durationMins,
-      );
-    } else if (effective === "rating") {
-      list.sort(
-        (a, b) => scoreOf(b) - scoreOf(a),
-      );
-    }
+      if (
+        effective ===
+        "price"
+      ) {
+        list.sort(
+          (a, b) =>
+            Math.min(
+              ...a.options.map(
+                (o) =>
+                  o.fare,
+              ),
+            ) -
+            Math.min(
+              ...b.options.map(
+                (o) =>
+                  o.fare,
+              ),
+            ),
+        );
+      }
 
-    return list;
-  }, [
-    results,
-    state.query,
-    sortBy,
-    scoreOf,
-  ]);
+      if (
+        effective ===
+        "duration"
+      ) {
+        list.sort(
+          (a, b) =>
+            a.durationMins -
+            b.durationMins,
+        );
+      }
+
+      if (
+        effective ===
+        "rating"
+      ) {
+        list.sort(
+          (a, b) =>
+            scoreOf(b) -
+            scoreOf(a),
+        );
+      }
+
+      return list;
+    }, [
+      results,
+      state.query,
+      sortBy,
+      scoreOf,
+    ]);
 
   /*
-   * Hotel has no travel distance.
+   * Hotel has no journey distance.
    */
   const km = isHotel
     ? 0
@@ -448,55 +579,76 @@ function BookPage() {
       );
 
   const submitSearch = () => {
-    setSearchNonce(uid());
-
-    if (isHotel) {
-      navigate({
-        to: "/book/$mode",
-        params: {
-          mode: m,
-        },
-        search: {
-          from: state.from.code,
-          to: undefined,
-          date: state.date
-            .toISOString()
-            .slice(0, 10),
-          slot: state.slot,
-          q:
-            state.query ||
-            undefined,
-        },
-      });
-
-      return;
-    }
+    setSearchNonce(
+      uid(),
+    );
 
     navigate({
       to: "/book/$mode",
+
       params: {
         mode: m,
       },
-      search: {
-        from: state.from.code,
-        to: state.to.code,
-        date: state.date
-          .toISOString()
-          .slice(0, 10),
-        slot: state.slot,
-        q:
-          state.query ||
-          undefined,
-      },
+
+      search: isHotel
+        ? {
+            from:
+              state.from.code,
+
+            to: undefined,
+
+            date:
+              state.date
+                .toISOString()
+                .slice(
+                  0,
+                  10,
+                ),
+
+            slot:
+              state.slot,
+
+            q:
+              state.query ||
+              undefined,
+          }
+        : {
+            from:
+              state.from.code,
+
+            to:
+              state.to.code,
+
+            date:
+              state.date
+                .toISOString()
+                .slice(
+                  0,
+                  10,
+                ),
+
+            slot:
+              state.slot,
+
+            q:
+              state.query ||
+              undefined,
+          },
     });
   };
 
   /*
-   * RAC / WL applies ONLY to trains.
+   * RAC / WL:
    *
-   * 1A and General never get RAC/WL.
+   * ONLY TRAIN.
+   *
+   * 1A does NOT get RAC/WL.
+   * General does NOT get RAC/WL
+   * according to the existing page logic.
    */
-  const racWlFor = (code: string) =>
+  const racWlFor = (
+    code: string,
+  ) =>
     m === "train" &&
     !code.startsWith("1A") &&
     code !== "GEN";
@@ -511,64 +663,104 @@ function BookPage() {
       availableBase,
       tick,
       {
-        racWl: racWlFor(code),
+        racWl:
+          racWlFor(code),
       },
     );
 
+  /*
+   * THIS IS THE IMPORTANT ROUTE FIX.
+   *
+   * The selected Segment is stored exactly as returned
+   * by generateResults().
+   *
+   * Therefore:
+   * Train result -> train Segment
+   * Bus result -> bus Segment
+   * Flight result -> flight Segment
+   * Metro result -> metro Segment
+   * Ferry result -> ferry Segment
+   *
+   * We do not reconstruct the route from state.from/state.to.
+   */
   const pickOption = (
     seg: Segment,
     code: string,
   ) => {
-    const option = seg.options.find(
-      (o) => o.code === code,
-    );
+    const selectedOption =
+      seg.options.find(
+        (item) =>
+          item.code === code,
+      );
 
-    if (!option) return;
-
-    const st = seatFor(
-      seg,
-      code,
-      option.available,
-    );
-
-    if (st.tone === "sold") {
+    if (!selectedOption) {
       return;
     }
 
-    /*
-     * IMPORTANT:
-     * Save the exact selected Segment.
-     * This ensures booking uses the actual route
-     * associated with the result.
-     */
+    const availability =
+      seatFor(
+        seg,
+        code,
+        selectedOption.available,
+      );
+
+    if (
+      availability.tone ===
+      "sold"
+    ) {
+      return;
+    }
+
     setSegment(seg);
+
     setClassCode(code);
 
     if (
-      st.tone === "rac" ||
-      st.tone === "wl"
+      availability.tone ===
+        "rac" ||
+      availability.tone ===
+        "wl"
     ) {
-      setStep("waitlist");
+      setStep(
+        "waitlist",
+      );
     } else {
-      setStep("passengers");
+      setStep(
+        "passengers",
+      );
     }
   };
 
-  const togglePax = (id: string) =>
-    setSelectedPax((s) =>
-      s.includes(id)
-        ? s.filter((x) => x !== id)
-        : [...s, id],
+  const togglePax = (
+    id: string,
+  ) => {
+    setSelectedPax(
+      (current) =>
+        current.includes(id)
+          ? current.filter(
+              (item) =>
+                item !== id,
+            )
+          : [
+              ...current,
+              id,
+            ],
     );
+  };
 
   const chosenPassengers: SavedPassenger[] =
-    passengers.filter((p) =>
-      selectedPax.includes(p.id),
+    passengers.filter(
+      (passenger) =>
+        selectedPax.includes(
+          passenger.id,
+        ),
     );
 
   const option =
     segment?.options.find(
-      (o) => o.code === classCode,
+      (item) =>
+        item.code ===
+        classCode,
     );
 
   const currentSeatState =
@@ -588,34 +780,49 @@ function BookPage() {
       )
     : 0;
 
-  const surge = Math.round(
-    base *
-      (demand - 1 > 0
-        ? demand - 1
-        : 0),
-  );
+  const surge =
+    Math.round(
+      base *
+        Math.max(
+          0,
+          demand - 1,
+        ),
+    );
 
-  const gst = Math.round(
-    (base + surge) * 0.05,
-  );
+  const gst =
+    Math.round(
+      (base + surge) *
+        0.05,
+    );
 
   const convenience =
-    chosenPassengers.length > 0
+    chosenPassengers.length >
+    0
       ? 25 +
-        chosenPassengers.length * 5
+        chosenPassengers.length *
+          5
       : 0;
 
   const mealsTotal =
-    Object.entries(mealQty).reduce(
-      (sum, [id, qty]) => {
-        const meal = meals.find(
-          (mm) => mm.id === id,
-        );
+    Object.entries(
+      mealQty,
+    ).reduce(
+      (
+        sum,
+        [id, qty],
+      ) => {
+        const meal =
+          meals.find(
+            (item) =>
+              item.id ===
+              id,
+          );
 
         return (
           sum +
           (meal
-            ? meal.price * qty
+            ? meal.price *
+              qty
             : 0)
         );
       },
@@ -631,15 +838,19 @@ function BookPage() {
 
   const availableRewards =
     redeemedRewards.filter(
-      (r) =>
-        r.status === "redeemed" &&
-        !isRewardExpired(r),
+      (rewardItem) =>
+        rewardItem.status ===
+          "redeemed" &&
+        !isRewardExpired(
+          rewardItem,
+        ),
     );
 
   const selectedReward =
     availableRewards.find(
-      (r) =>
-        r.id === selectedRewardId,
+      (rewardItem) =>
+        rewardItem.id ===
+        selectedRewardId,
     ) ?? null;
 
   const rewardStillEligible =
@@ -650,7 +861,8 @@ function BookPage() {
             mode: m,
             hasMeals:
               mealsTotal > 0,
-            total: grossTotal,
+            total:
+              grossTotal,
           },
         ).ok
       : false;
@@ -668,248 +880,316 @@ function BookPage() {
         )
       : 0;
 
-  const preCoinTotal = Math.max(
-    0,
-    grossTotal - rewardDiscount,
-  );
-
-  const coinDiscount = Math.round(
-    appliedCoins * 0.25,
-  );
-
-  const pointDiscount = Math.min(
-    Math.floor(
-      appliedPoints * POINT_VALUE,
-    ),
+  const preCoinTotal =
     Math.max(
       0,
-      preCoinTotal - coinDiscount,
-    ),
-  );
+      grossTotal -
+        rewardDiscount,
+    );
 
-  const total = Math.max(
-    0,
-    preCoinTotal -
-      coinDiscount -
-      pointDiscount,
-  );
+  const coinDiscount =
+    Math.round(
+      appliedCoins *
+        0.25,
+    );
 
-  const fareLines: FareLine[] = [
-    {
-      label: `Base fare × ${Math.max(
-        1,
-        chosenPassengers.length,
-      )}`,
-      amount: base,
-    },
-    {
-      label: "Dynamic surge",
-      amount: surge,
-      muted: true,
-    },
-    {
-      label: "Taxes & GST (5%)",
-      amount: gst,
-      muted: true,
-    },
-    {
-      label: "Convenience fee",
-      amount: convenience,
-      muted: true,
-    },
-  ];
+  const pointDiscount =
+    Math.min(
+      Math.floor(
+        appliedPoints *
+          POINT_VALUE,
+      ),
+      Math.max(
+        0,
+        preCoinTotal -
+          coinDiscount,
+      ),
+    );
 
-  if (mealsTotal > 0) {
+  const total =
+    Math.max(
+      0,
+      preCoinTotal -
+        coinDiscount -
+        pointDiscount,
+    );
+
+  const fareLines: FareLine[] =
+    [
+      {
+        label: `Base fare × ${Math.max(
+          1,
+          chosenPassengers.length,
+        )}`,
+        amount: base,
+      },
+
+      {
+        label:
+          "Dynamic surge",
+        amount: surge,
+        muted: true,
+      },
+
+      {
+        label:
+          "Taxes & GST (5%)",
+        amount: gst,
+        muted: true,
+      },
+
+      {
+        label:
+          "Convenience fee",
+        amount:
+          convenience,
+        muted: true,
+      },
+    ];
+
+  if (
+    mealsTotal > 0
+  ) {
     fareLines.push({
       label: "Meals",
-      amount: mealsTotal,
+      amount:
+        mealsTotal,
     });
   }
 
   if (activeReward) {
     fareLines.push({
       label: `Reward · ${activeReward.name}`,
-      amount: -rewardDiscount,
+      amount:
+        -rewardDiscount,
     });
   }
 
-  if (coinDiscount > 0) {
+  if (
+    coinDiscount > 0
+  ) {
     fareLines.push({
-      label: "Transit Coins discount",
-      amount: -coinDiscount,
+      label:
+        "Transit Coins discount",
+      amount:
+        -coinDiscount,
     });
   }
 
-  if (pointDiscount > 0) {
+  if (
+    pointDiscount > 0
+  ) {
     fareLines.push({
-      label: "Transit Points discount",
-      amount: -pointDiscount,
+      label:
+        "Transit Points discount",
+      amount:
+        -pointDiscount,
     });
   }
 
-  /*
-   * Hotel and Metro do not have meal selection.
-   */
   const showMeals =
     m !== "hotel" &&
     m !== "metro";
 
   const goPayment = () =>
-    setStep("payment");
+    setStep(
+      "payment",
+    );
 
   /*
    * FINAL BOOKING
    *
-   * For normal transport:
-   * Segment route has priority.
+   * CRITICAL:
    *
-   * For hotel:
-   * only hotel location is stored.
+   * For transport:
+   *     segment.fromCode
+   *     segment.from
+   *     segment.toCode
+   *     segment.to
+   *
+   * are preferred.
+   *
+   * This prevents the booking ticket from accidentally
+   * showing the search route if the selected service has
+   * its own route.
+   *
+   * Hotel:
+   * only the hotel location is stored.
    */
   const finalizeBooking = (
     statusOverride?: Booking["status"],
     statusLabel?: string,
   ) => {
-    if (!segment || !option) {
+    if (
+      !segment ||
+      !option
+    ) {
       return;
     }
 
-    const pnr = genPnr();
+    const pnr =
+      genPnr();
 
     const mealsPayload =
-      Object.entries(mealQty)
+      Object.entries(
+        mealQty,
+      )
         .filter(
-          ([, qty]) => qty > 0,
+          ([, qty]) =>
+            qty > 0,
         )
-        .map(([id, qty]) => {
-          const meal = meals.find(
-            (mm) => mm.id === id,
-          );
+        .map(
+          ([id, qty]) => {
+            const meal =
+              meals.find(
+                (item) =>
+                  item.id ===
+                  id,
+              );
 
-          return {
-            id,
-            name:
-              meal?.name ?? id,
-            price:
-              meal?.price ?? 0,
-            qty,
-          };
-        });
+            return {
+              id,
+
+              name:
+                meal?.name ??
+                id,
+
+              price:
+                meal?.price ??
+                0,
+
+              qty,
+            };
+          },
+        );
 
     /*
-     * IMPORTANT ROUTE FIX:
-     *
-     * For train/bus/flight/metro/ferry:
-     * use actual Segment route.
-     *
-     * Hotel:
-     * use only selected hotel location.
+     * ACTUAL SELECTED SEGMENT ROUTE.
      */
-    const bookingFromCode = isHotel
-      ? state.from.code
-      : segment.fromCode ??
-        state.from.code;
+    const bookingFromCode =
+      isHotel
+        ? state.from.code
+        : segment.fromCode ??
+          state.from.code;
 
-    const bookingFromCity = isHotel
-      ? state.from.city
-      : segment.from ??
-        state.from.city;
+    const bookingFromCity =
+      isHotel
+        ? state.from.city
+        : segment.from ??
+          state.from.city;
 
-    const bookingToCode = isHotel
-      ? ""
-      : segment.toCode ??
-        state.to.code;
+    const bookingToCode =
+      isHotel
+        ? ""
+        : segment.toCode ??
+          state.to.code;
 
-    const bookingToCity = isHotel
-      ? ""
-      : segment.to ??
-        state.to.city;
+    const bookingToCity =
+      isHotel
+        ? ""
+        : segment.to ??
+          state.to.city;
 
-    const created = addBooking({
-      pnr,
+    const passengerList =
+      chosenPassengers.length
+        ? chosenPassengers
+        : passengers.slice(
+            0,
+            1,
+          );
 
-      mode: m,
-
-      serviceName:
-        segment.name,
-
-      serviceCode:
-        segment.code,
-
-      fromCode:
-        bookingFromCode,
-
-      fromCity:
-        bookingFromCity,
-
-      toCode:
-        bookingToCode,
-
-      toCity:
-        bookingToCity,
-
-      date: state.date
-        .toISOString()
-        .slice(0, 10),
-
-      depart:
-        segment.depart,
-
-      arrive:
-        segment.arrive,
-
-      classCode:
-        statusLabel
-          ? `${classCode} · ${statusLabel}`
-          : classCode,
-
-      passengers:
-        chosenPassengers.length
-          ? chosenPassengers
-          : passengers.slice(0, 1),
-
-      meals:
-        mealsPayload,
-
-      total,
-
-      status:
-        statusOverride ??
-        "confirmed",
-
-      coach:
-        m === "train" ||
-        m === "bus"
-          ? `${classCode}${
-              1 +
-              (Math.abs(
-                pnr.charCodeAt(0),
-              ) %
-                9)
-            }`
-          : undefined,
-
-      seats: allocateSeats(
+    const created =
+      addBooking({
         pnr,
-        m,
-        classCode,
-        (
-          chosenPassengers.length
-            ? chosenPassengers
-            : passengers.slice(0, 1)
-        ).length,
-      ),
 
-      tatkal:
-        isTatkalFlow ||
-        statusOverride ===
-          "queued",
+        mode: m,
 
-      coinsUsed:
-        appliedCoins,
-    });
+        serviceName:
+          segment.name,
 
-    setBooking(created);
+        serviceCode:
+          segment.code,
+
+        /*
+         * DO NOT use only state.from/state.to here.
+         */
+        fromCode:
+          bookingFromCode,
+
+        fromCity:
+          bookingFromCity,
+
+        toCode:
+          bookingToCode,
+
+        toCity:
+          bookingToCity,
+
+        date:
+          state.date
+            .toISOString()
+            .slice(
+              0,
+              10,
+            ),
+
+        depart:
+          segment.depart,
+
+        arrive:
+          segment.arrive,
+
+        classCode:
+          statusLabel
+            ? `${classCode} · ${statusLabel}`
+            : classCode,
+
+        passengers:
+          passengerList,
+
+        meals:
+          mealsPayload,
+
+        total,
+
+        status:
+          statusOverride ??
+          "confirmed",
+
+        coach:
+          m === "train" ||
+          m === "bus"
+            ? `${classCode}${
+                1 +
+                (Math.abs(
+                  pnr.charCodeAt(
+                    0,
+                  ),
+                ) %
+                  9)
+              }`
+            : undefined,
+
+        seats:
+          allocateSeats(
+            pnr,
+            m,
+            classCode,
+            passengerList.length,
+          ),
+
+        tatkal:
+          isTatkalFlow ||
+          statusOverride ===
+            "queued",
+
+        coinsUsed:
+          appliedCoins,
+      });
+
+    setBooking(
+      created,
+    );
 
     return created;
   };
@@ -921,7 +1201,7 @@ function BookPage() {
       paidWith ===
       "Transit Wallet"
     ) {
-      const res =
+      const result =
         payFromWallet(
           total,
           `Booking · ${
@@ -930,13 +1210,13 @@ function BookPage() {
           }`,
         );
 
-      if (!res.ok) {
+      if (!result.ok) {
         notify({
           kind: "wallet",
           title:
             "Payment failed",
           body:
-            res.error ??
+            result.error ??
             "Insufficient wallet balance.",
         });
 
@@ -946,11 +1226,17 @@ function BookPage() {
       reward("wallet");
     }
 
-    if (appliedCoins > 0) {
-      spendCoins(appliedCoins);
+    if (
+      appliedCoins > 0
+    ) {
+      spendCoins(
+        appliedCoins,
+      );
     }
 
-    if (appliedPoints > 0) {
+    if (
+      appliedPoints > 0
+    ) {
       spendPoints(
         appliedPoints,
         `Points redeemed · ${
@@ -977,42 +1263,54 @@ function BookPage() {
         statusLabel,
       );
 
-    if (created) {
-      if (activeTatkalDraftId) {
-        removeTatkalDraft(
-          activeTatkalDraftId,
-        );
-      }
-
-      if (activeReward) {
-        applyRewardToBooking(
-          activeReward.id,
-          created.id,
-          `${created.serviceName} · ${created.date}`,
-        );
-
-        setSelectedRewardId(null);
-
-        notify({
-          kind: "coins",
-          title:
-            "Reward applied",
-          body: `${activeReward.name} applied to ${created.serviceName}. It is now locked to this trip.`,
-        });
-      }
-
-      reward("booking");
-
-      if (mealsTotal > 0) {
-        reward("meal");
-      }
-
-      if (m === "hotel") {
-        reward("hotel");
-      }
-
-      setStep("ticket");
+    if (!created) {
+      return;
     }
+
+    if (
+      activeTatkalDraftId
+    ) {
+      removeTatkalDraft(
+        activeTatkalDraftId,
+      );
+    }
+
+    if (activeReward) {
+      applyRewardToBooking(
+        activeReward.id,
+        created.id,
+        `${created.serviceName} · ${created.date}`,
+      );
+
+      setSelectedRewardId(
+        null,
+      );
+
+      notify({
+        kind: "coins",
+        title:
+          "Reward applied",
+        body: `${activeReward.name} applied to ${created.serviceName}. It is now locked to this trip.`,
+      });
+    }
+
+    reward("booking");
+
+    if (
+      mealsTotal > 0
+    ) {
+      reward("meal");
+    }
+
+    if (
+      m === "hotel"
+    ) {
+      reward("hotel");
+    }
+
+    setStep(
+      "ticket",
+    );
   };
 
   const proceedFromTatkalDraft = (
@@ -1020,21 +1318,63 @@ function BookPage() {
   ) => {
     setSegment({
       id: draft.id,
+
       mode: m,
-      name: draft.serviceName,
-      code: draft.classCode,
+
+      name:
+        draft.serviceName,
+
+      code:
+        draft.classCode,
+
+      /*
+       * Tatkal drafts do not contain a full
+       * segment route in the current data model.
+       *
+       * The actual selected search route is used
+       * only as fallback here.
+       */
+      from:
+        state.from.city,
+
+      fromCode:
+        state.from.code,
+
+      to:
+        isHotel
+          ? ""
+          : state.to.city,
+
+      toCode:
+        isHotel
+          ? ""
+          : state.to.code,
+
       depart: "—",
+
       arrive: "—",
+
       durationMins: 0,
+
       duration: "",
+
       distanceKm: km,
+
       tags: [],
+
       options: [
         {
-          code: draft.classCode,
-          label: draft.classCode,
-          fare: draft.total,
+          code:
+            draft.classCode,
+
+          label:
+            draft.classCode,
+
+          fare:
+            draft.total,
+
           available: 10,
+
           probability: 80,
         },
       ],
@@ -1051,23 +1391,35 @@ function BookPage() {
     setMealQty(
       Object.fromEntries(
         draft.mealIds.map(
-          (mi) => [
-            mi.id,
-            mi.qty,
+          (mealItem) => [
+            mealItem.id,
+            mealItem.qty,
           ],
         ),
       ),
     );
 
-    setIsTatkalFlow(true);
+    setIsTatkalFlow(
+      true,
+    );
+
     setActiveTatkalDraftId(
       draft.id,
     );
-    setBooking(null);
-    setStep("payment");
+
+    setBooking(
+      null,
+    );
+
+    setStep(
+      "payment",
+    );
   };
 
-  if (!hydrated || !account) {
+  if (
+    !hydrated ||
+    !account
+  ) {
     return null;
   }
 
@@ -1075,66 +1427,99 @@ function BookPage() {
     <AppShell>
       <div className="space-y-5">
 
-        {/* TRANSPORT MODE SWITCHER */}
-        <div className="flex flex-wrap items-center gap-2">
-          {transportModes.map((tm) => {
-            const Icon = modeIcons[tm.id];
+        {/* =====================================================
+            TRANSPORT MODE SWITCHER
+        ===================================================== */}
 
-            return (
-              <button
-                key={tm.id}
-                onClick={() =>
-                  navigate({
-                    to: "/book/$mode",
-                    params: {
-                      mode: tm.id,
-                    },
-                    search:
-                      tm.id === "hotel"
-                        ? {
-                            from:
-                              state.from.code,
-                            to: undefined,
-                            date:
-                              state.date
-                                .toISOString()
-                                .slice(
-                                  0,
-                                  10,
-                                ),
-                            slot:
-                              state.slot,
-                            q: undefined,
-                          }
-                        : {
-                            from:
-                              state.from.code,
-                            to:
-                              state.to.code,
-                            date:
-                              state.date
-                                .toISOString()
-                                .slice(
-                                  0,
-                                  10,
-                                ),
-                            slot:
-                              state.slot,
-                            q: undefined,
-                          },
-                  })
-                }
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition ${
-                  tm.id === m
-                    ? "border-primary bg-[color:var(--brand-soft)] text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/40"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {tm.label}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap items-center gap-2">
+          {transportModes.map(
+            (transportMode) => {
+              const Icon =
+                modeIcons[
+                  transportMode.id
+                ];
+
+              return (
+                <button
+                  key={
+                    transportMode.id
+                  }
+                  onClick={() =>
+                    navigate({
+                      to:
+                        "/book/$mode",
+
+                      params: {
+                        mode:
+                          transportMode.id,
+                      },
+
+                      search:
+                        transportMode.id ===
+                        "hotel"
+                          ? {
+                              from:
+                                state.from
+                                  .code,
+
+                              to:
+                                undefined,
+
+                              date:
+                                state.date
+                                  .toISOString()
+                                  .slice(
+                                    0,
+                                    10,
+                                  ),
+
+                              slot:
+                                state.slot,
+
+                              q:
+                                undefined,
+                            }
+                          : {
+                              from:
+                                state.from
+                                  .code,
+
+                              to:
+                                state.to
+                                  .code,
+
+                              date:
+                                state.date
+                                  .toISOString()
+                                  .slice(
+                                    0,
+                                    10,
+                                  ),
+
+                              slot:
+                                state.slot,
+
+                              q:
+                                undefined,
+                            },
+                    })
+                  }
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition ${
+                    transportMode.id ===
+                    m
+                      ? "border-primary bg-[color:var(--brand-soft)] text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+
+                  {
+                    transportMode.label
+                  }
+                </button>
+              );
+            },
+          )}
         </div>
 
         <AnimatePresence mode="wait">
@@ -1142,7 +1527,9 @@ function BookPage() {
           {/* =====================================================
               RESULTS
           ===================================================== */}
-          {step === "results" && (
+
+          {step ===
+            "results" && (
             <motion.section
               key="results"
               initial={{
@@ -1161,39 +1548,45 @@ function BookPage() {
               <SmartSearch
                 mode={m}
                 value={state}
-                onChange={(p) =>
-                  setState((s) => {
-                    /*
-                     * HOTEL:
-                     * From and To stay internally identical.
-                     */
-                    if (isHotel) {
-                      const nextFrom =
-                        p.from ?? s.from;
+                onChange={(changes) =>
+                  setState(
+                    (current) => {
+                      if (
+                        isHotel
+                      ) {
+                        const nextFrom =
+                          changes.from ??
+                          current.from;
+
+                        return {
+                          ...current,
+                          ...changes,
+                          from:
+                            nextFrom,
+                          to:
+                            nextFrom,
+                        };
+                      }
 
                       return {
-                        ...s,
-                        ...p,
-                        from:
-                          nextFrom,
-                        to:
-                          nextFrom,
+                        ...current,
+                        ...changes,
                       };
-                    }
-
-                    return {
-                      ...s,
-                      ...p,
-                    };
-                  })
+                    },
+                  )
                 }
-                onSubmit={submitSearch}
+                onSubmit={
+                  submitSearch
+                }
                 compact
               />
 
               <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 
-                {/* RESULTS COLUMN */}
+                {/* =================================================
+                    RESULTS COLUMN
+                ================================================= */}
+
                 <div className="space-y-4">
 
                   {aiInterpretation && (
@@ -1202,8 +1595,11 @@ function BookPage() {
                       className="rounded-full border-primary/40 bg-[color:var(--brand-soft)] px-3 py-1 text-[11px] text-primary"
                     >
                       <Sparkles className="mr-1.5 h-3 w-3" />
+
                       AI applied:{" "}
-                      {aiInterpretation}
+                      {
+                        aiInterpretation
+                      }
                     </Badge>
                   )}
 
@@ -1214,62 +1610,67 @@ function BookPage() {
                         : `Fares update live with distance (${km} km), class and demand (×${demand}).`}
                     </p>
 
-                    <div
-                      className="flex flex-wrap items-center gap-1.5"
-                      data-a11y="optional"
-                    >
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
                         Sort
                       </span>
 
-                      {(
-                        [
-                          {
-                            id: "recommended",
-                            label:
-                              "Recommended",
-                          },
-                          {
-                            id: "rating",
-                            label:
-                              "Top rated",
-                          },
-                          {
-                            id: "price",
-                            label:
-                              "Cheapest",
-                          },
-                          {
-                            id: "duration",
-                            label:
-                              "Fastest",
-                          },
-                        ] as {
-                          id: SortKey;
-                          label: string;
-                        }[]
-                      ).map((o) => (
-                        <button
-                          key={o.id}
-                          onClick={() =>
-                            setSortBy(
-                              o.id,
-                            )
-                          }
-                          aria-pressed={
-                            sortBy ===
-                            o.id
-                          }
-                          className={`rounded-full border px-2.5 py-1 text-[12px] transition ${
-                            sortBy ===
-                            o.id
-                              ? "border-primary bg-[color:var(--brand-soft)] text-primary"
-                              : "border-border text-muted-foreground hover:border-primary/40"
-                          }`}
-                        >
-                          {o.label}
-                        </button>
-                      ))}
+                      {[
+                        {
+                          id:
+                            "recommended" as SortKey,
+                          label:
+                            "Recommended",
+                        },
+
+                        {
+                          id:
+                            "rating" as SortKey,
+                          label:
+                            "Top rated",
+                        },
+
+                        {
+                          id:
+                            "price" as SortKey,
+                          label:
+                            "Cheapest",
+                        },
+
+                        {
+                          id:
+                            "duration" as SortKey,
+                          label:
+                            "Fastest",
+                        },
+                      ].map(
+                        (item) => (
+                          <button
+                            key={
+                              item.id
+                            }
+                            onClick={() =>
+                              setSortBy(
+                                item.id,
+                              )
+                            }
+                            aria-pressed={
+                              sortBy ===
+                              item.id
+                            }
+                            className={`rounded-full border px-2.5 py-1 text-[12px] transition ${
+                              sortBy ===
+                              item.id
+                                ? "border-primary bg-[color:var(--brand-soft)] text-primary"
+                                : "border-border text-muted-foreground hover:border-primary/40"
+                            }`}
+                          >
+                            {
+                              item.label
+                            }
+                          </button>
+                        ),
+                      )}
                     </div>
                   </div>
 
@@ -1283,8 +1684,10 @@ function BookPage() {
                       const alternatives =
                         sortedResults
                           .filter(
-                            (s) =>
-                              s.id !==
+                            (
+                              alternative,
+                            ) =>
+                              alternative.id !==
                               seg.id,
                           )
                           .slice(
@@ -1292,14 +1695,33 @@ function BookPage() {
                             2,
                           );
 
+                      /*
+                       * IMPORTANT:
+                       *
+                       * These are the route values belonging
+                       * to THIS SEGMENT.
+                       */
+                      const segmentFrom =
+                        seg.from ??
+                        state.from
+                          .city;
+
+                      const segmentTo =
+                        seg.to ??
+                        state.to
+                          .city;
+
                       return (
                         <Card
-                          key={seg.id}
+                          key={
+                            seg.id
+                          }
                           className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur"
                         >
                           <div className="space-y-2">
 
                             {/* SERVICE HEADER */}
+
                             <div className="flex min-w-0 items-start gap-3">
                               <ServicePreview
                                 mode={m}
@@ -1318,11 +1740,16 @@ function BookPage() {
                                     seg.name
                                   }
                                 >
-                                  {seg.name}
+                                  {
+                                    seg.name
+                                  }
                                 </div>
 
                                 <div className="truncate text-[12px] leading-snug text-muted-foreground">
-                                  {seg.code}
+                                  {
+                                    seg.code
+                                  }
+
                                   {seg.operator
                                     ? ` · ${seg.operator}`
                                     : ""}
@@ -1344,7 +1771,28 @@ function BookPage() {
                               </div>
                             </div>
 
+                            {/* ROUTE IDENTITY */}
+
+                            {!isHotel && (
+                              <div className="rounded-xl border border-primary/15 bg-[color:var(--brand-soft)]/40 px-3 py-2">
+                                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                  Service route
+                                </div>
+
+                                <div className="mt-0.5 break-words text-[13px] font-semibold">
+                                  {
+                                    segmentFrom
+                                  }{" "}
+                                  →
+                                  {
+                                    segmentTo
+                                  }
+                                </div>
+                              </div>
+                            )}
+
                             {/* DISRUPTION */}
+
                             {(disruption.cancelled ||
                               disruption.delayMins >
                                 0) && (
@@ -1370,20 +1818,21 @@ function BookPage() {
                             )}
 
                             {/* TAGS */}
+
                             {seg.tags.length >
                               0 && (
                               <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                                 {seg.tags.map(
-                                  (tg) => (
+                                  (tag) => (
                                     <Badge
                                       key={
-                                        tg
+                                        tag
                                       }
                                       variant="outline"
                                       className="max-w-full whitespace-normal rounded-full text-[10px] leading-snug"
                                     >
                                       {
-                                        tg
+                                        tag
                                       }
                                     </Badge>
                                   ),
@@ -1392,7 +1841,8 @@ function BookPage() {
                             )}
                           </div>
 
-                          {/* ROUTE / HOTEL INFO */}
+                          {/* HOTEL INFO / TIMING */}
+
                           <div className="mt-3">
                             {isHotel ? (
                               <div className="rounded-xl border border-border bg-background/50 p-3">
@@ -1413,8 +1863,7 @@ function BookPage() {
                                   {
                                     seg.depart
                                   }{" "}
-                                  ·
-                                  Check-out{" "}
+                                  · Check-out{" "}
                                   {
                                     seg.arrive
                                   }{" "}
@@ -1425,10 +1874,6 @@ function BookPage() {
                                 </div>
                               </div>
                             ) : (
-                              /*
-                               * IMPORTANT:
-                               * RouteLine uses the actual Segment timing.
-                               */
                               <RouteLine
                                 depart={
                                   seg.depart
@@ -1444,18 +1889,15 @@ function BookPage() {
                           </div>
 
                           {/* ACTUAL SEGMENT ROUTE */}
+
                           {!isHotel && (
                             <RoutePreview
                               mode={m}
                               origin={
-                                seg.from ??
-                                state.from
-                                  .city
+                                segmentFrom
                               }
                               destination={
-                                seg.to ??
-                                state.to
-                                  .city
+                                segmentTo
                               }
                               km={
                                 seg.distanceKm
@@ -1471,14 +1913,14 @@ function BookPage() {
 
                           <Separator className="my-3" />
 
-                          {/* CANCELLED SERVICE */}
+                          {/* CANCELLED */}
+
                           {disruption.cancelled ? (
                             <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
                               <div className="flex items-center gap-2 text-[13px] font-medium text-destructive">
                                 <AlertTriangle className="h-4 w-4" />
 
-                                Service
-                                cancelled
+                                Service cancelled
                                 —{" "}
                                 {
                                   disruption.reason
@@ -1491,26 +1933,28 @@ function BookPage() {
 
                               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {alternatives.map(
-                                  (alt) => (
+                                  (
+                                    alternative,
+                                  ) => (
                                     <div
                                       key={
-                                        alt.id
+                                        alternative.id
                                       }
                                       className="rounded-xl border border-border bg-background/70 p-2.5 text-[12px]"
                                     >
                                       <div className="font-medium">
                                         {
-                                          alt.name
+                                          alternative.name
                                         }
                                       </div>
 
                                       <div className="text-muted-foreground">
                                         {
-                                          alt.depart
+                                          alternative.from
                                         }{" "}
                                         →
                                         {
-                                          alt.arrive
+                                          alternative.to
                                         }
                                       </div>
                                     </div>
@@ -1519,28 +1963,27 @@ function BookPage() {
                               </div>
                             </div>
                           ) : (
-                            /* AVAILABLE OPTIONS */
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                               {seg.options.map(
-                                (o) => {
-                                  const st =
+                                (transportOption) => {
+                                  const availability =
                                     seatFor(
                                       seg,
-                                      o.code,
-                                      o.available,
+                                      transportOption.code,
+                                      transportOption.available,
                                     );
 
                                   const toneClass =
-                                    st.tone ===
+                                    availability.tone ===
                                     "sold"
                                       ? "text-destructive"
-                                      : st.tone ===
+                                      : availability.tone ===
                                           "wl"
                                         ? "text-destructive"
-                                        : st.tone ===
+                                        : availability.tone ===
                                             "rac"
                                           ? "text-[color:var(--accent-orange)]"
-                                          : st.tone ===
+                                          : availability.tone ===
                                               "low"
                                             ? "text-[color:var(--accent-orange)]"
                                             : "text-[color:var(--success)]";
@@ -1548,56 +1991,56 @@ function BookPage() {
                                   return (
                                     <div
                                       key={
-                                        o.code
+                                        transportOption.code
                                       }
                                       role="button"
                                       tabIndex={
-                                        st.tone ===
+                                        availability.tone ===
                                         "sold"
                                           ? -1
                                           : 0
                                       }
                                       aria-disabled={
-                                        st.tone ===
+                                        availability.tone ===
                                         "sold"
                                       }
                                       onClick={() => {
                                         if (
-                                          st.tone !==
+                                          availability.tone !==
                                           "sold"
                                         ) {
                                           pickOption(
                                             seg,
-                                            o.code,
+                                            transportOption.code,
                                           );
                                         }
                                       }}
                                       onKeyDown={(
-                                        e,
+                                        event,
                                       ) => {
                                         if (
-                                          st.tone ===
+                                          availability.tone ===
                                           "sold"
                                         ) {
                                           return;
                                         }
 
                                         if (
-                                          e.key ===
+                                          event.key ===
                                             "Enter" ||
-                                          e.key ===
+                                          event.key ===
                                             " "
                                         ) {
-                                          e.preventDefault();
+                                          event.preventDefault();
 
                                           pickOption(
                                             seg,
-                                            o.code,
+                                            transportOption.code,
                                           );
                                         }
                                       }}
                                       className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-border bg-background/70 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/40 ${
-                                        st.tone ===
+                                        availability.tone ===
                                         "sold"
                                           ? "pointer-events-none opacity-50"
                                           : ""
@@ -1606,13 +2049,13 @@ function BookPage() {
                                       <div className="min-w-0">
                                         <div className="break-words text-[11px] uppercase tracking-widest text-muted-foreground">
                                           {
-                                            o.label
+                                            transportOption.label
                                           }
                                         </div>
 
                                         <div className="text-base font-bold">
                                           {formatCurrency(
-                                            o.fare,
+                                            transportOption.fare,
                                           )}
                                         </div>
 
@@ -1620,13 +2063,13 @@ function BookPage() {
                                           className={`text-[11px] font-medium ${toneClass}`}
                                         >
                                           {
-                                            st.label
+                                            availability.label
                                           }
                                         </div>
 
                                         <ProbabilityBar
                                           probability={
-                                            o.probability
+                                            transportOption.probability
                                           }
                                           className="mt-1.5 w-full max-w-32"
                                         />
@@ -1636,11 +2079,11 @@ function BookPage() {
                                         size="sm"
                                         className="shrink-0 rounded-full brand-gradient text-white"
                                         disabled={
-                                          st.tone ===
+                                          availability.tone ===
                                           "sold"
                                         }
                                       >
-                                        {st.tone ===
+                                        {availability.tone ===
                                         "sold"
                                           ? "Sold Out"
                                           : "Book"}
@@ -1657,7 +2100,10 @@ function BookPage() {
                   )}
                 </div>
 
-                {/* SIDEBAR */}
+                {/* =================================================
+                    SIDEBAR
+                ================================================= */}
+
                 <div className="space-y-4">
 
                   {!isHotel && (
@@ -1667,6 +2113,7 @@ function BookPage() {
                     >
                       <div className="flex items-center gap-2 text-sm font-semibold">
                         <TrendingUp className="h-4 w-4 text-primary" />
+
                         Alternative travel
                       </div>
 
@@ -1676,20 +2123,27 @@ function BookPage() {
                           "metro",
                         ]
                           .filter(
-                            (alt) =>
-                              alt !==
+                            (
+                              alternative,
+                            ) =>
+                              alternative !==
                               m,
                           )
                           .map(
-                            (alt) => (
+                            (
+                              alternative,
+                            ) => (
                               <div
                                 key={
-                                  alt
+                                  alternative
                                 }
                                 className="rounded-xl border border-border bg-background/70 p-3 text-[13px]"
                               >
                                 <div className="font-medium capitalize">
-                                  {alt} via{" "}
+                                  {
+                                    alternative
+                                  }{" "}
+                                  via{" "}
                                   {
                                     state
                                       .from
@@ -1708,12 +2162,12 @@ function BookPage() {
                                   {formatCurrency(
                                     computeFare(
                                       km,
-                                      alt ===
+                                      alternative ===
                                         "metro"
                                         ? "TOKEN"
                                         : "SEATER",
                                       demand,
-                                      alt ===
+                                      alternative ===
                                         "metro"
                                         ? 1.4
                                         : 0.5,
@@ -1732,7 +2186,8 @@ function BookPage() {
                     </Card>
                   )}
 
-                  {m === "train" && (
+                  {m ===
+                    "train" && (
                     <PreTatkalCard
                       segments={
                         sortedResults
@@ -1762,7 +2217,9 @@ function BookPage() {
           {/* =====================================================
               WAITLIST / RAC
           ===================================================== */}
-          {step === "waitlist" &&
+
+          {step ===
+            "waitlist" &&
             segment &&
             option &&
             currentSeatState && (
@@ -1818,51 +2275,64 @@ function BookPage() {
 
                     {sortedResults
                       .filter(
-                        (s) =>
-                          s.id !==
+                        (
+                          item,
+                        ) =>
+                          item.id !==
                           segment.id,
                       )
-                      .slice(0, 3)
-                      .map((alt) => (
-                        <div
-                          key={alt.id}
-                          className="flex items-center justify-between rounded-xl border border-border bg-background/70 p-3 text-[13px]"
-                        >
-                          <div>
-                            <div className="font-medium">
-                              {
-                                alt.name
-                              }
-                            </div>
-
-                            <div className="text-muted-foreground">
-                              {
-                                alt.depart
-                              }{" "}
-                              →
-                              {
-                                alt.arrive
-                              }
-                            </div>
-                          </div>
-
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="rounded-full"
-                            onClick={() =>
-                              pickOption(
-                                alt,
-                                alt
-                                  .options[0]
-                                  .code,
-                              )
+                      .slice(
+                        0,
+                        3,
+                      )
+                      .map(
+                        (
+                          alternative,
+                        ) => (
+                          <div
+                            key={
+                              alternative.id
                             }
+                            className="flex items-center justify-between rounded-xl border border-border bg-background/70 p-3 text-[13px]"
                           >
-                            View
-                          </Button>
-                        </div>
-                      ))}
+                            <div>
+                              <div className="font-medium">
+                                {
+                                  alternative.name
+                                }
+                              </div>
+
+                              <div className="text-muted-foreground">
+                                {
+                                  alternative.from
+                                }{" "}
+                                →
+                                {
+                                  alternative.to
+                                }
+                              </div>
+                            </div>
+
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-full"
+                              onClick={() =>
+                                pickOption(
+                                  alternative,
+                                  alternative
+                                    .options[
+                                    0
+                                  ]
+                                    .code,
+                                )
+                              }
+                            >
+                              View
+                            </Button>
+                          </div>
+                        ),
+                      )}
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -1909,7 +2379,9 @@ function BookPage() {
           {/* =====================================================
               PASSENGERS
           ===================================================== */}
-          {step === "passengers" &&
+
+          {step ===
+            "passengers" &&
             segment &&
             option && (
               <motion.section
@@ -1942,12 +2414,38 @@ function BookPage() {
                     </div>
 
                     <p className="mt-1 text-[13px] text-muted-foreground">
-                      {segment.name} ·{" "}
-                      {option.label} ·{" "}
+                      {
+                        segment.name
+                      }{" "}
+                      ·{" "}
+                      {
+                        option.label
+                      }{" "}
+                      ·{" "}
                       {formatDate(
                         state.date,
                       )}
                     </p>
+
+                    {/* ACTUAL SELECTED ROUTE */}
+
+                    {!isHotel && (
+                      <div className="mt-3 rounded-xl border border-primary/15 bg-[color:var(--brand-soft)]/40 p-3">
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                          Your selected route
+                        </div>
+
+                        <div className="mt-1 text-sm font-semibold">
+                          {
+                            segment.from
+                          }{" "}
+                          →
+                          {
+                            segment.to
+                          }
+                        </div>
+                      </div>
+                    )}
 
                     {currentSeatState &&
                       (
@@ -1991,9 +2489,12 @@ function BookPage() {
                           value={
                             contactEmail
                           }
-                          onChange={(e) =>
+                          onChange={(
+                            event,
+                          ) =>
                             setContactEmail(
-                              e.target
+                              event
+                                .target
                                 .value,
                             )
                           }
@@ -2010,9 +2511,12 @@ function BookPage() {
                           value={
                             contactMobile
                           }
-                          onChange={(e) =>
+                          onChange={(
+                            event,
+                          ) =>
                             setContactMobile(
-                              e.target
+                              event
+                                .target
                                 .value,
                             )
                           }
@@ -2040,8 +2544,12 @@ function BookPage() {
                   </Card>
 
                   <FareSidebar
-                    lines={fareLines}
-                    total={total}
+                    lines={
+                      fareLines
+                    }
+                    total={
+                      total
+                    }
                     note={
                       isHotel
                         ? "Hotel price is based on location, room type, stay dates and current demand."
@@ -2055,7 +2563,9 @@ function BookPage() {
           {/* =====================================================
               MEALS
           ===================================================== */}
-          {step === "meals" &&
+
+          {step ===
+            "meals" &&
             segment &&
             option && (
               <motion.section
@@ -2098,13 +2608,13 @@ function BookPage() {
                         )}
                         onChange={(
                           id,
-                          qty,
+                          quantity,
                         ) =>
                           setMealQty(
-                            (m2) => ({
-                              ...m2,
+                            (current) => ({
+                              ...current,
                               [id]:
-                                qty,
+                                quantity,
                             }),
                           )
                         }
@@ -2122,8 +2632,12 @@ function BookPage() {
                   </Card>
 
                   <FareSidebar
-                    lines={fareLines}
-                    total={total}
+                    lines={
+                      fareLines
+                    }
+                    total={
+                      total
+                    }
                   />
                 </div>
               </motion.section>
@@ -2132,7 +2646,9 @@ function BookPage() {
           {/* =====================================================
               PAYMENT
           ===================================================== */}
-          {step === "payment" && (
+
+          {step ===
+            "payment" && (
             <motion.section
               key="payment"
               initial={{
@@ -2163,7 +2679,9 @@ function BookPage() {
               <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-[1fr_280px]">
 
                 <PaymentFlow
-                  total={total}
+                  total={
+                    total
+                  }
                   walletBalance={
                     walletBalance
                   }
@@ -2183,7 +2701,8 @@ function BookPage() {
                     }
                     mode={m}
                     hasMeals={
-                      mealsTotal > 0
+                      mealsTotal >
+                      0
                     }
                     total={
                       grossTotal
@@ -2198,13 +2717,21 @@ function BookPage() {
                   />
 
                   <FareSidebar
-                    lines={fareLines}
-                    total={total}
-                    sticky={false}
+                    lines={
+                      fareLines
+                    }
+                    total={
+                      total
+                    }
+                    sticky={
+                      false
+                    }
                   />
 
                   <CoinRedeemCard
-                    coins={coins}
+                    coins={
+                      coins
+                    }
                     total={
                       preCoinTotal
                     }
@@ -2217,7 +2744,9 @@ function BookPage() {
                   />
 
                   <PointsRedeemCard
-                    points={points}
+                    points={
+                      points
+                    }
                     total={Math.max(
                       0,
                       preCoinTotal -
@@ -2238,7 +2767,9 @@ function BookPage() {
           {/* =====================================================
               TICKET
           ===================================================== */}
-          {step === "ticket" &&
+
+          {step ===
+            "ticket" &&
             booking && (
               <motion.section
                 key="ticket"
@@ -2264,8 +2795,14 @@ function BookPage() {
                   </span>
                 </div>
 
+                {/* 
+                 * TicketCard receives the Booking created from
+                 * the selected Segment route.
+                 */}
                 <TicketCard
-                  booking={booking}
+                  booking={
+                    booking
+                  }
                 />
               </motion.section>
             )}
