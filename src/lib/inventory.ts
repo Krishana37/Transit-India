@@ -1,20 +1,25 @@
 {/*
 IMPORTANT:
-This file is now an adapter around dummy-data.ts.
+This file is an adapter around dummy-data.ts.
 
-Route generation is handled centrally by dummy-data.ts.
-Therefore:
+ALL ROUTE DATA IS OWNED BY dummy-data.ts.
 
-- Train routes are separate
-- Bus routes are separate
-- Flight routes are separate
-- Metro routes are separate
-- Ferry routes are separate
-- Hotel is location based
-- No transport mode shares another mode's route
+Separate transport catalogs:
+- Train  -> trainRoutes
+- Bus    -> busRoutes
+- Flight -> flightRoutes
+- Metro  -> metroRoutes
+- Ferry  -> ferryRoutes
+- Hotel  -> allHotels
 
-Do NOT maintain duplicate route arrays here.
+This file does NOT create or maintain duplicate route catalogs.
+
+DO NOT add route arrays here.
 */}
+
+/* ============================================================
+IMPORTS
+============================================================ */
 
 import {
   trainStations,
@@ -22,14 +27,18 @@ import {
   airports,
   metroStations,
   seaports,
+
   type Station,
+
   trainRoutes as trainRouteCatalog,
   busRoutes as busRouteCatalog,
   flightRoutes as flightRouteCatalog,
   metroRoutes as metroRouteCatalog,
   ferryRoutes as ferryRouteCatalog,
+
   famousHotelDestinations,
   allHotels,
+
   generateResults,
   allocateSeats,
   computeFare,
@@ -39,17 +48,27 @@ import {
   seatState,
   serviceDisruption,
   transportModes,
+
   type Segment,
   type TransportMode,
   type HotelProperty,
 } from "./dummy-data";
 
 /* ============================================================
-CENTRAL STATION / ROUTE ADAPTERS
+CENTRAL STATION LOOKUP
 ============================================================ */
 
-// Keep one station lookup for legacy consumers. Each transport catalog
-// owns its own routes; stations are only combined here for search/lookup.
+/*
+Each transport mode owns its own route catalog.
+
+The combined stations list exists ONLY for:
+- station search
+- station lookup
+- legacy components
+
+It does NOT create routes.
+*/
+
 export const stations: Station[] = Array.from(
   new Map(
     [
@@ -62,14 +81,35 @@ export const stations: Station[] = Array.from(
   ).values(),
 );
 
-// Route catalogs remain completely separate by transport mode.
+/* ============================================================
+SEPARATE ROUTE CATALOGS
+============================================================ */
+
+/*
+IMPORTANT:
+
+These are direct references to dummy-data.ts.
+
+There is NO shared route array.
+
+Train -> trainRouteCatalog
+Bus -> busRouteCatalog
+Flight -> flightRouteCatalog
+Metro -> metroRouteCatalog
+Ferry -> ferryRouteCatalog
+*/
+
 const modeRoutes = {
   train: trainRouteCatalog,
   bus: busRouteCatalog,
   flight: flightRouteCatalog,
   metro: metroRouteCatalog,
   ferry: ferryRouteCatalog,
-};
+} as const;
+
+/* ============================================================
+RE-EXPORT COMMON DATA / HELPERS
+============================================================ */
 
 export {
   allocateSeats,
@@ -84,21 +124,33 @@ export {
 };
 
 /* ============================================================
-COMMON HELPERS
+COMMON INVENTORY GENERATOR
 ============================================================ */
 
 const DEMO_DATE = new Date("2026-08-20T00:00:00");
 
+/*
+Generate booking/search results from ONLY the selected
+transport mode's route catalog.
+
+Example:
+
+generateInventoryResults("train")
+    -> only trainRouteCatalog
+
+generateInventoryResults("bus")
+    -> only busRouteCatalog
+
+generateInventoryResults("metro")
+    -> only metroRouteCatalog
+
+No cross-mode route fallback is performed.
+*/
+
 function generateInventoryResults(
   mode: Exclude<TransportMode, "hotel">,
 ): Segment[] {
-  const routes = {
-    train: trainRouteCatalog,
-    bus: busRouteCatalog,
-    flight: flightRouteCatalog,
-    metro: metroRouteCatalog,
-    ferry: ferryRouteCatalog,
-  }[mode];
+  const routes = modeRoutes[mode];
 
   return routes.flatMap((route, index) =>
     generateResults(
@@ -152,7 +204,13 @@ export type Train = {
   tags?: string[];
 };
 
-function getTrainType(segment: Segment): Train["type"] {
+/*
+Determine train category from the train name.
+*/
+
+function getTrainType(
+  segment: Segment,
+): Train["type"] {
   const name = segment.name.toLowerCase();
 
   if (name.includes("rajdhani")) {
@@ -163,11 +221,15 @@ function getTrainType(segment: Segment): Train["type"] {
     return "Shatabdi";
   }
 
-  if (name.includes("tejas")) {
+  if (
+    name.includes("vande bharat") ||
+    name.includes("tejas")
+  ) {
     return "Vande Bharat";
   }
 
   if (
+    name.includes("superfast") ||
     name.includes("vega") ||
     name.includes("sapphire") ||
     name.includes("kaveri")
@@ -178,11 +240,19 @@ function getTrainType(segment: Segment): Train["type"] {
   return "Express";
 }
 
-function convertTrain(segment: Segment): Train {
+/*
+Convert common Segment data into the legacy Train shape
+expected by existing UI components.
+*/
+
+function convertTrain(
+  segment: Segment,
+): Train {
   return {
     id: segment.id,
 
     name: segment.name,
+
     number: segment.code,
 
     from: segment.from ?? "",
@@ -200,23 +270,28 @@ function convertTrain(segment: Segment): Train {
 
     tags: segment.tags,
 
-    classes: segment.options.map((option) => ({
-      code: option.code,
-      fare: option.fare,
-      available: option.available,
-      probability: option.probability,
-    })),
+    classes: segment.options.map(
+      (option) => ({
+        code: option.code,
+        fare: option.fare,
+        available: option.available,
+        probability: option.probability,
+      }),
+    ),
   };
 }
 
 /*
-All train inventory.
+TRAIN INVENTORY
 
-Route count comes directly from dummy-data.ts.
+Source:
+dummy-data.ts -> trainRoutes
 */
 
 export const trains: Train[] =
-  generateInventoryResults("train").map(convertTrain);
+  generateInventoryResults("train").map(
+    convertTrain,
+  );
 
 /* ============================================================
 BUS INVENTORY
@@ -252,32 +327,40 @@ export type BusRoute = {
   amenities: string[];
 };
 
+/*
+Determine bus type from route tags.
+*/
+
 function getBusType(
   segment: Segment,
 ): BusRoute["busType"] {
-  const tags = segment.tags.map((tag) =>
-    tag.toLowerCase(),
+  const tags = segment.tags.map(
+    (tag) => tag.toLowerCase(),
   );
 
   if (
-    tags.some((tag) =>
-      tag.includes("volvo"),
+    tags.some(
+      (tag) =>
+        tag.includes("volvo"),
     )
   ) {
     return "Volvo AC";
   }
 
   if (
-    tags.some((tag) =>
-      tag.includes("sleeper"),
+    tags.some(
+      (tag) =>
+        tag.includes("sleeper"),
     )
   ) {
     return "AC Sleeper";
   }
 
   if (
-    tags.some((tag) =>
-      tag.includes("a/c"),
+    tags.some(
+      (tag) =>
+        tag.includes("a/c") ||
+        tag.includes("ac"),
     )
   ) {
     return "AC Seater";
@@ -285,6 +368,10 @@ function getBusType(
 
   return "Non-AC Seater";
 }
+
+/*
+Convert Segment into legacy BusRoute shape.
+*/
 
 function convertBus(
   segment: Segment,
@@ -305,29 +392,48 @@ function convertBus(
       segment.operator ??
       segment.name,
 
-    busNumber: segment.code,
+    busNumber:
+      segment.code,
 
-    from: segment.from ?? "",
-    fromCode: segment.fromCode ?? "",
+    from:
+      segment.from ?? "",
+    fromCode:
+      segment.fromCode ?? "",
 
-    to: segment.to ?? "",
-    toCode: segment.toCode ?? "",
+    to:
+      segment.to ?? "",
+    toCode:
+      segment.toCode ?? "",
 
-    depart: segment.depart,
-    arrive: segment.arrive,
+    depart:
+      segment.depart,
 
-    duration: segment.duration,
+    arrive:
+      segment.arrive,
 
-    busType: getBusType(segment),
+    duration:
+      segment.duration,
 
-    fare: cheapest?.fare ?? 0,
+    busType:
+      getBusType(segment),
+
+    fare:
+      cheapest?.fare ?? 0,
 
     seatsAvailable:
       cheapest?.available ?? 0,
 
-    amenities: segment.tags,
+    amenities:
+      segment.tags,
   };
 }
+
+/*
+BUS INVENTORY
+
+Source:
+dummy-data.ts -> busRoutes
+*/
 
 export const busRoutes: BusRoute[] =
   generateInventoryResults("bus").map(
@@ -367,6 +473,10 @@ export type FlightRoute = {
     | "Business";
 };
 
+/*
+Convert flight option code into cabin name.
+*/
+
 function getFlightCabin(
   code: string,
 ): FlightRoute["cabin"] {
@@ -382,6 +492,10 @@ function getFlightCabin(
   }
 }
 
+/*
+Convert Segment into legacy FlightRoute shape.
+*/
+
 function convertFlight(
   segment: Segment,
 ): FlightRoute {
@@ -392,15 +506,22 @@ function convertFlight(
     ) ??
     segment.options[0];
 
-  const stopTag = segment.tags.find(
-    (tag) =>
-      tag.toLowerCase().includes("stop"),
-  );
+  const stopTag =
+    segment.tags.find(
+      (tag) =>
+        tag
+          .toLowerCase()
+          .includes("stop"),
+    );
 
   const stops =
-    stopTag === "1 stop"
-      ? 1
-      : 0;
+    stopTag &&
+    stopTag.toLowerCase().includes("2")
+      ? 2
+      : stopTag &&
+          stopTag.toLowerCase().includes("1")
+        ? 1
+        : 0;
 
   return {
     id: segment.id,
@@ -414,13 +535,11 @@ function convertFlight(
 
     from:
       segment.from ?? "",
-
     fromCode:
       segment.fromCode ?? "",
 
     to:
       segment.to ?? "",
-
     toCode:
       segment.toCode ?? "",
 
@@ -443,10 +562,18 @@ function convertFlight(
 
     cabin:
       getFlightCabin(
-        economy?.code ?? "ECONOMY",
+        economy?.code ??
+          "ECONOMY",
       ),
   };
 }
+
+/*
+FLIGHT INVENTORY
+
+Source:
+dummy-data.ts -> flightRoutes
+*/
 
 export const flightRoutes: FlightRoute[] =
   generateInventoryResults("flight").map(
@@ -478,6 +605,10 @@ export type MetroRoute = {
   interchanges: number;
 };
 
+/*
+Convert Metro Segment into the UI-compatible MetroRoute.
+*/
+
 function convertMetro(
   segment: Segment,
 ): MetroRoute {
@@ -495,6 +626,15 @@ function convertMetro(
     ) ??
     segment.options[0];
 
+  const frequency =
+    segment.tags.find(
+      (tag) =>
+        tag
+          .toLowerCase()
+          .includes("every"),
+    ) ??
+    "Every 5 min";
+
   return {
     id: segment.id,
 
@@ -507,13 +647,11 @@ function convertMetro(
 
     from:
       segment.from ?? "",
-
     fromCode:
       segment.fromCode ?? "",
 
     to:
       segment.to ?? "",
-
     toCode:
       segment.toCode ?? "",
 
@@ -523,18 +661,26 @@ function convertMetro(
     fare:
       token?.fare ?? 20,
 
-    frequency:
-      segment.tags.find(
-        (tag) =>
-          tag
-            .toLowerCase()
-            .includes("every"),
-      ) ??
-      "Every 5 min",
+    frequency,
 
+    /*
+    Current dummy-data route catalog already determines
+    the actual metro route. This value is only a legacy
+    UI field.
+    */
     interchanges: 0,
   };
 }
+
+/*
+METRO INVENTORY
+
+Source:
+dummy-data.ts -> metroRoutes
+
+IMPORTANT:
+Metro does NOT fall back to train routes.
+*/
 
 export const metroRoutes: MetroRoute[] =
   generateInventoryResults("metro").map(
@@ -572,6 +718,10 @@ export type FerryRoute = {
     | "Catamaran";
 };
 
+/*
+Deterministically determine ferry type.
+*/
+
 function getFerryType(
   segment: Segment,
 ): FerryRoute["ferryType"] {
@@ -589,6 +739,10 @@ function getFerryType(
 
   return "Passenger Ferry";
 }
+
+/*
+Convert Segment into legacy FerryRoute shape.
+*/
 
 function convertFerry(
   segment: Segment,
@@ -612,13 +766,11 @@ function convertFerry(
 
     from:
       segment.from ?? "",
-
     fromCode:
       segment.fromCode ?? "",
 
     to:
       segment.to ?? "",
-
     toCode:
       segment.toCode ?? "",
 
@@ -641,6 +793,13 @@ function convertFerry(
       getFerryType(segment),
   };
 }
+
+/*
+FERRY INVENTORY
+
+Source:
+dummy-data.ts -> ferryRoutes
+*/
 
 export const ferryRoutes: FerryRoute[] =
   generateInventoryResults("ferry").map(
@@ -683,6 +842,11 @@ export type Hotel = {
   breakfastIncluded: boolean;
 };
 
+/*
+Convert central HotelProperty data into the legacy Hotel
+shape used by the existing UI.
+*/
+
 function hotelToLegacy(
   hotel: HotelProperty,
   index: number,
@@ -701,19 +865,39 @@ function hotelToLegacy(
 
   const originalPrice =
     Math.round(
-      (hotel.priceFrom * 1.25) / 50,
+      (hotel.priceFrom * 1.25) /
+        50,
     ) * 50;
 
+  const previewImages =
+    hotel.previewImages ?? [];
+
+  const image =
+    previewImages.length > 0
+      ? previewImages[
+          index %
+            previewImages.length
+        ]
+      : "";
+
   return {
-    id: hotel.id,
+    id:
+      hotel.id,
 
-    name: hotel.name,
+    name:
+      hotel.name,
 
-    city: hotel.city,
-    state: hotel.state,
-    area: hotel.area,
+    city:
+      hotel.city,
 
-    rating: hotel.rating,
+    state:
+      hotel.state,
+
+    area:
+      hotel.area,
+
+    rating:
+      hotel.rating,
 
     reviews:
       500 +
@@ -724,15 +908,7 @@ function hotelToLegacy(
 
     originalPrice,
 
-    /*
-     * Existing hotel UI may expect a string path.
-     * dummy-data also exposes real preview images separately.
-     */
-    image:
-      hotel.previewImages[
-        index %
-          hotel.previewImages.length
-      ],
+    image,
 
     amenities:
       hotel.amenities,
@@ -746,17 +922,28 @@ function hotelToLegacy(
     roomType,
 
     refundable:
-      hotel.category !== "Luxury",
+      hotel.category !==
+      "Luxury",
 
     breakfastIncluded:
       hotel.amenities.some(
         (item) =>
           item
             .toLowerCase()
-            .includes("breakfast"),
+            .includes(
+              "breakfast",
+            ),
       ),
   };
 }
+
+/*
+HOTEL INVENTORY
+
+Hotels are NOT routes.
+
+They are location/property based.
+*/
 
 export const hotels: Hotel[] =
   allHotels.map(
@@ -810,8 +997,7 @@ export type Passenger = {
   idNumber: string;
 };
 
-export const savedPassengers:
-  Passenger[] = [
+export const savedPassengers: Passenger[] = [
   {
     id: "p1",
     name: "Aarav Sharma",
@@ -853,14 +1039,6 @@ export const savedPassengers:
   },
 ];
 
-/*
-Re-export stations from dummy-data.ts so old imports such as:
-
-import { stations } from "./inventory";
-
-continue working.
-*/
-
 /* ============================================================
 POPULAR STATIONS
 ============================================================ */
@@ -879,7 +1057,7 @@ export const popularStationCodes = [
 ];
 
 /* ============================================================
-SEARCH HELPERS
+STATION SEARCH
 ============================================================ */
 
 export function findStation(
@@ -907,7 +1085,8 @@ export function searchStations(
   return stations
     .filter(
       (station) =>
-        station.code !== exclude,
+        station.code !==
+        exclude,
     )
     .filter(
       (station) =>
@@ -932,41 +1111,42 @@ export function searchStations(
 MEAL HELPERS
 ============================================================ */
 
-/*
-Meal categories are derived from dummy-data.ts.
-
-This prevents maintaining a second duplicate meal-category
-database in inventory.ts.
-*/
-
 export type MealCategory =
   (typeof meals)[number]["category"];
 
-export const mealCategories: MealCategory[] = [
-  ...new Set(
-    meals.map(
-      (meal) => meal.category,
+export const mealCategories: MealCategory[] =
+  Array.from(
+    new Set(
+      meals.map(
+        (meal) =>
+          meal.category,
+      ),
     ),
-  ),
-];
+  );
 
 /* ============================================================
 ROUTE COUNTS
 ============================================================ */
 
 export const routeCounts = {
-  train: modeRoutes.train.length,
-  bus: modeRoutes.bus.length,
-  flight: modeRoutes.flight.length,
-  metro: modeRoutes.metro.length,
-  ferry: modeRoutes.ferry.length,
+  train:
+    modeRoutes.train.length,
+
+  bus:
+    modeRoutes.bus.length,
+
+  flight:
+    modeRoutes.flight.length,
+
+  metro:
+    modeRoutes.metro.length,
+
+  ferry:
+    modeRoutes.ferry.length,
 };
 
 /*
-Returns the number of routes for a transport mode.
-
-Hotels are location/property based, so for hotel this returns
-the number of available hotel properties rather than a route count.
+Hotels return property count instead of route count.
 */
 
 export function routeCountFor(
@@ -984,7 +1164,10 @@ ROUTE PREVIEW
 ============================================================ */
 
 export type RoutePreviewMode =
-  Exclude<TransportMode, "hotel">;
+  Exclude<
+    TransportMode,
+    "hotel"
+  >;
 
 export type RoutePreviewStop = {
   name: string;
@@ -1007,11 +1190,15 @@ function formatRouteDuration(
   const mins =
     Math.max(
       0,
-      Math.round(totalMins),
+      Math.round(
+        totalMins,
+      ),
     );
 
   const hours =
-    Math.floor(mins / 60);
+    Math.floor(
+      mins / 60,
+    );
 
   const remaining =
     mins % 60;
@@ -1028,11 +1215,12 @@ function formatRouteDuration(
 }
 
 /*
-Builds a deterministic route preview for the booking UI.
+Builds a UI route preview.
 
-The actual route catalog remains owned by dummy-data.ts.
-This function only converts route information into the
-display structure expected by RoutePreview.tsx.
+IMPORTANT:
+This is ONLY a visual preview.
+
+It does not modify or generate the actual route catalog.
 */
 
 export function buildRoutePreview(
@@ -1047,11 +1235,20 @@ export function buildRoutePreview(
     RoutePreviewMode,
     string
   > = {
-    train: "Indian Rail Network",
-    bus: "Bharat Bus Network",
-    flight: "Indian Air Network",
-    metro: "Metro Network",
-    ferry: "Coastal Ferry Network",
+    train:
+      "Indian Rail Network",
+
+    bus:
+      "Bharat Bus Network",
+
+    flight:
+      "Indian Air Network",
+
+    metro:
+      "Metro Network",
+
+    ferry:
+      "Coastal Ferry Network",
   };
 
   const safeKm =
@@ -1063,13 +1260,11 @@ export function buildRoutePreview(
   const safeMins =
     Math.max(
       0,
-      Math.round(totalMins),
+      Math.round(
+        totalMins,
+      ),
     );
 
-  /*
-   * Keep previews simple for short routes and add
-   * intermediate points only for longer journeys.
-   */
   const intermediateCount =
     safeKm >= 900
       ? 2
@@ -1124,9 +1319,14 @@ export function buildRoutePreview(
   }
 
   stops.push({
-    name: destination,
-    at: "Arrival",
-    km: safeKm,
+    name:
+      destination,
+
+    at:
+      "Arrival",
+
+    km:
+      safeKm,
   });
 
   return {
@@ -1150,8 +1350,15 @@ export function buildRoutePreview(
 }
 
 /* ============================================================
-ROUTE ARRAYS — DIRECT ACCESS
+DIRECT ROUTE ACCESS
 ============================================================ */
+
+/*
+These exports point directly to the corresponding
+dummy-data.ts catalogs.
+
+NO route copying happens here.
+*/
 
 export const trainRoutes =
   modeRoutes.train;
@@ -1176,12 +1383,23 @@ MODE SUMMARY
 ============================================================ */
 
 export const inventorySummary = {
-  trains: trains.length,
-  buses: busRoutes.length,
-  flights: flightRoutes.length,
-  metros: metroRoutes.length,
-  ferries: ferryRoutes.length,
-  hotels: hotels.length,
+  trains:
+    trains.length,
+
+  buses:
+    busRoutes.length,
+
+  flights:
+    flightRoutes.length,
+
+  metros:
+    metroRoutes.length,
+
+  ferries:
+    ferryRoutes.length,
+
+  hotels:
+    hotels.length,
 
   routes: {
     train:
@@ -1201,9 +1419,20 @@ export const inventorySummary = {
   },
 };
 
+/* ============================================================
+ROUTE INTEGRITY CHECKS
+============================================================ */
+
 /*
-These checks make accidental duplicate route reuse
-between transport modes visible during development.
+Create a unique key for a directed route.
+
+Example:
+
+NDLS -> BCT
+
+is different from:
+
+BCT -> NDLS
 */
 
 function routeKey(
@@ -1212,6 +1441,10 @@ function routeKey(
 ): string {
   return `${fromCode}-${toCode}`;
 }
+
+/*
+Get all route keys for one transport mode.
+*/
 
 function getRouteKeys(
   mode: Exclude<
@@ -1229,6 +1462,14 @@ function getRouteKeys(
     ),
   );
 }
+
+/*
+Route integrity information.
+
+This lets the development code inspect whether
+different transport catalogs accidentally contain
+the exact same directed route.
+*/
 
 export const routeIntegrity = {
   train:
@@ -1248,8 +1489,20 @@ export const routeIntegrity = {
 };
 
 /*
-Returns true when the same exact directed route
-is shared by two different transport modes.
+Returns true if the exact same directed route exists
+in more than one transport mode.
+
+Example:
+
+Train: NDLS -> MMCT
+Bus:   NDLS -> MMCT
+
+=> true
+
+Train: NDLS -> MMCT
+Bus:   MMCT -> NDLS
+
+=> false
 */
 
 export function hasCrossModeRouteDuplicate(): boolean {
@@ -1275,13 +1528,21 @@ export function hasCrossModeRouteDuplicate(): boolean {
       j++
     ) {
       const first =
-        routeIntegrity[modes[i]];
+        routeIntegrity[
+          modes[i]
+        ];
 
       const second =
-        routeIntegrity[modes[j]];
+        routeIntegrity[
+          modes[j]
+        ];
 
-      for (const key of first) {
-        if (second.has(key)) {
+      for (
+        const key of first
+      ) {
+        if (
+          second.has(key)
+        ) {
           return true;
         }
       }
@@ -1297,17 +1558,30 @@ DEFAULT EXPORT
 
 export default {
   trains,
+
   busRoutes,
+
   flightRoutes,
+
   metroRoutes,
+
   ferryRoutes,
+
   hotels,
+
   stations,
+
   savedPassengers,
+
   popularStationCodes,
+
   routeCounts,
+
   inventorySummary,
+
   mealCategories,
+
   routeCountFor,
+
   buildRoutePreview,
 };
