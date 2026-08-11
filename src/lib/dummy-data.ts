@@ -982,8 +982,6 @@ export const metroStations: Station[] = [
     state: "Uttar Pradesh",
     locationType: "metro_station",
   },
-
-  // Mumbai Metro
   {
     name: "Andheri Metro Station",
     code: "MMA",
@@ -1005,8 +1003,6 @@ export const metroStations: Station[] = [
     state: "Maharashtra",
     locationType: "metro_station",
   },
-
-  // Bengaluru Metro
   {
     name: "Majestic Metro Station",
     code: "MBM",
@@ -1021,8 +1017,6 @@ export const metroStations: Station[] = [
     state: "Karnataka",
     locationType: "metro_station",
   },
-
-  // Kolkata Metro
   {
     name: "Esplanade Metro Station",
     code: "KES",
@@ -1037,8 +1031,6 @@ export const metroStations: Station[] = [
     state: "West Bengal",
     locationType: "metro_station",
   },
-
-  // Hyderabad Metro
   {
     name: "Ameerpet Metro Station",
     code: "HAM",
@@ -1053,8 +1045,6 @@ export const metroStations: Station[] = [
     state: "Telangana",
     locationType: "metro_station",
   },
-
-  // Chennai Metro
   {
     name: "Chennai Central Metro Station",
     code: "CMC",
@@ -1069,8 +1059,6 @@ export const metroStations: Station[] = [
     state: "Tamil Nadu",
     locationType: "metro_station",
   },
-
-  // Kochi Metro
   {
     name: "Aluva Metro Station",
     code: "KMA",
@@ -1198,7 +1186,7 @@ export const suggestions = [
   "Cheapest AC train from Delhi to Jaipur tomorrow morning",
   "Vande Bharat from Mumbai to Ahmedabad this Friday",
   "Overnight sleeper from Bengaluru to Chennai",
-  "Fastest train Delhi to Lucknow under ₹2500",
+  "Fastest train Delhi to Lucknow under ₹1500",
   "Tatkal 3A from Patna to Howrah for Monday",
   "Volvo bus from Delhi to Jaipur tonight",
   "Flight from Delhi to Mumbai tomorrow morning",
@@ -1330,140 +1318,122 @@ function explicitRoutes(
 
 // ============================================================
 // TRAIN ROUTES
-// ONLY TRAIN STATIONS
 // ============================================================
 
-export const trainRoutes: RouteDef[] = explicitRoutes(
-  trainStations,
-  [
-    [0, 3],
-    [0, 8],
-    [0, 14],
-    [0, 18],
-    [0, 23],
-    [0, 27],
-    [0, 30],
-    [0, 37],
-    [0, 42],
-    [0, 49],
-    [0, 53],
-    [0, 57],
-    [3, 4],
-    [3, 8],
-    [8, 11],
-    [8, 14],
-    [11, 14],
-    [14, 15],
-    [18, 19],
-    [19, 20],
-    [23, 20],
-    [27, 25],
-    [49, 50],
-    [53, 54],
-    [54, 57],
-    [63, 64],
-  ],
-);
+export const trainRoutes: RouteDef[] = [
+  [trainStations[0], trainStations[3]],
+  [trainStations[0], trainStations[8]],
+  [trainStations[0], trainStations[14]],
+  [trainStations[0], trainStations[18]],
+  [trainStations[0], trainStations[22]],
+  [trainStations[0], trainStations[27]],
+  [trainStations[0], trainStations[32]],
+  [trainStations[0], trainStations[37]],
+  [trainStations[0], trainStations[42]],
+  [trainStations[0], trainStations[49]],
+  [trainStations[0], trainStations[54]],
+  [trainStations[0], trainStations[57]],
+
+  [trainStations[3], trainStations[4]],
+  [trainStations[3], trainStations[8]],
+  [trainStations[8], trainStations[11]],
+  [trainStations[8], trainStations[14]],
+  [trainStations[11], trainStations[14]],
+  [trainStations[14], trainStations[15]],
+  [trainStations[18], trainStations[19]],
+  [trainStations[19], trainStations[20]],
+  [trainStations[22], trainStations[20]],
+  [trainStations[27], trainStations[28]],
+  [trainStations[49], trainStations[51]],
+  [trainStations[54], trainStations[55]],
+  [trainStations[55], trainStations[57]],
+  [trainStations[63], trainStations[64]],
+].map(([from, to]) => ({ from, to }));
 
 // ============================================================
 // BUS ROUTES
-// ONLY BUS STANDS
 // ============================================================
 
-export const busRoutes: RouteDef[] = explicitRoutes(
-  busStands,
-  [
-    [0, 2],
-    [0, 6],
-    [0, 10],
-    [0, 13],
-    [0, 15],
-    [0, 16],
-    [0, 17],
-    [2, 3],
-    [2, 5],
-    [6, 7],
-    [6, 8],
-    [8, 9],
-    [10, 11],
-    [11, 12],
-    [16, 17],
-    [17, 18],
-    [18, 19],
-  ],
-);
+export const busRoutes: RouteDef[] = [
+  [busStands[0], busStands[2]],
+  [busStands[0], busStands[6]],
+  [busStands[0], busStands[10]],
+  [busStands[0], busStands[13]],
+  [busStands[0], busStands[15]],
+  [busStands[0], busStands[16]],
+  [busStands[0], busStands[17]],
+  [busStands[2], busStands[3]],
+  [busStands[2], busStands[5]],
+  [busStands[6], busStands[7]],
+  [busStands[6], busStands[8]],
+  [busStands[8], busStands[9]],
+  [busStands[10], busStands[11]],
+  [busStands[11], busStands[12]],
+  [busStands[16], busStands[17]],
+  [busStands[17], busStands[18]],
+  [busStands[18], busStands[19]],
+].map(([from, to]) => ({ from, to }));
 
 // ============================================================
 // FLIGHT ROUTES
-// ONLY AIRPORTS
 // ============================================================
 
-export const flightRoutes: RouteDef[] = explicitRoutes(
-  airports,
-  [
-    [0, 3],
-    [0, 1],
-    [0, 5],
-    [0, 7],
-    [0, 9],
-    [0, 10],
-    [0, 11],
-    [0, 15],
-    [0, 17],
-    [0, 22],
-    [0, 24],
-    [0, 27],
-    [0, 30],
-    [3, 4],
-    [3, 5],
-    [22, 24],
-    [24, 27],
-  ],
-);
+export const flightRoutes: RouteDef[] = [
+  [airports[0], airports[3]],
+  [airports[0], airports[1]],
+  [airports[0], airports[5]],
+  [airports[0], airports[7]],
+  [airports[0], airports[9]],
+  [airports[0], airports[10]],
+  [airports[0], airports[11]],
+  [airports[0], airports[15]],
+  [airports[0], airports[17]],
+  [airports[0], airports[22]],
+  [airports[0], airports[24]],
+  [airports[0], airports[27]],
+  [airports[0], airports[30]],
+  [airports[3], airports[4]],
+  [airports[3], airports[5]],
+  [airports[22], airports[24]],
+  [airports[24], airports[27]],
+  [airports[30], airports[31]],
+].map(([from, to]) => ({ from, to }));
 
 // ============================================================
 // METRO ROUTES
-// ONLY METRO STATIONS
 // ============================================================
 
-export const metroRoutes: RouteDef[] = explicitRoutes(
-  metroStations,
-  [
-    [0, 1],
-    [0, 2],
-    [0, 3],
-    [0, 4],
-    [1, 5],
-    [5, 6],
-    [6, 7],
-    [8, 9],
-    [9, 10],
-    [11, 12],
-    [13, 14],
-    [15, 16],
-    [17, 18],
-    [19, 20],
-  ],
-);
+export const metroRoutes: RouteDef[] = [
+  [metroStations[0], metroStations[1]],
+  [metroStations[0], metroStations[2]],
+  [metroStations[0], metroStations[3]],
+  [metroStations[0], metroStations[4]],
+  [metroStations[1], metroStations[5]],
+  [metroStations[5], metroStations[6]],
+  [metroStations[6], metroStations[7]],
+  [metroStations[8], metroStations[9]],
+  [metroStations[9], metroStations[10]],
+  [metroStations[11], metroStations[12]],
+  [metroStations[13], metroStations[14]],
+  [metroStations[15], metroStations[16]],
+  [metroStations[17], metroStations[18]],
+  [metroStations[19], metroStations[20]],
+].map(([from, to]) => ({ from, to }));
 
 // ============================================================
 // FERRY ROUTES
-// ONLY SEAPORTS / FERRY TERMINALS
 // ============================================================
 
-export const ferryRoutes: RouteDef[] = explicitRoutes(
-  seaports,
-  [
-    [0, 1],
-    [0, 2],
-    [1, 0],
-    [2, 0],
-    [3, 4],
-    [5, 6],
-    [8, 9],
-    [10, 11],
-  ],
-);
+export const ferryRoutes: RouteDef[] = [
+  [seaports[0], seaports[1]],
+  [seaports[0], seaports[2]],
+  [seaports[1], seaports[0]],
+  [seaports[2], seaports[0]],
+  [seaports[3], seaports[4]],
+  [seaports[5], seaports[6]],
+  [seaports[8], seaports[9]],
+  [seaports[10], seaports[11]],
+].map(([from, to]) => ({ from, to }));
 
 // ============================================================
 // MODE ROUTES
@@ -1491,161 +1461,53 @@ export type HotelDestination = {
 };
 
 export const famousHotelDestinations: HotelDestination[] = [
-  {
-    city: "Delhi",
-    state: "Delhi",
-    landmark: "India Gate & Connaught Place",
-  },
-  {
-    city: "Agra",
-    state: "Uttar Pradesh",
-    landmark: "Taj Mahal",
-  },
-  {
-    city: "Jaipur",
-    state: "Rajasthan",
-    landmark: "Hawa Mahal & Amber Fort",
-  },
-  {
-    city: "Udaipur",
-    state: "Rajasthan",
-    landmark: "Lake Pichola",
-  },
-  {
-    city: "Jodhpur",
-    state: "Rajasthan",
-    landmark: "Mehrangarh Fort",
-  },
-  {
-    city: "Jaisalmer",
-    state: "Rajasthan",
-    landmark: "Jaisalmer Fort",
-  },
-  {
-    city: "Pushkar",
-    state: "Rajasthan",
-    landmark: "Pushkar Lake",
-  },
+  { city: "Delhi", state: "Delhi", landmark: "India Gate & Connaught Place" },
+  { city: "Agra", state: "Uttar Pradesh", landmark: "Taj Mahal" },
+  { city: "Jaipur", state: "Rajasthan", landmark: "Hawa Mahal & Amber Fort" },
+  { city: "Udaipur", state: "Rajasthan", landmark: "Lake Pichola" },
+  { city: "Jodhpur", state: "Rajasthan", landmark: "Mehrangarh Fort" },
+  { city: "Jaisalmer", state: "Rajasthan", landmark: "Jaisalmer Fort" },
+  { city: "Pushkar", state: "Rajasthan", landmark: "Pushkar Lake" },
   {
     city: "Mumbai",
     state: "Maharashtra",
     landmark: "Gateway of India & Marine Drive",
   },
-  {
-    city: "Pune",
-    state: "Maharashtra",
-    landmark: "Shaniwar Wada",
-  },
-  {
-    city: "Nashik",
-    state: "Maharashtra",
-    landmark: "Trimbakeshwar",
-  },
+  { city: "Pune", state: "Maharashtra", landmark: "Shaniwar Wada" },
+  { city: "Nashik", state: "Maharashtra", landmark: "Trimbakeshwar" },
   {
     city: "Aurangabad",
     state: "Maharashtra",
     landmark: "Ajanta & Ellora Caves",
   },
-  {
-    city: "Ahmedabad",
-    state: "Gujarat",
-    landmark: "Sabarmati Ashram",
-  },
-  {
-    city: "Vadodara",
-    state: "Gujarat",
-    landmark: "Laxmi Vilas Palace",
-  },
-  {
-    city: "Rann of Kutch",
-    state: "Gujarat",
-    landmark: "White Rann",
-  },
-  {
-    city: "Goa",
-    state: "Goa",
-    landmark: "Baga & Calangute Beach",
-  },
-  {
-    city: "Panaji",
-    state: "Goa",
-    landmark: "Fontainhas",
-  },
+  { city: "Ahmedabad", state: "Gujarat", landmark: "Sabarmati Ashram" },
+  { city: "Vadodara", state: "Gujarat", landmark: "Laxmi Vilas Palace" },
+  { city: "Rann of Kutch", state: "Gujarat", landmark: "White Rann" },
+  { city: "Goa", state: "Goa", landmark: "Baga & Calangute Beach" },
+  { city: "Panaji", state: "Goa", landmark: "Fontainhas" },
   {
     city: "Bengaluru",
     state: "Karnataka",
     landmark: "Bangalore Palace & MG Road",
   },
-  {
-    city: "Mysuru",
-    state: "Karnataka",
-    landmark: "Mysore Palace",
-  },
-  {
-    city: "Hampi",
-    state: "Karnataka",
-    landmark: "Virupaksha Temple",
-  },
-  {
-    city: "Coorg",
-    state: "Karnataka",
-    landmark: "Abbey Falls",
-  },
-  {
-    city: "Chennai",
-    state: "Tamil Nadu",
-    landmark: "Marina Beach",
-  },
-  {
-    city: "Mahabalipuram",
-    state: "Tamil Nadu",
-    landmark: "Shore Temple",
-  },
-  {
-    city: "Ooty",
-    state: "Tamil Nadu",
-    landmark: "Ooty Lake",
-  },
-  {
-    city: "Madurai",
-    state: "Tamil Nadu",
-    landmark: "Meenakshi Temple",
-  },
-  {
-    city: "Kochi",
-    state: "Kerala",
-    landmark: "Fort Kochi",
-  },
-  {
-    city: "Munnar",
-    state: "Kerala",
-    landmark: "Tea Gardens",
-  },
-  {
-    city: "Alappuzha",
-    state: "Kerala",
-    landmark: "Alleppey Backwaters",
-  },
+  { city: "Mysuru", state: "Karnataka", landmark: "Mysore Palace" },
+  { city: "Hampi", state: "Karnataka", landmark: "Virupaksha Temple" },
+  { city: "Coorg", state: "Karnataka", landmark: "Abbey Falls" },
+  { city: "Chennai", state: "Tamil Nadu", landmark: "Marina Beach" },
+  { city: "Mahabalipuram", state: "Tamil Nadu", landmark: "Shore Temple" },
+  { city: "Ooty", state: "Tamil Nadu", landmark: "Ooty Lake" },
+  { city: "Madurai", state: "Tamil Nadu", landmark: "Meenakshi Temple" },
+  { city: "Kochi", state: "Kerala", landmark: "Fort Kochi" },
+  { city: "Munnar", state: "Kerala", landmark: "Tea Gardens" },
+  { city: "Alappuzha", state: "Kerala", landmark: "Alleppey Backwaters" },
   {
     city: "Thiruvananthapuram",
     state: "Kerala",
     landmark: "Kovalam Beach",
   },
-  {
-    city: "Varkala",
-    state: "Kerala",
-    landmark: "Varkala Cliff",
-  },
-  {
-    city: "Hyderabad",
-    state: "Telangana",
-    landmark: "Charminar",
-  },
-  {
-    city: "Warangal",
-    state: "Telangana",
-    landmark: "Warangal Fort",
-  },
+  { city: "Varkala", state: "Kerala", landmark: "Varkala Cliff" },
+  { city: "Hyderabad", state: "Telangana", landmark: "Charminar" },
+  { city: "Warangal", state: "Telangana", landmark: "Warangal Fort" },
   {
     city: "Visakhapatnam",
     state: "Andhra Pradesh",
@@ -1661,96 +1523,40 @@ export const famousHotelDestinations: HotelDestination[] = [
     state: "Andhra Pradesh",
     landmark: "Tirumala Temple",
   },
-  {
-    city: "Kolkata",
-    state: "West Bengal",
-    landmark: "Victoria Memorial",
-  },
-  {
-    city: "Darjeeling",
-    state: "West Bengal",
-    landmark: "Tiger Hill",
-  },
-  {
-    city: "Gangtok",
-    state: "Sikkim",
-    landmark: "MG Marg",
-  },
-  {
-    city: "Bhubaneswar",
-    state: "Odisha",
-    landmark: "Lingaraj Temple",
-  },
-  {
-    city: "Puri",
-    state: "Odisha",
-    landmark: "Jagannath Temple & Beach",
-  },
+  { city: "Kolkata", state: "West Bengal", landmark: "Victoria Memorial" },
+  { city: "Darjeeling", state: "West Bengal", landmark: "Tiger Hill" },
+  { city: "Gangtok", state: "Sikkim", landmark: "MG Marg" },
+  { city: "Bhubaneswar", state: "Odisha", landmark: "Lingaraj Temple" },
+  { city: "Puri", state: "Odisha", landmark: "Jagannath Temple & Beach" },
   {
     city: "Varanasi",
     state: "Uttar Pradesh",
     landmark: "Dashashwamedh Ghat",
   },
-  {
-    city: "Lucknow",
-    state: "Uttar Pradesh",
-    landmark: "Bara Imambara",
-  },
-  {
-    city: "Amritsar",
-    state: "Punjab",
-    landmark: "Golden Temple",
-  },
-  {
-    city: "Chandigarh",
-    state: "Chandigarh",
-    landmark: "Rock Garden",
-  },
+  { city: "Lucknow", state: "Uttar Pradesh", landmark: "Bara Imambara" },
+  { city: "Amritsar", state: "Punjab", landmark: "Golden Temple" },
+  { city: "Chandigarh", state: "Chandigarh", landmark: "Rock Garden" },
   {
     city: "Shimla",
     state: "Himachal Pradesh",
     landmark: "The Ridge & Mall Road",
   },
-  {
-    city: "Manali",
-    state: "Himachal Pradesh",
-    landmark: "Solang Valley",
-  },
+  { city: "Manali", state: "Himachal Pradesh", landmark: "Solang Valley" },
   {
     city: "Dharamshala",
     state: "Himachal Pradesh",
     landmark: "McLeod Ganj",
   },
-  {
-    city: "Srinagar",
-    state: "Jammu & Kashmir",
-    landmark: "Dal Lake",
-  },
-  {
-    city: "Leh",
-    state: "Ladakh",
-    landmark: "Leh Palace",
-  },
+  { city: "Srinagar", state: "Jammu & Kashmir", landmark: "Dal Lake" },
+  { city: "Leh", state: "Ladakh", landmark: "Leh Palace" },
   {
     city: "Rishikesh",
     state: "Uttarakhand",
     landmark: "Laxman Jhula & Ganga",
   },
-  {
-    city: "Nainital",
-    state: "Uttarakhand",
-    landmark: "Naini Lake",
-  },
-  {
-    city: "Dehradun",
-    state: "Uttarakhand",
-    landmark: "Robber's Cave",
-  },
-  {
-    city: "Patna",
-    state: "Bihar",
-    landmark: "Golghar",
-  },
+  { city: "Nainital", state: "Uttarakhand", landmark: "Naini Lake" },
+  { city: "Dehradun", state: "Uttarakhand", landmark: "Robber's Cave" },
+  { city: "Patna", state: "Bihar", landmark: "Golghar" },
 ];
 
 // ============================================================
@@ -1768,11 +1574,7 @@ export type HotelProperty = {
   priceFrom: number;
   previewImages: string[];
   amenities: string[];
-  category:
-    | "Budget"
-    | "Standard"
-    | "Premium"
-    | "Luxury";
+  category: "Budget" | "Standard" | "Luxury";
 };
 
 const hotelNamePrefixes = [
@@ -1785,73 +1587,85 @@ const hotelNamePrefixes = [
   "Imperial",
   "Regal",
   "Urban",
+  "Pearl",
   "Central",
   "Elite",
-  "Crown",
 ];
 
 const hotelNameSuffixByCategory: Record<
   HotelProperty["category"],
   string
 > = {
-  Budget: "Lodge",
+  Budget: "Inn",
   Standard: "Residency",
-  Premium: "Suites",
   Luxury: "Palace",
 };
 
+// 5 hotels per destination.
+// This gives a wider price range:
+// ₹700–₹1,499
+// ₹1,500–₹2,999
+// ₹3,000–₹5,999
+// ₹6,000–₹10,999
+// ₹11,000–₹19,999
 export const allHotels: HotelProperty[] =
   famousHotelDestinations.flatMap((dest, di) => {
-    const categories: HotelProperty["category"][] = [
-      "Budget",
-      "Standard",
-      "Premium",
-      "Luxury",
+    const hotelLevels: {
+      category: HotelProperty["category"];
+      min: number;
+      max: number;
+    }[] = [
+      {
+        category: "Budget",
+        min: 700,
+        max: 1499,
+      },
+      {
+        category: "Budget",
+        min: 1500,
+        max: 2999,
+      },
+      {
+        category: "Standard",
+        min: 3000,
+        max: 5999,
+      },
+      {
+        category: "Luxury",
+        min: 6000,
+        max: 10999,
+      },
+      {
+        category: "Luxury",
+        min: 11000,
+        max: 19999,
+      },
     ];
 
-    return categories.map((cat, ci) => {
-      const idx = di * 4 + ci;
-      const h = hashString(
-        `${dest.city}-${cat}-${idx}`,
-      );
-
-      let priceBase = 0;
-      let priceRange = 0;
-
-      switch (cat) {
-        case "Budget":
-          priceBase = 799;
-          priceRange = 700;
-          break;
-
-        case "Standard":
-          priceBase = 1499;
-          priceRange = 1500;
-          break;
-
-        case "Premium":
-          priceBase = 3299;
-          priceRange = 2500;
-          break;
-
-        case "Luxury":
-          priceBase = 6999;
-          priceRange = 5500;
-          break;
-      }
+    return hotelLevels.map((level, ci) => {
+      const idx = di * hotelLevels.length + ci;
+      const h = hashString(`${dest.city}-${level.category}-${idx}`);
 
       const price =
-        Math.round(
-          (priceBase + (h % priceRange)) / 100,
-        ) * 100;
+        level.min +
+        (h % (level.max - level.min + 1));
 
       const prefix =
-        hotelNamePrefixes[
-          h % hotelNamePrefixes.length
-        ];
+        hotelNamePrefixes[h % hotelNamePrefixes.length];
 
-      const suffix =
-        hotelNameSuffixByCategory[cat];
+      let suffix = hotelNameSuffixByCategory[level.category];
+
+      if (ci === 1) {
+        suffix = "Hotel";
+      }
+
+      if (ci === 2) {
+        suffix = "Residency";
+      }
+
+      if (ci === 4) {
+        suffix = "Grand Palace";
+      }
 
       return {
         id: `hotel-${dest.city
@@ -1859,7 +1673,7 @@ export const allHotels: HotelProperty[] =
           .replace(/[^a-z0-9]+/g, "-")}-${idx}`,
 
         name:
-          cat === "Luxury"
+          level.category === "Luxury"
             ? `The ${prefix} ${suffix}`
             : `${prefix} ${suffix}`,
 
@@ -1868,18 +1682,13 @@ export const allHotels: HotelProperty[] =
         area: dest.landmark,
 
         rating:
-          cat === "Luxury"
+          level.category === "Luxury"
             ? 4.5 + (h % 5) / 10
-            : cat === "Premium"
-              ? 4.1 + (h % 6) / 10
-              : cat === "Standard"
-                ? 3.7 + (h % 6) / 10
-                : 3.2 + (h % 6) / 10,
+            : level.category === "Standard"
+              ? 4.0 + (h % 6) / 10
+              : 3.2 + (h % 7) / 10,
 
-        priceFrom: Math.max(
-          cat === "Budget" ? 799 : priceBase,
-          price,
-        ),
+        priceFrom: price,
 
         previewImages: [
           "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80",
@@ -1887,7 +1696,7 @@ export const allHotels: HotelProperty[] =
         ],
 
         amenities:
-          cat === "Luxury"
+          level.category === "Luxury"
             ? [
                 "Free WiFi",
                 "Swimming Pool",
@@ -1898,31 +1707,22 @@ export const allHotels: HotelProperty[] =
                 "Gym",
                 "Airport Transfer",
               ]
-            : cat === "Premium"
+            : level.category === "Standard"
               ? [
                   "Free WiFi",
-                  "Swimming Pool",
                   "Breakfast Included",
                   "AC",
                   "Room Service",
-                  "Gym",
+                  "Parking",
                 ]
-              : cat === "Standard"
-                ? [
-                    "Free WiFi",
-                    "Breakfast Included",
-                    "AC",
-                    "Room Service",
-                    "Parking",
-                  ]
-                : [
-                    "Free WiFi",
-                    "AC",
-                    "Parking",
-                    "24x7 Reception",
-                  ],
+              : [
+                  "Free WiFi",
+                  "AC",
+                  "Parking",
+                  "24×7 Reception",
+                ],
 
-        category: cat,
+        category: level.category,
       };
     });
   });
@@ -1946,7 +1746,6 @@ export type Segment = {
   code: string;
   operator?: string;
 
-  // Hotels intentionally do NOT use from/to.
   from?: string;
   fromCode?: string;
   to?: string;
@@ -1963,6 +1762,8 @@ export type Segment = {
 
 // ============================================================
 // DISTANCE
+// IMPORTANT:
+// SAME-CITY LOCATIONS MUST NOT SHOW HUGE RANDOM DISTANCES.
 // ============================================================
 
 export function distanceKm(
@@ -1973,9 +1774,25 @@ export function distanceKm(
     return 0;
   }
 
-  const key = [from.code, to.code]
-    .sort()
-    .join("-");
+  const key = [from.code, to.code].sort().join("-");
+
+  // Nearby stations / terminals in same city.
+  // Keep them realistically close.
+  if (
+    from.city.toLowerCase() ===
+    to.city.toLowerCase()
+  ) {
+    const h = hashString(key);
+
+    if (
+      from.locationType === "metro_station" ||
+      to.locationType === "metro_station"
+    ) {
+      return 2 + (h % 8);
+    }
+
+    return 2 + (h % 14);
+  }
 
   const h = hashString(key);
 
@@ -2003,63 +1820,46 @@ export function demandIndex(
 
 // ============================================================
 // FARE FACTORS
-// IMPORTANT: 1A / FIRST AC IS SIGNIFICANTLY MORE EXPENSIVE
 // ============================================================
 
-const classFareFactors: Record<
-  string,
-  number
-> = {
-  SL: 0.42,
+const classFareFactors: Record<string, number> = {
+  // TRAIN
+  SL: 0.65,
+  "3A": 1.35,
+  "2A": 2.05,
+  "1A": 4.2,
+  CC: 1.25,
+  EC: 1.65,
+  GEN: 0.35,
 
-  "3A": 1.05,
-
-  "2A": 1.55,
-
-  // First AC should not be unrealistically cheap.
-  "1A": 2.85,
-
-  CC: 0.95,
-
-  EC: 1.2,
-
-  GEN: 0.2,
-
+  // BUS
   SEATER: 0.55,
-
   SLEEPER: 0.9,
-
   VOLVO: 1.15,
 
-  ECONOMY: 1.15,
+  // FLIGHT
+  ECONOMY: 1,
+  PREMIUM_ECONOMY: 1.55,
+  BUSINESS: 3.2,
 
-  PREMIUM_ECONOMY: 1.75,
-
-  BUSINESS: 3.25,
-
+  // METRO
   TOKEN: 0.05,
 
-  DECK: 0.55,
+  // FERRY
+  DECK: 0.4,
+  CABIN: 1.2,
 
-  CABIN: 1.45,
-
-  // Hotel room factors
-  NORMAL: 0.75,
-
-  DELUXE: 1.15,
-
-  PREMIUM: 1.45,
-
-  EXECUTIVE: 1.8,
-
-  SUITE: 2.5,
-
-  FAMILY: 2.0,
+  // HOTEL ROOMS
+  BUDGET_ROOM: 1,
+  STANDARD_ROOM: 1.45,
+  DELUXE: 1.8,
+  PREMIUM: 2.2,
+  EXECUTIVE: 2.7,
+  SUITE: 3.5,
+  FAMILY: 2.8,
 };
 
-function classFareFactor(
-  code: string,
-): number {
+function classFareFactor(code: string): number {
   return classFareFactors[code] ?? 1;
 }
 
@@ -2078,10 +1878,10 @@ export function computeFare(
 
   const raw =
     km * 1.1 * factor +
-    120 * factor;
+    220 * factor;
 
   const withDemand =
-    raw * Math.max(0.8, demand);
+    raw * Math.max(0.85, demand);
 
   return Math.max(
     49,
@@ -2091,279 +1891,218 @@ export function computeFare(
 
 // ============================================================
 // MEALS
-// EXPLICIT VEG / NON-VEG TYPE
+// VEG = GREEN CATEGORY
+// NON-VEG = RED CATEGORY
 // ============================================================
 
-export type MealType =
-  | "veg"
-  | "nonveg";
+export type MealCategory = "veg" | "nonveg";
 
 export type Meal = {
   id: string;
   name: string;
   price: number;
-  type: MealType;
+  category: MealCategory;
   isVeg: boolean;
 };
 
 export const meals: Meal[] = [
-  // ----------------------------------------------------------
-  // VEG MEALS
-  // ----------------------------------------------------------
+  // VEG
   {
     id: "veg-thali",
     name: "Veg Thali",
     price: 180,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "paneer-thali",
     name: "Paneer Thali",
     price: 220,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "south-indian-meal",
-    name: "South Indian Veg Meal",
+    name: "South Indian Meal",
     price: 170,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "masala-dosa",
     name: "Masala Dosa Combo",
     price: 140,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "veg-biryani",
     name: "Veg Biryani",
     price: 160,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "paneer-biryani",
     name: "Paneer Biryani",
     price: 210,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "chole-bhature",
     name: "Chole Bhature",
     price: 150,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "rajma-rice",
     name: "Rajma Rice",
     price: 140,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "grilled-veg-sandwich",
     name: "Grilled Veg Sandwich",
     price: 120,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "veg-wrap",
     name: "Veg Wrap Combo",
     price: 135,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "fresh-fruit-box",
     name: "Fresh Fruit Box",
     price: 110,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
     id: "vegetarian-snack-box",
     name: "Vegetarian Snack Box",
     price: 90,
-    type: "veg",
+    category: "veg",
+    isVeg: true,
+  },
+  {
+    id: "dal-roti",
+    name: "Dal Roti Meal",
+    price: 130,
+    category: "veg",
     isVeg: true,
   },
   {
     id: "aloo-paratha",
     name: "Aloo Paratha Combo",
-    price: 130,
-    type: "veg",
+    price: 125,
+    category: "veg",
     isVeg: true,
   },
   {
-    id: "paneer-tikka",
-    name: "Paneer Tikka Meal",
-    price: 240,
-    type: "veg",
+    id: "pav-bhaji",
+    name: "Pav Bhaji",
+    price: 120,
+    category: "veg",
     isVeg: true,
   },
   {
     id: "veg-pulao",
-    name: "Veg Pulao",
+    name: "Vegetable Pulao",
     price: 145,
-    type: "veg",
+    category: "veg",
     isVeg: true,
   },
   {
-    id: "dal-makhani",
-    name: "Dal Makhani & Rice",
-    price: 175,
-    type: "veg",
+    id: "paneer-tikka",
+    name: "Paneer Tikka Combo",
+    price: 240,
+    category: "veg",
     isVeg: true,
   },
   {
     id: "veg-noodles",
     name: "Veg Hakka Noodles",
-    price: 155,
-    type: "veg",
-    isVeg: true,
-  },
-  {
-    id: "veg-manchurian",
-    name: "Veg Manchurian Combo",
-    price: 165,
-    type: "veg",
-    isVeg: true,
-  },
-  {
-    id: "idli-sambar",
-    name: "Idli Sambar",
-    price: 115,
-    type: "veg",
-    isVeg: true,
-  },
-  {
-    id: "curd-rice",
-    name: "Curd Rice",
-    price: 110,
-    type: "veg",
-    isVeg: true,
-  },
-  {
-    id: "veg-poha",
-    name: "Vegetable Poha",
-    price: 95,
-    type: "veg",
-    isVeg: true,
-  },
-  {
-    id: "veg-pasta",
-    name: "Creamy Veg Pasta",
-    price: 190,
-    type: "veg",
-    isVeg: true,
-  },
-  {
-    id: "cheese-burger",
-    name: "Veg Cheese Burger",
-    price: 175,
-    type: "veg",
-    isVeg: true,
-  },
-  {
-    id: "veg-pizza",
-    name: "Farmhouse Veg Pizza",
-    price: 260,
-    type: "veg",
+    price: 150,
+    category: "veg",
     isVeg: true,
   },
 
-  // ----------------------------------------------------------
-  // NON-VEG MEALS
-  // ----------------------------------------------------------
+  // NON-VEG
   {
     id: "chicken-thali",
     name: "Chicken Thali",
     price: 260,
-    type: "nonveg",
-    isVeg: false,
-  },
-  {
-    id: "mutton-thali",
-    name: "Mutton Thali",
-    price: 320,
-    type: "nonveg",
+    category: "nonveg",
     isVeg: false,
   },
   {
     id: "chicken-biryani",
     name: "Chicken Biryani",
     price: 250,
-    type: "nonveg",
-    isVeg: false,
-  },
-  {
-    id: "mutton-biryani",
-    name: "Mutton Biryani",
-    price: 320,
-    type: "nonveg",
+    category: "nonveg",
     isVeg: false,
   },
   {
     id: "egg-curry-rice",
     name: "Egg Curry Rice",
     price: 190,
-    type: "nonveg",
+    category: "nonveg",
     isVeg: false,
   },
   {
     id: "chicken-curry-rice",
     name: "Chicken Curry Rice",
-    price: 240,
-    type: "nonveg",
-    isVeg: false,
-  },
-  {
-    id: "fish-curry-rice",
-    name: "Fish Curry Rice",
-    price: 280,
-    type: "nonveg",
-    isVeg: false,
-  },
-  {
-    id: "chicken-sandwich",
-    name: "Chicken Sandwich",
-    price: 180,
-    type: "nonveg",
+    price: 270,
+    category: "nonveg",
     isVeg: false,
   },
   {
     id: "chicken-wrap",
     name: "Chicken Wrap Combo",
     price: 210,
-    type: "nonveg",
+    category: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "egg-sandwich",
+    name: "Egg Sandwich Combo",
+    price: 160,
+    category: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "fish-meal",
+    name: "Fish Meal",
+    price: 290,
+    category: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "chicken-kebab",
+    name: "Chicken Kebab Combo",
+    price: 280,
+    category: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "mutton-biryani",
+    name: "Mutton Biryani",
+    price: 320,
+    category: "nonveg",
     isVeg: false,
   },
   {
     id: "chicken-noodles",
     name: "Chicken Hakka Noodles",
     price: 220,
-    type: "nonveg",
-    isVeg: false,
-  },
-  {
-    id: "chicken-manchurian",
-    name: "Chicken Manchurian Combo",
-    price: 240,
-    type: "nonveg",
-    isVeg: false,
-  },
-  {
-    id: "egg-roll",
-    name: "Egg Roll Combo",
-    price: 150,
-    type: "nonveg",
+    category: "nonveg",
     isVeg: false,
   },
 ];
@@ -2383,17 +2122,12 @@ export function seatState(
   key: string,
   availableBase: number,
   tick: number,
-  opts?: {
-    racWl?: boolean;
-    classCode?: string;
-  },
+  opts?: { racWl?: boolean },
 ): {
   tone: SeatTone;
   label: string;
 } {
-  const h = hashString(
-    `${key}:${tick}`,
-  );
+  const h = hashString(`${key}:${tick}`);
 
   const avail = Math.max(
     0,
@@ -2401,18 +2135,12 @@ export function seatState(
       (h % (availableBase + 3)),
   );
 
-  // First AC should never show RAC/WL.
-  const allowRacWl =
-    opts?.racWl === true &&
-    opts?.classCode !== "1A";
-
   if (avail <= 0) {
     if (
-      allowRacWl &&
+      opts?.racWl &&
       h % 5 !== 0
     ) {
-      const isRac =
-        h % 2 === 0;
+      const isRac = h % 2 === 0;
 
       return isRac
         ? {
@@ -2512,9 +2240,7 @@ export function allocateSeats(
           rowLetters.length
       ];
 
-    seats.push(
-      `${letter}${seatNum}`,
-    );
+    seats.push(`${letter}${seatNum}`);
   }
 
   return seats;
@@ -2549,8 +2275,7 @@ function timeFromMinutes(
   mins: number,
 ): string {
   const normalized =
-    ((mins % 1440) + 1440) %
-    1440;
+    ((mins % 1440) + 1440) % 1440;
 
   const h = Math.floor(
     normalized / 60,
@@ -2614,8 +2339,8 @@ const modeProfiles: Record<
   }
 > = {
   train: {
-    speedKmh: 55,
-    overheadMins: 10,
+    speedKmh: 70,
+    overheadMins: 8,
 
     namePool: [
       "Rajdhani Express",
@@ -2832,20 +2557,41 @@ function buildTransportSegment(
   const slotStart =
     slotStartMinutes(slot);
 
+  // Nearby stations should depart normally,
+  // but duration must remain short.
   const departMins =
-    (slotStart + (h % 300)) %
+    (slotStart + (h % 180)) %
     1440;
 
-  const durationMins =
+  let durationMins =
     Math.max(
-      20,
+      5,
       Math.round(
         (km / profile.speedKmh) *
           60,
       ) +
         profile.overheadMins +
-        (h % 20),
+        (h % 8),
     );
+
+  // Same-city / nearby locations:
+  // never allow absurd multi-hour duration.
+  if (
+    from.city.toLowerCase() ===
+    to.city.toLowerCase()
+  ) {
+    if (mode === "metro") {
+      durationMins = Math.min(
+        durationMins,
+        18,
+      );
+    } else {
+      durationMins = Math.min(
+        durationMins,
+        35,
+      );
+    }
+  }
 
   const arriveMins =
     departMins +
@@ -2878,38 +2624,12 @@ function buildTransportSegment(
           5 +
           (availSeed % 60);
 
-        let fare =
+        const fare =
           computeFare(
             km,
             cls.code,
             demand,
           );
-
-        // Extra realism for long-distance
-        // First AC fares.
-        if (
-          mode === "train" &&
-          cls.code === "1A"
-        ) {
-          fare = Math.max(
-            fare,
-            Math.round(
-              (km * 2.7 + 650) / 50,
-            ) * 50,
-          );
-        }
-
-        if (
-          mode === "train" &&
-          cls.code === "2A"
-        ) {
-          fare = Math.max(
-            fare,
-            Math.round(
-              (km * 1.55 + 400) / 50,
-            ) * 50,
-          );
-        }
 
         const probability =
           mode === "metro"
@@ -2985,50 +2705,37 @@ function buildTransportSegment(
 
 // ============================================================
 // HOTEL ROOM TYPES
-// AFFORDABLE → EXPENSIVE
 // ============================================================
 
-const hotelRoomTypes: {
-  code: string;
-  label: string;
-  multiplier: number;
-  minimumFare: number;
-}[] = [
+const hotelRoomTypes: ClassDef[] = [
   {
-    code: "NORMAL",
-    label: "Normal Room",
-    multiplier: 0.55,
-    minimumFare: 799,
+    code: "BUDGET_ROOM",
+    label: "Budget Room",
+  },
+  {
+    code: "STANDARD_ROOM",
+    label: "Standard Room",
   },
   {
     code: "DELUXE",
     label: "Deluxe Room",
-    multiplier: 1.0,
-    minimumFare: 1399,
   },
   {
     code: "PREMIUM",
     label: "Premium Room",
-    multiplier: 1.35,
-    minimumFare: 2199,
   },
   {
     code: "EXECUTIVE",
     label: "Executive Room",
-    multiplier: 1.7,
-    minimumFare: 3499,
   },
   {
     code: "SUITE",
     label: "Family Suite",
-    multiplier: 2.35,
-    minimumFare: 5499,
   },
 ];
 
 // ============================================================
 // HOTEL SEGMENT
-// IMPORTANT: NO FROM / TO
 // ============================================================
 
 function buildHotelSegment(
@@ -3057,53 +2764,22 @@ function buildHotelSegment(
 
   const options =
     hotelRoomTypes.map(
-      (room) => {
+      (rt) => {
         const availSeed =
           hashString(
-            `${seed}-${room.code}`,
+            `${seed}-${rt.code}`,
           );
 
         const available =
           1 +
           (availSeed % 12);
 
-        let fare: number;
-
-        if (
-          room.code ===
-          "NORMAL"
-        ) {
-          // Explicitly affordable,
-          // including sub-₹1000 options.
-          fare =
-            799 +
-            (availSeed % 3) *
-              50;
-        } else {
-          fare =
-            Math.round(
-              (hotel.priceFrom *
-                room.multiplier) /
-                100,
-            ) * 100;
-
-          fare = Math.max(
-            fare,
-            room.minimumFare,
+        const fare =
+          computeFare(
+            120,
+            rt.code,
+            demand,
           );
-        }
-
-        // Keep premium/luxury rooms
-        // appropriately expensive.
-        if (
-          room.code ===
-          "SUITE"
-        ) {
-          fare = Math.max(
-            fare,
-            5499,
-          );
-        }
 
         const probability =
           Math.max(
@@ -3113,8 +2789,8 @@ function buildHotelSegment(
           );
 
         return {
-          code: room.code,
-          label: room.label,
+          code: rt.code,
+          label: rt.label,
           fare,
           available,
           probability,
@@ -3138,19 +2814,11 @@ function buildHotelSegment(
     operator:
       hotel.name,
 
-    // --------------------------------------------------------
-    // NO FROM
-    // NO FROM CODE
-    // NO TO
-    // NO TO CODE
-    // --------------------------------------------------------
-
+    // Hotels intentionally have no from/to.
     depart: "2:00 PM",
-
     arrive: "11:00 AM",
 
     durationMins: 1260,
-
     duration: "1 Night",
 
     distanceKm: 0,
@@ -3178,7 +2846,6 @@ function hotelLocationToStation(
 ): Station {
   return {
     name: destination.city,
-
     code:
       `HOTEL-${destination.city
         .toUpperCase()
@@ -3186,11 +2853,8 @@ function hotelLocationToStation(
           /[^A-Z0-9]+/g,
           "-",
         )}`,
-
     city: destination.city,
-
     state: destination.state,
-
     locationType:
       "hotel_location",
   };
@@ -3244,13 +2908,14 @@ export function generateResults(
 
       const demand =
         1 +
-        (hashString(
-          `${destination.city}-${date
-            .toISOString()
-            .slice(0, 10)}`,
-        ) %
-          40) /
-          100;
+        ((
+          hashString(
+            `${destination.city}-${date
+              .toISOString()
+              .slice(0, 10)}`,
+          ) % 40
+        ) /
+          100);
 
       segments.push(
         buildHotelSegment(
@@ -3376,16 +3041,11 @@ export function isValidLocationForMode(
 // ============================================================
 
 export function findRoute(
-  mode: Exclude<
-    TransportMode,
-    "hotel"
-  >,
+  mode: Exclude<TransportMode, "hotel">,
   fromCode: string,
   toCode: string,
 ): RouteDef | undefined {
-  return modeRoutes[
-    mode
-  ].find(
+  return modeRoutes[mode].find(
     (route) =>
       route.from.code ===
         fromCode &&
@@ -3399,10 +3059,7 @@ export function findRoute(
 // ============================================================
 
 export function routesForMode(
-  mode: Exclude<
-    TransportMode,
-    "hotel"
-  >,
+  mode: Exclude<TransportMode, "hotel">,
 ): RouteDef[] {
   return modeRoutes[mode];
 }
@@ -3412,15 +3069,10 @@ export function routesForMode(
 // ============================================================
 
 export function destinationsFrom(
-  mode: Exclude<
-    TransportMode,
-    "hotel"
-  >,
+  mode: Exclude<TransportMode, "hotel">,
   fromCode: string,
 ): Station[] {
-  return modeRoutes[
-    mode
-  ]
+  return modeRoutes[mode]
     .filter(
       (route) =>
         route.from.code ===
@@ -3437,15 +3089,10 @@ export function destinationsFrom(
 // ============================================================
 
 export function originsTo(
-  mode: Exclude<
-    TransportMode,
-    "hotel"
-  >,
+  mode: Exclude<TransportMode, "hotel">,
   toCode: string,
 ): Station[] {
-  return modeRoutes[
-    mode
-  ]
+  return modeRoutes[mode]
     .filter(
       (route) =>
         route.to.code ===
