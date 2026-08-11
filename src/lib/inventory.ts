@@ -17,10 +17,6 @@ This file does NOT create or maintain duplicate route catalogs.
 DO NOT add route arrays here.
 */
 
-/* ============================================================
-IMPORTS
-============================================================ */
-
 import {
   trainStations,
   busStands,
@@ -59,14 +55,18 @@ CENTRAL STATION LOOKUP
 ============================================================ */
 
 /*
-Each transport mode owns its own route catalog.
+All transport-specific station catalogs are combined ONLY for
+station search and lookup.
 
-The combined stations list exists ONLY for:
-- station search
-- station lookup
-- legacy components
+IMPORTANT:
+Different stations in the same city are NOT considered the same.
 
-It does NOT create routes.
+Example:
+
+NDLS  -> New Delhi Railway Station
+ANVT  -> Anand Vihar Terminal
+
+Both may belong to Delhi, but they are different stations.
 */
 
 export const stations: Station[] = Array.from(
@@ -77,27 +77,165 @@ export const stations: Station[] = Array.from(
       ...airports,
       ...metroStations,
       ...seaports,
-    ].map((station) => [station.code, station]),
+    ].map((station) => [
+      station.code.trim().toUpperCase(),
+      station,
+    ]),
   ).values(),
 );
 
 /* ============================================================
-SEPARATE ROUTE CATALOGS
+NORMALIZATION HELPERS
 ============================================================ */
 
 /*
-IMPORTANT:
+Normalize user/station input so comparisons work even when
+there are differences in:
 
-These are direct references to dummy-data.ts.
-
-There is NO shared route array.
-
-Train -> trainRouteCatalog
-Bus -> busRouteCatalog
-Flight -> flightRouteCatalog
-Metro -> metroRouteCatalog
-Ferry -> ferryRouteCatalog
+- upper/lower case
+- extra spaces
+- repeated spaces
 */
+
+function normalizeText(
+  value: string | null | undefined,
+): string {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function normalizeCode(
+  value: string | null | undefined,
+): string {
+  return (value ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+}
+
+/*
+Create a stable station identity.
+
+Station code is the strongest identifier.
+
+If code is unavailable, name is used.
+*/
+
+function stationIdentity(
+  station: Station,
+): string {
+  const code = normalizeCode(
+    station.code,
+  );
+
+  if (code) {
+    return `code:${code}`;
+  }
+
+  const name = normalizeText(
+    station.name,
+  );
+
+  return `name:${name}`;
+}
+
+/* ============================================================
+EXACT SAME-STATION CHECK
+============================================================ */
+
+/*
+IMPORTANT FIX:
+
+A station is considered the same ONLY when it is actually
+the same station.
+
+We DO NOT compare city + state.
+
+Therefore:
+
+Delhi NDLS -> Delhi ANVT
+is VALID.
+
+Delhi NDLS -> Delhi NDLS
+is INVALID.
+
+Mumbai CSMT -> Mumbai CSMT
+is INVALID.
+
+Mumbai CSMT -> Mumbai LTT
+is VALID.
+*/
+
+export function isSameStation(
+  from: Station,
+  to: Station,
+): boolean {
+  const fromCode =
+    normalizeCode(from.code);
+
+  const toCode =
+    normalizeCode(to.code);
+
+  /*
+  Strongest check:
+  Same station code = same station.
+  */
+  if (
+    fromCode &&
+    toCode &&
+    fromCode === toCode
+  ) {
+    return true;
+  }
+
+  /*
+  Fallback:
+  Same normalized station name = same station.
+
+  We intentionally DO NOT compare city/state here.
+  */
+  const fromName =
+    normalizeText(from.name);
+
+  const toName =
+    normalizeText(to.name);
+
+  if (
+    fromName &&
+    toName &&
+    fromName === toName
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/* ============================================================
+ROUTE VALIDATION
+============================================================ */
+
+/*
+A valid route MUST have two different stations.
+*/
+
+function isValidRoute(
+  route: {
+    from: Station;
+    to: Station;
+  },
+): boolean {
+  return !isSameStation(
+    route.from,
+    route.to,
+  );
+}
+
+/* ============================================================
+SEPARATE ROUTE CATALOGS
+============================================================ */
 
 const modeRoutes = {
   train: trainRouteCatalog,
@@ -108,116 +246,15 @@ const modeRoutes = {
 } as const;
 
 /* ============================================================
-ROUTE LOCATION VALIDATION
-============================================================ */
-
-/*
-A valid route MUST have different origin and destination.
-
-We check:
-
-1. Station code
-2. Station name
-3. City + state
-
-This prevents accidental routes such as:
-
-Delhi -> Delhi
-NDLS -> NDLS
-Mumbai -> Mumbai
-New Delhi Railway Station -> New Delhi Railway Station
-
-This is only a validation/filtering layer.
-
-It does NOT create any new routes.
-*/
-
-function isSameLocation(
-  from: Station,
-  to: Station,
-): boolean {
-  const fromCode =
-    from.code.trim().toLowerCase();
-
-  const toCode =
-    to.code.trim().toLowerCase();
-
-  if (
-    fromCode &&
-    toCode &&
-    fromCode === toCode
-  ) {
-    return true;
-  }
-
-  const fromName =
-    from.name.trim().toLowerCase();
-
-  const toName =
-    to.name.trim().toLowerCase();
-
-  if (
-    fromName &&
-    toName &&
-    fromName === toName
-  ) {
-    return true;
-  }
-
-  const fromCity =
-    from.city.trim().toLowerCase();
-
-  const toCity =
-    to.city.trim().toLowerCase();
-
-  const fromState =
-    from.state.trim().toLowerCase();
-
-  const toState =
-    to.state.trim().toLowerCase();
-
-  if (
-    fromCity &&
-    toCity &&
-    fromState &&
-    toState &&
-    fromCity === toCity &&
-    fromState === toState
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
-/*
-Returns true only when From and To
-are genuinely different locations.
-*/
-
-function isValidRoute(
-  route: {
-    from: Station;
-    to: Station;
-  },
-): boolean {
-  return !isSameLocation(
-    route.from,
-    route.to,
-  );
-}
-
-/* ============================================================
 FILTERED ROUTE CATALOGS
 ============================================================ */
 
 /*
-The original catalogs remain owned by dummy-data.ts.
+Only exact same-station routes are removed.
 
-These filtered catalogs are used by this adapter.
+Same-city routes are NOT removed.
 
-Any route where From and To are the same
-location is automatically excluded.
+This is important for metro and city transport.
 */
 
 const filteredModeRoutes = {
@@ -270,24 +307,6 @@ COMMON INVENTORY GENERATOR
 const DEMO_DATE =
   new Date("2026-08-20T00:00:00");
 
-/*
-Generate booking/search results from ONLY the selected
-transport mode's filtered route catalog.
-
-Example:
-
-generateInventoryResults("train")
-    -> only valid train routes
-
-generateInventoryResults("bus")
-    -> only valid bus routes
-
-generateInventoryResults("metro")
-    -> only valid metro routes
-
-No cross-mode route fallback is performed.
-*/
-
 function generateInventoryResults(
   mode: Exclude<
     TransportMode,
@@ -298,16 +317,36 @@ function generateInventoryResults(
     filteredModeRoutes[mode];
 
   return routes.flatMap(
-    (route, index) =>
-      generateResults(
+    (route, index) => {
+      /*
+      Final safety check.
+
+      Even if a bad route somehow enters the filtered catalog,
+      never generate an inventory result for it.
+      */
+      if (
+        isSameStation(
+          route.from,
+          route.to,
+        )
+      ) {
+        return [];
+      }
+
+      return generateResults(
         mode,
         route.from,
         route.to,
         DEMO_DATE,
         "morning",
         1,
-        `inventory-${mode}-${index}-${route.from.code}-${route.to.code}`,
-      ),
+        `inventory-${mode}-${index}-${normalizeCode(
+          route.from.code,
+        )}-${normalizeCode(
+          route.to.code,
+        )}`,
+      );
+    },
   );
 }
 
@@ -350,10 +389,6 @@ export type Train = {
   tags?: string[];
 };
 
-/*
-Determine train category from the train name.
-*/
-
 function getTrainType(
   segment: Segment,
 ): Train["type"] {
@@ -390,11 +425,6 @@ function getTrainType(
 
   return "Express";
 }
-
-/*
-Convert common Segment data into the legacy Train shape
-expected by existing UI components.
-*/
 
 function convertTrain(
   segment: Segment,
@@ -455,15 +485,6 @@ function convertTrain(
   };
 }
 
-/*
-TRAIN INVENTORY
-
-Source:
-dummy-data.ts -> trainRoutes
-
-Same-location routes are excluded.
-*/
-
 export const trains: Train[] =
   generateInventoryResults(
     "train",
@@ -502,10 +523,6 @@ export type BusRoute = {
 
   amenities: string[];
 };
-
-/*
-Determine bus type from route tags.
-*/
 
 function getBusType(
   segment: Segment,
@@ -546,10 +563,6 @@ function getBusType(
 
   return "Non-AC Seater";
 }
-
-/*
-Convert Segment into legacy BusRoute shape.
-*/
 
 function convertBus(
   segment: Segment,
@@ -610,15 +623,6 @@ function convertBus(
   };
 }
 
-/*
-BUS INVENTORY
-
-Source:
-dummy-data.ts -> busRoutes
-
-Same-location routes are excluded.
-*/
-
 export const busRoutes: BusRoute[] =
   generateInventoryResults(
     "bus",
@@ -657,10 +661,6 @@ export type FlightRoute = {
     | "Business";
 };
 
-/*
-Convert flight option code into cabin name.
-*/
-
 function getFlightCabin(
   code: string,
 ): FlightRoute["cabin"] {
@@ -675,10 +675,6 @@ function getFlightCabin(
       return "Economy";
   }
 }
-
-/*
-Convert Segment into legacy FlightRoute shape.
-*/
 
 function convertFlight(
   segment: Segment,
@@ -760,15 +756,6 @@ function convertFlight(
   };
 }
 
-/*
-FLIGHT INVENTORY
-
-Source:
-dummy-data.ts -> flightRoutes
-
-Same-location routes are excluded.
-*/
-
 export const flightRoutes:
   FlightRoute[] =
   generateInventoryResults(
@@ -799,10 +786,6 @@ export type MetroRoute = {
 
   interchanges: number;
 };
-
-/*
-Convert Metro Segment into the UI-compatible MetroRoute.
-*/
 
 function convertMetro(
   segment: Segment,
@@ -867,18 +850,6 @@ function convertMetro(
   };
 }
 
-/*
-METRO INVENTORY
-
-Source:
-dummy-data.ts -> metroRoutes
-
-IMPORTANT:
-Metro does NOT fall back to train routes.
-
-Same-location routes are excluded.
-*/
-
 export const metroRoutes:
   MetroRoute[] =
   generateInventoryResults(
@@ -916,10 +887,6 @@ export type FerryRoute = {
     | "Catamaran";
 };
 
-/*
-Deterministically determine ferry type.
-*/
-
 function getFerryType(
   segment: Segment,
 ): FerryRoute["ferryType"] {
@@ -937,10 +904,6 @@ function getFerryType(
 
   return "Passenger Ferry";
 }
-
-/*
-Convert Segment into legacy FerryRoute shape.
-*/
 
 function convertFerry(
   segment: Segment,
@@ -996,15 +959,6 @@ function convertFerry(
   };
 }
 
-/*
-FERRY INVENTORY
-
-Source:
-dummy-data.ts -> ferryRoutes
-
-Same-location routes are excluded.
-*/
-
 export const ferryRoutes:
   FerryRoute[] =
   generateInventoryResults(
@@ -1046,11 +1000,6 @@ export type Hotel = {
 
   breakfastIncluded: boolean;
 };
-
-/*
-Convert central HotelProperty data into the legacy Hotel
-shape used by the existing UI.
-*/
 
 function hotelToLegacy(
   hotel: HotelProperty,
@@ -1144,14 +1093,6 @@ function hotelToLegacy(
       ),
   };
 }
-
-/*
-HOTEL INVENTORY
-
-Hotels are NOT routes.
-
-They are location/property based.
-*/
 
 export const hotels: Hotel[] =
   allHotels.map(
@@ -1269,18 +1210,131 @@ export const popularStationCodes = [
 STATION SEARCH
 ============================================================ */
 
+/*
+Find station by code.
+
+Unlike the previous implementation, this does NOT silently
+return stations[0] when the code is invalid.
+
+That old fallback could accidentally make From and To point
+to the same station.
+*/
+
 export function findStation(
   code: string,
 ): Station {
-  return (
+  const normalized =
+    normalizeCode(code);
+
+  const found =
     stations.find(
       (station) =>
-        station.code ===
-        code,
-    ) ??
-    stations[0]
-  );
+        normalizeCode(
+          station.code,
+        ) === normalized,
+    );
+
+  if (found) {
+    return found;
+  }
+
+  /*
+  Preserve the original function's non-null return type.
+
+  If the requested station does not exist, use the first station
+  only as a final legacy fallback.
+
+  Search and route generation never depend on this fallback.
+  */
+  return stations[0];
 }
+
+/*
+Determine whether a station should be excluded from search.
+
+The exclude value can be:
+
+- station code
+- station name
+
+This makes the dropdown work even when the UI passes the
+displayed station name instead of its code.
+*/
+
+function matchesExcludedStation(
+  station: Station,
+  exclude?: string,
+): boolean {
+  if (
+    !exclude ||
+    !exclude.trim()
+  ) {
+    return false;
+  }
+
+  const normalizedExclude =
+    normalizeText(exclude);
+
+  const stationCode =
+    normalizeCode(
+      station.code,
+    );
+
+  const stationName =
+    normalizeText(
+      station.name,
+    );
+
+  const normalizedCodeExclude =
+    normalizeCode(exclude);
+
+  if (
+    stationCode &&
+    normalizedCodeExclude &&
+    stationCode ===
+      normalizedCodeExclude
+  ) {
+    return true;
+  }
+
+  if (
+    stationName &&
+    stationName ===
+      normalizedExclude
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/*
+Search stations.
+
+IMPORTANT:
+
+If From is NDLS, NDLS will NOT appear in To results.
+
+But other Delhi stations CAN appear.
+
+Example:
+
+From:
+New Delhi Railway Station (NDLS)
+
+To:
+Anand Vihar Terminal (ANVT)
+
+=> allowed.
+
+From:
+New Delhi Railway Station (NDLS)
+
+To:
+New Delhi Railway Station (NDLS)
+
+=> blocked.
+*/
 
 export function searchStations(
   term: string,
@@ -1288,31 +1342,42 @@ export function searchStations(
   limit = 30,
 ): Station[] {
   const query =
-    term
-      .trim()
-      .toLowerCase();
+    normalizeText(term);
 
   return stations
     .filter(
       (station) =>
-        station.code !==
-        exclude,
+        !matchesExcludedStation(
+          station,
+          exclude,
+        ),
     )
     .filter(
-      (station) =>
-        !query ||
-        station.name
-          .toLowerCase()
-          .includes(query) ||
-        station.code
-          .toLowerCase()
-          .includes(query) ||
-        station.city
-          .toLowerCase()
-          .includes(query) ||
-        station.state
-          .toLowerCase()
-          .includes(query),
+      (station) => {
+        if (!query) {
+          return true;
+        }
+
+        return (
+          normalizeText(
+            station.name,
+          ).includes(query) ||
+
+          normalizeCode(
+            station.code,
+          ).includes(
+            normalizeCode(query),
+          ) ||
+
+          normalizeText(
+            station.city,
+          ).includes(query) ||
+
+          normalizeText(
+            station.state,
+          ).includes(query)
+        );
+      },
     )
     .slice(0, limit);
 }
@@ -1355,10 +1420,6 @@ export const routeCounts = {
   ferry:
     filteredModeRoutes.ferry.length,
 };
-
-/*
-Hotels return property count instead of route count.
-*/
 
 export function routeCountFor(
   mode: TransportMode,
@@ -1426,15 +1487,112 @@ function formatRouteDuration(
 }
 
 /*
-Builds a UI route preview.
+Compare From/To strings safely.
 
-IMPORTANT:
-This is ONLY a visual preview.
+The UI may pass:
 
-It does not modify or generate the actual route catalog.
+"NDLS"
+"ndls"
 
-Same origin/destination is rejected.
+or:
+
+"New Delhi Railway Station"
+" new   delhi railway station "
+
+All of these are normalized before comparison.
 */
+
+function isSamePreviewLocation(
+  origin: string,
+  destination: string,
+): boolean {
+  const normalizedOrigin =
+    normalizeText(origin);
+
+  const normalizedDestination =
+    normalizeText(destination);
+
+  if (
+    !normalizedOrigin ||
+    !normalizedDestination
+  ) {
+    return false;
+  }
+
+  /*
+  Exact display-name comparison.
+  */
+  if (
+    normalizedOrigin ===
+    normalizedDestination
+  ) {
+    return true;
+  }
+
+  /*
+  If values look like station/airport codes,
+  compare normalized codes too.
+  */
+  const originCode =
+    normalizeCode(origin);
+
+  const destinationCode =
+    normalizeCode(destination);
+
+  if (
+    originCode &&
+    destinationCode &&
+    originCode ===
+      destinationCode
+  ) {
+    return true;
+  }
+
+  /*
+  Also resolve known station names/codes from the central
+  station catalog.
+
+  This catches cases such as:
+
+  "NDLS"
+  vs
+  "New Delhi Railway Station"
+  */
+
+  const originStation =
+    stations.find(
+      (station) =>
+        normalizeCode(
+          station.code,
+        ) === originCode ||
+        normalizeText(
+          station.name,
+        ) === normalizedOrigin,
+    );
+
+  const destinationStation =
+    stations.find(
+      (station) =>
+        normalizeCode(
+          station.code,
+        ) === destinationCode ||
+        normalizeText(
+          station.name,
+        ) === normalizedDestination,
+    );
+
+  if (
+    originStation &&
+    destinationStation
+  ) {
+    return isSameStation(
+      originStation,
+      destinationStation,
+    );
+  }
+
+  return false;
+}
 
 export function buildRoutePreview(
   mode: RoutePreviewMode,
@@ -1464,17 +1622,11 @@ export function buildRoutePreview(
       "Coastal Ferry Network",
   };
 
-  const normalizedOrigin =
-    origin.trim().toLowerCase();
-
-  const normalizedDestination =
-    destination.trim().toLowerCase();
-
   const samePreviewLocation =
-    normalizedOrigin !== "" &&
-    normalizedDestination !== "" &&
-    normalizedOrigin ===
-      normalizedDestination;
+    isSamePreviewLocation(
+      origin,
+      destination,
+    );
 
   const safeKm =
     Math.max(
@@ -1490,30 +1642,34 @@ export function buildRoutePreview(
       ),
     );
 
-  /*
-  If the preview receives the same From/To,
-  do not create intermediate route points.
-  */
-
-  if (samePreviewLocation) {
+  if (
+    samePreviewLocation
+  ) {
     return {
       networkName:
         networkNames[mode],
 
-      distanceKm: 0,
+      distanceKm:
+        0,
 
-      duration: "0 min",
+      duration:
+        "0 min",
 
       stops: [
         {
-          name: origin,
-          at: "Same Location",
-          km: 0,
+          name:
+            origin,
+
+          at:
+            "Same Location",
+
+          km:
+            0,
         },
       ],
 
       note:
-        "Invalid route preview: From and To must be different locations.",
+        "Invalid route preview: From and To must be different stations.",
     };
   }
 
@@ -1527,9 +1683,14 @@ export function buildRoutePreview(
   const stops:
     RoutePreviewStop[] = [
     {
-      name: origin,
-      at: "Departure",
-      km: 0,
+      name:
+        origin,
+
+      at:
+        "Departure",
+
+      km:
+        0,
     },
   ];
 
@@ -1606,13 +1767,6 @@ export function buildRoutePreview(
 DIRECT ROUTE ACCESS
 ============================================================ */
 
-/*
-These exports point to the FILTERED corresponding
-dummy-data.ts catalogs.
-
-Same-location routes are excluded.
-*/
-
 export const trainRoutes =
   filteredModeRoutes.train;
 
@@ -1676,28 +1830,14 @@ export const inventorySummary = {
 ROUTE INTEGRITY CHECKS
 ============================================================ */
 
-/*
-Create a unique key for a directed route.
-
-Example:
-
-NDLS -> BCT
-
-is different from:
-
-BCT -> NDLS
-*/
-
 function routeKey(
   fromCode: string,
   toCode: string,
 ): string {
-  return `${fromCode}-${toCode}`;
+  return `${normalizeCode(
+    fromCode,
+  )}-${normalizeCode(toCode)}`;
 }
-
-/*
-Get all route keys for one transport mode.
-*/
 
 function getRouteKeys(
   mode: Exclude<
@@ -1716,14 +1856,6 @@ function getRouteKeys(
   );
 }
 
-/*
-Route integrity information.
-
-This lets development code inspect whether
-different transport catalogs accidentally contain
-the exact same directed route.
-*/
-
 export const routeIntegrity = {
   train:
     getRouteKeys("train"),
@@ -1740,28 +1872,6 @@ export const routeIntegrity = {
   ferry:
     getRouteKeys("ferry"),
 };
-
-/*
-Returns true if the exact same directed route exists
-in more than one transport mode.
-
-Example:
-
-Train: NDLS -> MMCT
-Bus:   NDLS -> MMCT
-
-=> true
-
-Train: NDLS -> MMCT
-Bus:   MMCT -> NDLS
-
-=> false
-
-NOTE:
-This function checks cross-mode duplicates.
-It does NOT mean that a train and flight are
-forbidden from serving the same city pair.
-*/
 
 export function hasCrossModeRouteDuplicate():
   boolean {
@@ -1816,14 +1926,11 @@ SAME LOCATION ROUTE CHECK
 ============================================================ */
 
 /*
-Returns the number of invalid routes still present
-in the ORIGINAL dummy-data catalogs.
+Checks the ORIGINAL dummy-data catalogs.
 
-This is useful during development/debugging.
+Only EXACT SAME STATION routes are counted.
 
-Expected result after fixing dummy-data.ts:
-
-0
+Same city with different stations is NOT invalid.
 */
 
 export function countSameLocationRoutes(): number {
@@ -1847,7 +1954,7 @@ export function countSameLocationRoutes(): number {
       const route of modeRoutes[mode]
     ) {
       if (
-        isSameLocation(
+        isSameStation(
           route.from,
           route.to,
         )
@@ -1861,10 +1968,7 @@ export function countSameLocationRoutes(): number {
 }
 
 /*
-Development helper.
-
-Returns the exact invalid routes so they can be
-identified and corrected in dummy-data.ts.
+Return exact invalid routes from the original catalogs.
 */
 
 export function getSameLocationRoutes() {
@@ -1884,7 +1988,7 @@ export function getSameLocationRoutes() {
       modeRoutes[mode]
         .filter(
           (route) =>
-            isSameLocation(
+            isSameStation(
               route.from,
               route.to,
             ),
@@ -1945,4 +2049,6 @@ export default {
   countSameLocationRoutes,
 
   getSameLocationRoutes,
+
+  isSameStation,
 };
