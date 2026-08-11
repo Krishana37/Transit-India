@@ -1341,16 +1341,87 @@ export function searchStations(
   exclude?: string,
   limit = 30,
 ): Station[] {
-  const query =
-    normalizeText(term);
+  const query = term.trim().toLowerCase();
+
+  /*
+   * Resolve the selected From station.
+   *
+   * The UI normally passes the station code
+   * (for example NDLS), but this also supports
+   * a station name or city as a fallback.
+   */
+  const excludedStation =
+    exclude?.trim()
+      ? stations.find((station) => {
+          const value =
+            exclude.trim().toLowerCase();
+
+          return (
+            station.code.trim().toLowerCase() === value ||
+            station.name.trim().toLowerCase() === value ||
+            station.city.trim().toLowerCase() === value
+          );
+        })
+      : undefined;
 
   return stations
-    .filter(
-      (station) =>
-        !matchesExcludedStation(
+    .filter((station) => {
+      /*
+       * NEVER show the exact same station.
+       */
+      if (
+        excludedStation &&
+        station.code.trim().toLowerCase() ===
+          excludedStation.code.trim().toLowerCase()
+      ) {
+        return false;
+      }
+
+      /*
+       * NEVER show another station that represents
+       * the exact same location.
+       *
+       * This prevents things such as:
+       *
+       * From: New Delhi
+       * To:   New Delhi
+       *
+       * even when their internal identifiers differ.
+       */
+      if (
+        excludedStation &&
+        isSameLocation(
+          excludedStation,
           station,
-          exclude,
-        ),
+        )
+      ) {
+        return false;
+      }
+
+      return true;
+    })
+    .filter((station) => {
+      if (!query) {
+        return true;
+      }
+
+      return (
+        station.name
+          .toLowerCase()
+          .includes(query) ||
+        station.code
+          .toLowerCase()
+          .includes(query) ||
+        station.city
+          .toLowerCase()
+          .includes(query) ||
+        station.state
+          .toLowerCase()
+          .includes(query)
+      );
+    })
+    .slice(0, limit);
+},
     )
     .filter(
       (station) => {
