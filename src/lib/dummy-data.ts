@@ -1889,30 +1889,266 @@ export function computeFare(
   );
 }
 
+
+
 // ============================================================
 // MEALS
 // ============================================================
-// Every meal has:
-// 1. section  -> main-course | snacks | dessert | beverage | combo
-// 2. isVeg    -> true = Veg | false = Non-Veg
-// ============================================================
+
+export type MealCategory = "veg" | "nonveg";
 
 export type MealSection =
+  | "breakfast"
+  | "starters"
   | "main-course"
+  | "rice-biryani"
+  | "breads"
   | "snacks"
-  | "dessert"
-  | "beverage"
-  | "combo";
+  | "desserts"
+  | "beverages";
 
 export type Meal = {
   id: string;
   name: string;
   price: number;
-  section: MealSection;
+
+  // VEG / NON-VEG
+  category: MealCategory;
   isVeg: boolean;
+
+  // MEAL SECTION
+  section: MealSection;
 };
 
 export const meals: Meal[] = [
+
+  // ==========================================================
+  // BREAKFAST — VEG
+  // ==========================================================
+
+  {
+    id: "veg-poha",
+    name: "Poha",
+    price: 80,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "veg-upma",
+    name: "Vegetable Upma",
+    price: 85,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "veg-idli",
+    name: "Idli Sambar",
+    price: 90,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "veg-vada-sambar",
+    name: "Vada Sambar",
+    price: 95,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "masala-dosa",
+    name: "Masala Dosa Combo",
+    price: 140,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "paneer-paratha",
+    name: "Paneer Paratha",
+    price: 130,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "aloo-paratha",
+    name: "Aloo Paratha Combo",
+    price: 125,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "veg-sandwich-breakfast",
+    name: "Grilled Veg Sandwich",
+    price: 120,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+
+  // ==========================================================
+  // BREAKFAST — NON VEG
+  // ==========================================================
+
+  {
+    id: "egg-bhurji",
+    name: "Egg Bhurji & Toast",
+    price: 140,
+    category: "nonveg",
+    isVeg: false,
+    section: "breakfast",
+  },
+  {
+    id: "boiled-egg-breakfast",
+    name: "Boiled Egg Breakfast",
+    price: 120,
+    category: "nonveg",
+    isVeg: false,
+    section: "breakfast",
+  },
+  {
+    id: "omelette-toast",
+    name: "Masala Omelette & Toast",
+    price: 145,
+    category: "nonveg",
+    isVeg: false,
+    section: "breakfast",
+  },
+  {
+    id: "chicken-sandwich-breakfast",
+    name: "Chicken Breakfast Sandwich",
+    price: 180,
+    category: "nonveg",
+    isVeg: false,
+    section: "breakfast",
+  },
+
+  // ==========================================================
+  // STARTERS — VEG
+  // ==========================================================
+
+  {
+    id: "paneer-tikka",
+    name: "Paneer Tikka",
+    price: 210,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "honey-chilli-paneer",
+    name: "Honey Chilli Paneer",
+    price: 220,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "veg-manchurian",
+    name: "Veg Manchurian",
+    price: 170,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "crispy-corn",
+    name: "Crispy Corn",
+    price: 160,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "honey-chilli-potato",
+    name: "Honey Chilli Potato",
+    price: 160,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "veg-spring-roll",
+    name: "Veg Spring Rolls",
+    price: 150,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "hara-bhara-kebab",
+    name: "Hara Bhara Kebab",
+    price: 170,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "dahi-ke-kebab",
+    name: "Dahi Ke Kebab",
+    price: 190,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+
+  // ==========================================================
+  // STARTERS — NON VEG
+  // ==========================================================
+
+  {
+    id: "chicken-tikka",
+    name: "Chicken Tikka",
+    price: 240,
+    category: "nonveg",
+    isVeg: false,
+    section: "starters",
+  },
+  {
+    id: "chicken-kebab",
+    name: "Chicken Kebab",
+    price: 250,
+    category: "nonveg",
+    isVeg: false,
+    section: "starters",
+  },
+  {
+    id: "chicken-65",
+    name: "Chicken 65",
+    price: 230,
+    category: "nonveg",
+    isVeg: false,
+    section: "starters",
+  },
+  {
+    id: "chicken-wings",
+    name: "Chicken Wings",
+    price: 240,
+    category: "nonveg",
+    isVeg: false,
+    section: "starters",
+  },
+  {
+    id: "fish-fingers",
+    name: "Fish Fingers",
+    price: 270,
+    category: "nonveg",
+    isVeg: false,
+    section: "starters",
+  },
+  {
+    id: "chicken-spring-roll",
+    name: "Chicken Spring Rolls",
+    price: 210,
+    category: "nonveg",
+    isVeg: false,
+    section: "starters",
+  },
 
   // ==========================================================
   // MAIN COURSE — VEG
@@ -1922,293 +2158,333 @@ export const meals: Meal[] = [
     id: "veg-thali",
     name: "Veg Thali",
     price: 180,
-    section: "main-course",
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "special-veg-thali",
-    name: "Special Veg Thali",
-    price: 240,
     section: "main-course",
-    isVeg: true,
   },
   {
     id: "paneer-thali",
     name: "Paneer Thali",
     price: 220,
-    section: "main-course",
+    category: "veg",
     isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "dal-tadka",
+    name: "Dal Tadka",
+    price: 130,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "dal-makhani",
+    name: "Dal Makhani",
+    price: 160,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "shahi-paneer",
+    name: "Shahi Paneer",
+    price: 220,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "kadai-paneer",
+    name: "Kadai Paneer",
+    price: 210,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "palak-paneer",
+    name: "Palak Paneer",
+    price: 210,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "matar-paneer",
+    name: "Matar Paneer",
+    price: 200,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "chole",
+    name: "Chole Masala",
+    price: 140,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "rajma",
+    name: "Rajma Masala",
+    price: 140,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
+  {
+    id: "mix-veg",
+    name: "Mix Vegetable Curry",
+    price: 160,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
   },
   {
     id: "south-indian-meal",
     name: "South Indian Meal",
     price: 170,
-    section: "main-course",
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "mini-meals",
-    name: "Mini Meals",
-    price: 130,
     section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "masala-dosa",
-    name: "Masala Dosa",
-    price: 120,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "paper-dosa",
-    name: "Paper Dosa",
-    price: 150,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "idli-sambar",
-    name: "Idli Sambar",
-    price: 100,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "medu-vada",
-    name: "Medu Vada Sambar",
-    price: 110,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "chole-bhature",
-    name: "Chole Bhature",
-    price: 150,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "rajma-rice",
-    name: "Rajma Rice",
-    price: 140,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "dal-makhani-rice",
-    name: "Dal Makhani Rice",
-    price: 160,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "dal-roti",
-    name: "Dal Roti Meal",
-    price: 130,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "dal-tadka-rice",
-    name: "Dal Tadka Rice",
-    price: 140,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "aloo-paratha",
-    name: "Aloo Paratha",
-    price: 110,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "paneer-paratha",
-    name: "Paneer Paratha",
-    price: 140,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "stuffed-paratha-meal",
-    name: "Stuffed Paratha Meal",
-    price: 160,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "veg-biryani",
-    name: "Veg Biryani",
-    price: 160,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "paneer-biryani",
-    name: "Paneer Biryani",
-    price: 210,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "veg-pulao",
-    name: "Vegetable Pulao",
-    price: 145,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "kashmiri-pulao",
-    name: "Kashmiri Pulao",
-    price: 180,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "veg-korma",
-    name: "Veg Korma with Rice",
-    price: 190,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "shahi-paneer-meal",
-    name: "Shahi Paneer Meal",
-    price: 220,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "palak-paneer-meal",
-    name: "Palak Paneer Meal",
-    price: 210,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "kadai-paneer-meal",
-    name: "Kadai Paneer Meal",
-    price: 220,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "malai-kofta-meal",
-    name: "Malai Kofta Meal",
-    price: 220,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "pav-bhaji",
-    name: "Pav Bhaji",
-    price: 120,
-    section: "main-course",
-    isVeg: true,
-  },
-  {
-    id: "misal-pav",
-    name: "Misal Pav",
-    price: 130,
-    section: "main-course",
-    isVeg: true,
   },
 
   // ==========================================================
-  // MAIN COURSE — NON-VEG
+  // MAIN COURSE — NON VEG
   // ==========================================================
 
   {
     id: "chicken-thali",
     name: "Chicken Thali",
     price: 260,
-    section: "main-course",
+    category: "nonveg",
     isVeg: false,
+    section: "main-course",
   },
   {
-    id: "special-chicken-thali",
-    name: "Special Chicken Thali",
-    price: 320,
-    section: "main-course",
+    id: "chicken-curry",
+    name: "Chicken Curry",
+    price: 250,
+    category: "nonveg",
     isVeg: false,
+    section: "main-course",
   },
+  {
+    id: "butter-chicken",
+    name: "Butter Chicken",
+    price: 280,
+    category: "nonveg",
+    isVeg: false,
+    section: "main-course",
+  },
+  {
+    id: "kadai-chicken",
+    name: "Kadai Chicken",
+    price: 270,
+    category: "nonveg",
+    isVeg: false,
+    section: "main-course",
+  },
+  {
+    id: "chicken-tikka-masala",
+    name: "Chicken Tikka Masala",
+    price: 290,
+    category: "nonveg",
+    isVeg: false,
+    section: "main-course",
+  },
+  {
+    id: "egg-curry",
+    name: "Egg Curry",
+    price: 180,
+    category: "nonveg",
+    isVeg: false,
+    section: "main-course",
+  },
+  {
+    id: "fish-curry",
+    name: "Fish Curry",
+    price: 290,
+    category: "nonveg",
+    isVeg: false,
+    section: "main-course",
+  },
+  {
+    id: "mutton-curry",
+    name: "Mutton Curry",
+    price: 320,
+    category: "nonveg",
+    isVeg: false,
+    section: "main-course",
+  },
+
+  // ==========================================================
+  // RICE & BIRYANI — VEG
+  // ==========================================================
+
+  {
+    id: "veg-biryani",
+    name: "Veg Biryani",
+    price: 160,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+  {
+    id: "paneer-biryani",
+    name: "Paneer Biryani",
+    price: 210,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+  {
+    id: "veg-pulao",
+    name: "Vegetable Pulao",
+    price: 145,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+  {
+    id: "jeera-rice",
+    name: "Jeera Rice",
+    price: 110,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+  {
+    id: "dal-khichdi",
+    name: "Dal Khichdi",
+    price: 130,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+  {
+    id: "rajma-rice",
+    name: "Rajma Rice",
+    price: 140,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+  {
+    id: "chole-rice",
+    name: "Chole Rice",
+    price: 140,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+
+  // ==========================================================
+  // RICE & BIRYANI — NON VEG
+  // ==========================================================
+
   {
     id: "chicken-biryani",
     name: "Chicken Biryani",
     price: 250,
-    section: "main-course",
+    category: "nonveg",
     isVeg: false,
-  },
-  {
-    id: "chicken-hyderabadi-biryani",
-    name: "Hyderabadi Chicken Biryani",
-    price: 280,
-    section: "main-course",
-    isVeg: false,
+    section: "rice-biryani",
   },
   {
     id: "mutton-biryani",
     name: "Mutton Biryani",
     price: 320,
-    section: "main-course",
+    category: "nonveg",
     isVeg: false,
+    section: "rice-biryani",
   },
   {
     id: "egg-biryani",
     name: "Egg Biryani",
-    price: 200,
-    section: "main-course",
-    isVeg: false,
-  },
-  {
-    id: "egg-curry-rice",
-    name: "Egg Curry Rice",
     price: 190,
-    section: "main-course",
+    category: "nonveg",
     isVeg: false,
+    section: "rice-biryani",
   },
   {
-    id: "chicken-curry-rice",
-    name: "Chicken Curry Rice",
-    price: 270,
-    section: "main-course",
+    id: "chicken-fried-rice",
+    name: "Chicken Fried Rice",
+    price: 220,
+    category: "nonveg",
     isVeg: false,
+    section: "rice-biryani",
   },
   {
-    id: "butter-chicken-rice",
-    name: "Butter Chicken Rice",
-    price: 290,
-    section: "main-course",
+    id: "egg-fried-rice",
+    name: "Egg Fried Rice",
+    price: 180,
+    category: "nonveg",
     isVeg: false,
+    section: "rice-biryani",
+  },
+
+  // ==========================================================
+  // BREADS — VEG
+  // ==========================================================
+
+  {
+    id: "tandoori-roti",
+    name: "Tandoori Roti",
+    price: 30,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
   },
   {
-    id: "chicken-tikka-meal",
-    name: "Chicken Tikka Meal",
-    price: 280,
-    section: "main-course",
-    isVeg: false,
+    id: "butter-roti",
+    name: "Butter Roti",
+    price: 40,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
   },
   {
-    id: "fish-meal",
-    name: "Fish Meal",
-    price: 290,
-    section: "main-course",
-    isVeg: false,
+    id: "plain-naan",
+    name: "Plain Naan",
+    price: 50,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
   },
   {
-    id: "fish-curry-rice",
-    name: "Fish Curry Rice",
-    price: 300,
-    section: "main-course",
-    isVeg: false,
+    id: "butter-naan",
+    name: "Butter Naan",
+    price: 60,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
   },
   {
-    id: "mutton-curry-rice",
-    name: "Mutton Curry Rice",
-    price: 330,
-    section: "main-course",
-    isVeg: false,
+    id: "garlic-naan",
+    name: "Garlic Naan",
+    price: 70,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
+  },
+  {
+    id: "lachha-paratha",
+    name: "Lachha Paratha",
+    price: 60,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
+  },
+  {
+    id: "missi-roti",
+    name: "Missi Roti",
+    price: 55,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
   },
 
   // ==========================================================
@@ -2216,446 +2492,277 @@ export const meals: Meal[] = [
   // ==========================================================
 
   {
-    id: "grilled-veg-sandwich",
-    name: "Grilled Veg Sandwich",
+    id: "samosa",
+    name: "Samosa",
+    price: 50,
+    category: "veg",
+    isVeg: true,
+    section: "snacks",
+  },
+  {
+    id: "paneer-pakora",
+    name: "Paneer Pakora",
     price: 120,
-    section: "snacks",
+    category: "veg",
     isVeg: true,
+    section: "snacks",
   },
   {
-    id: "cheese-sandwich",
-    name: "Cheese Sandwich",
-    price: 140,
-    section: "snacks",
+    id: "veg-sandwich",
+    name: "Veg Sandwich",
+    price: 110,
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "veg-club-sandwich",
-    name: "Veg Club Sandwich",
-    price: 170,
     section: "snacks",
-    isVeg: true,
   },
   {
     id: "veg-wrap",
     name: "Veg Wrap",
     price: 135,
-    section: "snacks",
+    category: "veg",
     isVeg: true,
+    section: "snacks",
   },
   {
-    id: "paneer-wrap",
-    name: "Paneer Wrap",
-    price: 170,
-    section: "snacks",
+    id: "pav-bhaji",
+    name: "Pav Bhaji",
+    price: 120,
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "paneer-tikka",
-    name: "Paneer Tikka",
-    price: 240,
     section: "snacks",
-    isVeg: true,
-  },
-  {
-    id: "hara-bhara-kebab",
-    name: "Hara Bhara Kebab",
-    price: 180,
-    section: "snacks",
-    isVeg: true,
-  },
-  {
-    id: "veg-cutlet",
-    name: "Veg Cutlet",
-    price: 100,
-    section: "snacks",
-    isVeg: true,
-  },
-  {
-    id: "samosa",
-    name: "Samosa",
-    price: 50,
-    section: "snacks",
-    isVeg: true,
-  },
-  {
-    id: "kachori",
-    name: "Kachori",
-    price: 60,
-    section: "snacks",
-    isVeg: true,
-  },
-  {
-    id: "veg-samosa-combo",
-    name: "Samosa Snack Combo",
-    price: 100,
-    section: "snacks",
-    isVeg: true,
   },
   {
     id: "veg-noodles",
     name: "Veg Hakka Noodles",
     price: 150,
-    section: "snacks",
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "veg-momos",
-    name: "Veg Momos",
-    price: 130,
     section: "snacks",
-    isVeg: true,
-  },
-  {
-    id: "spring-rolls",
-    name: "Veg Spring Rolls",
-    price: 140,
-    section: "snacks",
-    isVeg: true,
   },
   {
     id: "french-fries",
     name: "French Fries",
     price: 100,
-    section: "snacks",
+    category: "veg",
     isVeg: true,
+    section: "snacks",
+  },
+  {
+    id: "veg-snack-box",
+    name: "Vegetarian Snack Box",
+    price: 90,
+    category: "veg",
+    isVeg: true,
+    section: "snacks",
   },
 
   // ==========================================================
-  // SNACKS — NON-VEG
+  // SNACKS — NON VEG
   // ==========================================================
 
   {
     id: "chicken-wrap",
     name: "Chicken Wrap",
     price: 210,
-    section: "snacks",
+    category: "nonveg",
     isVeg: false,
+    section: "snacks",
   },
   {
-    id: "chicken-club-sandwich",
-    name: "Chicken Club Sandwich",
-    price: 220,
-    section: "snacks",
+    id: "chicken-sandwich",
+    name: "Chicken Sandwich",
+    price: 190,
+    category: "nonveg",
     isVeg: false,
+    section: "snacks",
   },
   {
     id: "egg-sandwich",
     name: "Egg Sandwich",
     price: 160,
-    section: "snacks",
+    category: "nonveg",
     isVeg: false,
-  },
-  {
-    id: "chicken-kebab",
-    name: "Chicken Kebab",
-    price: 280,
     section: "snacks",
-    isVeg: false,
-  },
-  {
-    id: "chicken-tikka",
-    name: "Chicken Tikka",
-    price: 260,
-    section: "snacks",
-    isVeg: false,
-  },
-  {
-    id: "chicken-nuggets",
-    name: "Chicken Nuggets",
-    price: 190,
-    section: "snacks",
-    isVeg: false,
   },
   {
     id: "chicken-noodles",
     name: "Chicken Hakka Noodles",
     price: 220,
-    section: "snacks",
+    category: "nonveg",
     isVeg: false,
+    section: "snacks",
   },
   {
-    id: "chicken-momos",
-    name: "Chicken Momos",
-    price: 180,
-    section: "snacks",
+    id: "chicken-roll",
+    name: "Chicken Roll",
+    price: 190,
+    category: "nonveg",
     isVeg: false,
-  },
-  {
-    id: "fish-fingers",
-    name: "Fish Fingers",
-    price: 250,
     section: "snacks",
-    isVeg: false,
   },
 
   // ==========================================================
-  // DESSERT — VEG
+  // DESSERTS — VEG
   // ==========================================================
 
   {
     id: "gulab-jamun",
     name: "Gulab Jamun",
     price: 80,
-    section: "dessert",
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "rasgulla",
-    name: "Rasgulla",
-    price: 80,
-    section: "dessert",
-    isVeg: true,
+    section: "desserts",
   },
   {
     id: "rasmalai",
     name: "Rasmalai",
-    price: 120,
-    section: "dessert",
+    price: 110,
+    category: "veg",
     isVeg: true,
+    section: "desserts",
   },
   {
-    id: "kaju-katli",
-    name: "Kaju Katli",
-    price: 120,
-    section: "dessert",
+    id: "rasgulla",
+    name: "Rasgulla",
+    price: 90,
+    category: "veg",
     isVeg: true,
+    section: "desserts",
   },
   {
     id: "gajar-halwa",
-    name: "Gajar Ka Halwa",
-    price: 100,
-    section: "dessert",
+    name: "Gajar Halwa",
+    price: 120,
+    category: "veg",
     isVeg: true,
+    section: "desserts",
   },
   {
     id: "moong-dal-halwa",
     name: "Moong Dal Halwa",
-    price: 110,
-    section: "dessert",
+    price: 130,
+    category: "veg",
     isVeg: true,
+    section: "desserts",
   },
   {
-    id: "chocolate-brownie",
-    name: "Chocolate Brownie",
-    price: 110,
-    section: "dessert",
-    isVeg: true,
-  },
-  {
-    id: "ice-cream",
-    name: "Ice Cream",
+    id: "kheer",
+    name: "Rice Kheer",
     price: 90,
-    section: "dessert",
+    category: "veg",
     isVeg: true,
+    section: "desserts",
   },
   {
     id: "fruit-custard",
     name: "Fruit Custard",
     price: 100,
-    section: "dessert",
+    category: "veg",
     isVeg: true,
+    section: "desserts",
   },
   {
-    id: "kulfi",
-    name: "Kulfi",
-    price: 100,
-    section: "dessert",
-    isVeg: true,
-  },
-  {
-    id: "rasmalai-cup",
-    name: "Rasmalai Cup",
+    id: "ice-cream",
+    name: "Ice Cream",
     price: 90,
-    section: "dessert",
+    category: "veg",
     isVeg: true,
+    section: "desserts",
+  },
+  {
+    id: "chocolate-brownie",
+    name: "Chocolate Brownie",
+    price: 130,
+    category: "veg",
+    isVeg: true,
+    section: "desserts",
+  },
+  {
+    id: "gulab-jamun-icecream",
+    name: "Gulab Jamun with Ice Cream",
+    price: 150,
+    category: "veg",
+    isVeg: true,
+    section: "desserts",
   },
 
   // ==========================================================
-  // BEVERAGES
+  // BEVERAGES — VEG
   // ==========================================================
 
   {
     id: "mineral-water",
     name: "Mineral Water",
     price: 30,
-    section: "beverage",
+    category: "veg",
     isVeg: true,
+    section: "beverages",
   },
   {
-    id: "sparkling-water",
-    name: "Sparkling Water",
-    price: 70,
-    section: "beverage",
+    id: "fresh-lime",
+    name: "Fresh Lime Water",
+    price: 60,
+    category: "veg",
     isVeg: true,
+    section: "beverages",
   },
   {
     id: "masala-chai",
     name: "Masala Chai",
     price: 50,
-    section: "beverage",
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "ginger-tea",
-    name: "Ginger Tea",
-    price: 50,
-    section: "beverage",
-    isVeg: true,
+    section: "beverages",
   },
   {
     id: "filter-coffee",
-    name: "South Indian Filter Coffee",
+    name: "Filter Coffee",
     price: 70,
-    section: "beverage",
+    category: "veg",
     isVeg: true,
+    section: "beverages",
   },
   {
     id: "cold-coffee",
     name: "Cold Coffee",
     price: 100,
-    section: "beverage",
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "fresh-lime-soda",
-    name: "Fresh Lime Soda",
-    price: 60,
-    section: "beverage",
-    isVeg: true,
-  },
-  {
-    id: "mango-juice",
-    name: "Mango Juice",
-    price: 80,
-    section: "beverage",
-    isVeg: true,
-  },
-  {
-    id: "orange-juice",
-    name: "Orange Juice",
-    price: 90,
-    section: "beverage",
-    isVeg: true,
-  },
-  {
-    id: "mixed-fruit-juice",
-    name: "Mixed Fruit Juice",
-    price: 100,
-    section: "beverage",
-    isVeg: true,
-  },
-  {
-    id: "lassi",
-    name: "Sweet Lassi",
-    price: 80,
-    section: "beverage",
-    isVeg: true,
+    section: "beverages",
   },
   {
     id: "mango-lassi",
     name: "Mango Lassi",
     price: 100,
-    section: "beverage",
+    category: "veg",
     isVeg: true,
+    section: "beverages",
   },
   {
-    id: "buttermilk",
-    name: "Masala Buttermilk",
-    price: 50,
-    section: "beverage",
+    id: "sweet-lassi",
+    name: "Sweet Lassi",
+    price: 90,
+    category: "veg",
     isVeg: true,
+    section: "beverages",
   },
-
-  // ==========================================================
-  // COMBO — VEG
-  // ==========================================================
-
   {
-    id: "veg-meal-combo",
-    name: "Veg Meal Combo",
-    price: 299,
-    section: "combo",
+    id: "fresh-orange-juice",
+    name: "Fresh Orange Juice",
+    price: 110,
+    category: "veg",
     isVeg: true,
+    section: "beverages",
   },
   {
-    id: "paneer-combo",
-    name: "Paneer Special Combo",
-    price: 349,
-    section: "combo",
+    id: "mixed-fruit-juice",
+    name: "Mixed Fruit Juice",
+    price: 120,
+    category: "veg",
     isVeg: true,
-  },
-  {
-    id: "dosa-combo",
-    name: "South Indian Combo",
-    price: 249,
-    section: "combo",
-    isVeg: true,
-  },
-  {
-    id: "snacks-combo",
-    name: "Veg Snacks Combo",
-    price: 199,
-    section: "combo",
-    isVeg: true,
-  },
-  {
-    id: "sandwich-combo",
-    name: "Veg Sandwich Combo",
-    price: 229,
-    section: "combo",
-    isVeg: true,
-  },
-  {
-    id: "chai-snack-combo",
-    name: "Chai & Snack Combo",
-    price: 129,
-    section: "combo",
-    isVeg: true,
-  },
-
-  // ==========================================================
-  // COMBO — NON-VEG
-  // ==========================================================
-
-  {
-    id: "chicken-meal-combo",
-    name: "Chicken Meal Combo",
-    price: 399,
-    section: "combo",
-    isVeg: false,
-  },
-  {
-    id: "biryani-combo",
-    name: "Chicken Biryani Combo",
-    price: 349,
-    section: "combo",
-    isVeg: false,
-  },
-  {
-    id: "chicken-snacks-combo",
-    name: "Chicken Snacks Combo",
-    price: 329,
-    section: "combo",
-    isVeg: false,
-  },
-  {
-    id: "chicken-wrap-combo",
-    name: "Chicken Wrap Combo",
-    price: 299,
-    section: "combo",
-    isVeg: false,
-  },
-  {
-    id: "egg-breakfast-combo",
-    name: "Egg Breakfast Combo",
-    price: 229,
-    section: "combo",
-    isVeg: false,
+    section: "beverages",
   },
 ];
-
-
 
 
 // ============================================================
