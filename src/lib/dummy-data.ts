@@ -1,3 +1,5 @@
+// src/lib/dummy-data.ts
+
 // ============================================================
 // TRANSIT INDIA — DUMMY / DEMO DATA ENGINE
 // ============================================================
@@ -1121,7 +1123,7 @@ export const seaports: Station[] = [
   {
     name: "Panaji Ferry Terminal",
     code: "PNJ-F",
-    city: "Goa",
+    city: "Panaji",
     state: "Goa",
     locationType: "seaport",
   },
@@ -1196,7 +1198,7 @@ export const suggestions = [
   "Cheapest AC train from Delhi to Jaipur tomorrow morning",
   "Vande Bharat from Mumbai to Ahmedabad this Friday",
   "Overnight sleeper from Bengaluru to Chennai",
-  "Fastest train Delhi to Lucknow under ₹1500",
+  "Fastest train Delhi to Lucknow under ₹2500",
   "Tatkal 3A from Patna to Howrah for Monday",
   "Volvo bus from Delhi to Jaipur tonight",
   "Flight from Delhi to Mumbai tomorrow morning",
@@ -1331,120 +1333,137 @@ function explicitRoutes(
 // ONLY TRAIN STATIONS
 // ============================================================
 
-export const trainRoutes: RouteDef[] = explicitRoutes(trainStations, [
-  [0, 3],
-  [0, 8],
-  [0, 14],
-  [0, 18],
-  [0, 23],
-  [0, 27],
-  [0, 30],
-  [0, 37],
-  [0, 42],
-  [0, 49],
-  [0, 53],
-  [0, 57],
-  [3, 4],
-  [3, 8],
-  [8, 11],
-  [8, 14],
-  [11, 14],
-  [14, 15],
-  [18, 19],
-  [19, 20],
-  [23, 20],
-  [27, 25],
-  [49, 50],
-  [53, 54],
-  [54, 56],
-]);
+export const trainRoutes: RouteDef[] = explicitRoutes(
+  trainStations,
+  [
+    [0, 3],
+    [0, 8],
+    [0, 14],
+    [0, 18],
+    [0, 23],
+    [0, 27],
+    [0, 30],
+    [0, 37],
+    [0, 42],
+    [0, 49],
+    [0, 53],
+    [0, 57],
+    [3, 4],
+    [3, 8],
+    [8, 11],
+    [8, 14],
+    [11, 14],
+    [14, 15],
+    [18, 19],
+    [19, 20],
+    [23, 20],
+    [27, 25],
+    [49, 50],
+    [53, 54],
+    [54, 57],
+    [63, 64],
+  ],
+);
 
 // ============================================================
 // BUS ROUTES
 // ONLY BUS STANDS
 // ============================================================
 
-export const busRoutes: RouteDef[] = explicitRoutes(busStands, [
-  [0, 2],
-  [0, 6],
-  [0, 10],
-  [0, 13],
-  [0, 15],
-  [0, 16],
-  [0, 17],
-  [2, 3],
-  [2, 5],
-  [6, 7],
-  [8, 9],
-  [10, 11],
-  [11, 12],
-  [16, 17],
-  [17, 18],
-  [18, 19],
-]);
+export const busRoutes: RouteDef[] = explicitRoutes(
+  busStands,
+  [
+    [0, 2],
+    [0, 6],
+    [0, 10],
+    [0, 13],
+    [0, 15],
+    [0, 16],
+    [0, 17],
+    [2, 3],
+    [2, 5],
+    [6, 7],
+    [6, 8],
+    [8, 9],
+    [10, 11],
+    [11, 12],
+    [16, 17],
+    [17, 18],
+    [18, 19],
+  ],
+);
 
 // ============================================================
 // FLIGHT ROUTES
 // ONLY AIRPORTS
 // ============================================================
 
-export const flightRoutes: RouteDef[] = explicitRoutes(airports, [
-  [0, 3],
-  [0, 1],
-  [0, 5],
-  [0, 7],
-  [0, 9],
-  [0, 10],
-  [0, 11],
-  [0, 15],
-  [0, 17],
-  [0, 22],
-  [0, 24],
-  [0, 27],
-  [0, 30],
-  [3, 4],
-  [3, 5],
-  [22, 24],
-  [24, 27],
-]);
+export const flightRoutes: RouteDef[] = explicitRoutes(
+  airports,
+  [
+    [0, 3],
+    [0, 1],
+    [0, 5],
+    [0, 7],
+    [0, 9],
+    [0, 10],
+    [0, 11],
+    [0, 15],
+    [0, 17],
+    [0, 22],
+    [0, 24],
+    [0, 27],
+    [0, 30],
+    [3, 4],
+    [3, 5],
+    [22, 24],
+    [24, 27],
+  ],
+);
 
 // ============================================================
 // METRO ROUTES
 // ONLY METRO STATIONS
 // ============================================================
 
-export const metroRoutes: RouteDef[] = explicitRoutes(metroStations, [
-  [0, 1],
-  [0, 2],
-  [0, 3],
-  [0, 4],
-  [1, 5],
-  [5, 6],
-  [6, 7],
-  [8, 9],
-  [9, 10],
-  [11, 12],
-  [13, 14],
-  [15, 16],
-  [17, 18],
-  [19, 20],
-]);
+export const metroRoutes: RouteDef[] = explicitRoutes(
+  metroStations,
+  [
+    [0, 1],
+    [0, 2],
+    [0, 3],
+    [0, 4],
+    [1, 5],
+    [5, 6],
+    [6, 7],
+    [8, 9],
+    [9, 10],
+    [11, 12],
+    [13, 14],
+    [15, 16],
+    [17, 18],
+    [19, 20],
+  ],
+);
 
 // ============================================================
 // FERRY ROUTES
 // ONLY SEAPORTS / FERRY TERMINALS
 // ============================================================
 
-export const ferryRoutes: RouteDef[] = explicitRoutes(seaports, [
-  [0, 1],
-  [0, 2],
-  [1, 0],
-  [2, 0],
-  [3, 4],
-  [5, 6],
-  [8, 9],
-  [10, 11],
-]);
+export const ferryRoutes: RouteDef[] = explicitRoutes(
+  seaports,
+  [
+    [0, 1],
+    [0, 2],
+    [1, 0],
+    [2, 0],
+    [3, 4],
+    [5, 6],
+    [8, 9],
+    [10, 11],
+  ],
+);
 
 // ============================================================
 // MODE ROUTES
@@ -1736,8 +1755,7 @@ export const famousHotelDestinations: HotelDestination[] = [
 
 // ============================================================
 // HOTEL DATA
-// 4 HOTELS PER DESTINATION
-// PRICES INCREASED TO REALISTIC DEMO VALUES
+// AFFORDABLE → STANDARD → PREMIUM → LUXURY
 // ============================================================
 
 export type HotelProperty = {
@@ -1750,7 +1768,11 @@ export type HotelProperty = {
   priceFrom: number;
   previewImages: string[];
   amenities: string[];
-  category: "Budget" | "Standard" | "Luxury";
+  category:
+    | "Budget"
+    | "Standard"
+    | "Premium"
+    | "Luxury";
 };
 
 const hotelNamePrefixes = [
@@ -1762,16 +1784,19 @@ const hotelNamePrefixes = [
   "Sunrise",
   "Imperial",
   "Regal",
-  "The",
   "Urban",
+  "Central",
+  "Elite",
+  "Crown",
 ];
 
 const hotelNameSuffixByCategory: Record<
   HotelProperty["category"],
   string
 > = {
-  Budget: "Inn",
+  Budget: "Lodge",
   Standard: "Residency",
+  Premium: "Suites",
   Luxury: "Palace",
 };
 
@@ -1780,45 +1805,53 @@ export const allHotels: HotelProperty[] =
     const categories: HotelProperty["category"][] = [
       "Budget",
       "Standard",
+      "Premium",
       "Luxury",
-      "Standard",
     ];
 
     return categories.map((cat, ci) => {
       const idx = di * 4 + ci;
-      const h = hashString(`${dest.city}-${cat}-${idx}`);
+      const h = hashString(
+        `${dest.city}-${cat}-${idx}`,
+      );
 
-      /*
-       * Realistic demo hotel prices:
-       * Budget   : ₹1,800 – ₹3,500
-       * Standard : ₹3,500 – ₹6,500
-       * Luxury   : ₹8,500 – ₹15,000
-       */
-      const priceBase =
-        cat === "Budget"
-          ? 1800
-          : cat === "Standard"
-            ? 3800
-            : 8500;
+      let priceBase = 0;
+      let priceRange = 0;
 
-      const priceVariation =
-        cat === "Budget"
-          ? h % 1700
-          : cat === "Standard"
-            ? h % 2700
-            : h % 6500;
+      switch (cat) {
+        case "Budget":
+          priceBase = 799;
+          priceRange = 700;
+          break;
 
-      const price = priceBase + priceVariation;
+        case "Standard":
+          priceBase = 1499;
+          priceRange = 1500;
+          break;
+
+        case "Premium":
+          priceBase = 3299;
+          priceRange = 2500;
+          break;
+
+        case "Luxury":
+          priceBase = 6999;
+          priceRange = 5500;
+          break;
+      }
+
+      const price =
+        Math.round(
+          (priceBase + (h % priceRange)) / 100,
+        ) * 100;
 
       const prefix =
         hotelNamePrefixes[
           h % hotelNamePrefixes.length
         ];
 
-      const uniqueSuffix =
-        ci === 3
-          ? "Suites"
-          : hotelNameSuffixByCategory[cat];
+      const suffix =
+        hotelNameSuffixByCategory[cat];
 
       return {
         id: `hotel-${dest.city
@@ -1827,8 +1860,8 @@ export const allHotels: HotelProperty[] =
 
         name:
           cat === "Luxury"
-            ? `The ${prefix} ${uniqueSuffix}`
-            : `${prefix} ${uniqueSuffix}`,
+            ? `The ${prefix} ${suffix}`
+            : `${prefix} ${suffix}`,
 
         city: dest.city,
         state: dest.state,
@@ -1837,11 +1870,16 @@ export const allHotels: HotelProperty[] =
         rating:
           cat === "Luxury"
             ? 4.5 + (h % 5) / 10
-            : cat === "Standard"
-              ? 3.8 + (h % 6) / 10
-              : 3.2 + (h % 5) / 10,
+            : cat === "Premium"
+              ? 4.1 + (h % 6) / 10
+              : cat === "Standard"
+                ? 3.7 + (h % 6) / 10
+                : 3.2 + (h % 6) / 10,
 
-        priceFrom: price,
+        priceFrom: Math.max(
+          cat === "Budget" ? 799 : priceBase,
+          price,
+        ),
 
         previewImages: [
           "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80",
@@ -1860,21 +1898,29 @@ export const allHotels: HotelProperty[] =
                 "Gym",
                 "Airport Transfer",
               ]
-            : cat === "Standard"
+            : cat === "Premium"
               ? [
                   "Free WiFi",
+                  "Swimming Pool",
                   "Breakfast Included",
                   "AC",
                   "Room Service",
-                  "Parking",
                   "Gym",
                 ]
-              : [
-                  "Free WiFi",
-                  "AC",
-                  "Parking",
-                  "24x7 Reception",
-                ],
+              : cat === "Standard"
+                ? [
+                    "Free WiFi",
+                    "Breakfast Included",
+                    "AC",
+                    "Room Service",
+                    "Parking",
+                  ]
+                : [
+                    "Free WiFi",
+                    "AC",
+                    "Parking",
+                    "24x7 Reception",
+                  ],
 
         category: cat,
       };
@@ -1957,45 +2003,58 @@ export function demandIndex(
 
 // ============================================================
 // FARE FACTORS
-// MORE REALISTIC TRANSPORT PRICING
+// IMPORTANT: 1A / FIRST AC IS SIGNIFICANTLY MORE EXPENSIVE
 // ============================================================
 
 const classFareFactors: Record<
   string,
   number
 > = {
-  // TRAIN
-  GEN: 0.28,
-  SL: 0.62,
+  SL: 0.42,
+
   "3A": 1.05,
-  "2A": 1.45,
-  "1A": 2.35,
+
+  "2A": 1.55,
+
+  // First AC should not be unrealistically cheap.
+  "1A": 2.85,
+
   CC: 0.95,
-  EC: 1.35,
 
-  // BUS
-  SEATER: 0.72,
-  SLEEPER: 1.0,
-  VOLVO: 1.18,
+  EC: 1.2,
 
-  // FLIGHT
-  ECONOMY: 1,
-  PREMIUM_ECONOMY: 1.55,
-  BUSINESS: 2.75,
+  GEN: 0.2,
 
-  // METRO
-  TOKEN: 0.08,
+  SEATER: 0.55,
 
-  // FERRY
-  DECK: 0.42,
-  CABIN: 1.15,
+  SLEEPER: 0.9,
 
-  // HOTEL ROOMS
-  DELUXE: 1,
-  PREMIUM: 1.35,
-  EXECUTIVE: 1.7,
-  SUITE: 2.35,
-  FAMILY: 1.55,
+  VOLVO: 1.15,
+
+  ECONOMY: 1.15,
+
+  PREMIUM_ECONOMY: 1.75,
+
+  BUSINESS: 3.25,
+
+  TOKEN: 0.05,
+
+  DECK: 0.55,
+
+  CABIN: 1.45,
+
+  // Hotel room factors
+  NORMAL: 0.75,
+
+  DELUXE: 1.15,
+
+  PREMIUM: 1.45,
+
+  EXECUTIVE: 1.8,
+
+  SUITE: 2.5,
+
+  FAMILY: 2.0,
 };
 
 function classFareFactor(
@@ -2017,37 +2076,22 @@ export function computeFare(
   const factor =
     classFareFactor(code) * multiplier;
 
-  /*
-   * Base transport fare.
-   *
-   * Train examples:
-   * Delhi → Jaipur:
-   * SL  ≈ ₹350–₹500
-   * 3A  ≈ ₹650–₹900
-   * 2A  ≈ ₹900–₹1,200
-   * 1A  ≈ ₹1,400–₹2,000
-   *
-   * Long-distance trains scale naturally
-   * with distance.
-   */
   const raw =
-    km * 1.25 * factor +
-    220 * factor;
+    km * 1.1 * factor +
+    120 * factor;
 
   const withDemand =
-    raw * Math.max(0.9, demand);
+    raw * Math.max(0.8, demand);
 
   return Math.max(
-    60,
+    49,
     Math.round(withDemand / 10) * 10,
   );
 }
 
 // ============================================================
 // MEALS
-// MORE OPTIONS
-// ALL VEG = GREEN
-// ONLY NON-VEG = RED
+// EXPLICIT VEG / NON-VEG TYPE
 // ============================================================
 
 export type MealType =
@@ -2059,131 +2103,268 @@ export type Meal = {
   name: string;
   price: number;
   type: MealType;
-  color: "green" | "red";
+  isVeg: boolean;
 };
 
 export const meals: Meal[] = [
-  // VEG
+  // ----------------------------------------------------------
+  // VEG MEALS
+  // ----------------------------------------------------------
   {
     id: "veg-thali",
     name: "Veg Thali",
     price: 180,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "paneer-thali",
     name: "Paneer Thali",
     price: 220,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "south-indian-meal",
-    name: "South Indian Meal",
+    name: "South Indian Veg Meal",
     price: 170,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "masala-dosa",
     name: "Masala Dosa Combo",
     price: 140,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "veg-biryani",
     name: "Veg Biryani",
     price: 160,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "paneer-biryani",
     name: "Paneer Biryani",
     price: 210,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "chole-bhature",
     name: "Chole Bhature",
     price: 150,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "rajma-rice",
     name: "Rajma Rice",
     price: 140,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
-    id: "veg-sandwich",
+    id: "grilled-veg-sandwich",
     name: "Grilled Veg Sandwich",
     price: 120,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
     id: "veg-wrap",
     name: "Veg Wrap Combo",
     price: 135,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
-    id: "fruit-box",
+    id: "fresh-fruit-box",
     name: "Fresh Fruit Box",
     price: 110,
     type: "veg",
-    color: "green",
+    isVeg: true,
   },
   {
-    id: "snack-box",
+    id: "vegetarian-snack-box",
     name: "Vegetarian Snack Box",
     price: 90,
     type: "veg",
-    color: "green",
+    isVeg: true,
+  },
+  {
+    id: "aloo-paratha",
+    name: "Aloo Paratha Combo",
+    price: 130,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "paneer-tikka",
+    name: "Paneer Tikka Meal",
+    price: 240,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "veg-pulao",
+    name: "Veg Pulao",
+    price: 145,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "dal-makhani",
+    name: "Dal Makhani & Rice",
+    price: 175,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "veg-noodles",
+    name: "Veg Hakka Noodles",
+    price: 155,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "veg-manchurian",
+    name: "Veg Manchurian Combo",
+    price: 165,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "idli-sambar",
+    name: "Idli Sambar",
+    price: 115,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "curd-rice",
+    name: "Curd Rice",
+    price: 110,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "veg-poha",
+    name: "Vegetable Poha",
+    price: 95,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "veg-pasta",
+    name: "Creamy Veg Pasta",
+    price: 190,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "cheese-burger",
+    name: "Veg Cheese Burger",
+    price: 175,
+    type: "veg",
+    isVeg: true,
+  },
+  {
+    id: "veg-pizza",
+    name: "Farmhouse Veg Pizza",
+    price: 260,
+    type: "veg",
+    isVeg: true,
   },
 
-  // NON-VEG
+  // ----------------------------------------------------------
+  // NON-VEG MEALS
+  // ----------------------------------------------------------
   {
-    id: "nonveg-thali",
-    name: "Non-Veg Thali",
-    price: 250,
+    id: "chicken-thali",
+    name: "Chicken Thali",
+    price: 260,
     type: "nonveg",
-    color: "red",
+    isVeg: false,
+  },
+  {
+    id: "mutton-thali",
+    name: "Mutton Thali",
+    price: 320,
+    type: "nonveg",
+    isVeg: false,
   },
   {
     id: "chicken-biryani",
     name: "Chicken Biryani",
-    price: 280,
+    price: 250,
     type: "nonveg",
-    color: "red",
+    isVeg: false,
   },
   {
-    id: "chicken-meal",
-    name: "Chicken Meal",
-    price: 290,
+    id: "mutton-biryani",
+    name: "Mutton Biryani",
+    price: 320,
     type: "nonveg",
-    color: "red",
+    isVeg: false,
+  },
+  {
+    id: "egg-curry-rice",
+    name: "Egg Curry Rice",
+    price: 190,
+    type: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "chicken-curry-rice",
+    name: "Chicken Curry Rice",
+    price: 240,
+    type: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "fish-curry-rice",
+    name: "Fish Curry Rice",
+    price: 280,
+    type: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "chicken-sandwich",
+    name: "Chicken Sandwich",
+    price: 180,
+    type: "nonveg",
+    isVeg: false,
   },
   {
     id: "chicken-wrap",
     name: "Chicken Wrap Combo",
     price: 210,
     type: "nonveg",
-    color: "red",
+    isVeg: false,
   },
   {
-    id: "egg-meal",
-    name: "Egg Meal",
-    price: 190,
+    id: "chicken-noodles",
+    name: "Chicken Hakka Noodles",
+    price: 220,
     type: "nonveg",
-    color: "red",
+    isVeg: false,
+  },
+  {
+    id: "chicken-manchurian",
+    name: "Chicken Manchurian Combo",
+    price: 240,
+    type: "nonveg",
+    isVeg: false,
+  },
+  {
+    id: "egg-roll",
+    name: "Egg Roll Combo",
+    price: 150,
+    type: "nonveg",
+    isVeg: false,
   },
 ];
 
@@ -2204,6 +2385,7 @@ export function seatState(
   tick: number,
   opts?: {
     racWl?: boolean;
+    classCode?: string;
   },
 ): {
   tone: SeatTone;
@@ -2219,9 +2401,14 @@ export function seatState(
       (h % (availableBase + 3)),
   );
 
+  // First AC should never show RAC/WL.
+  const allowRacWl =
+    opts?.racWl === true &&
+    opts?.classCode !== "1A";
+
   if (avail <= 0) {
     if (
-      opts?.racWl &&
+      allowRacWl &&
       h % 5 !== 0
     ) {
       const isRac =
@@ -2502,10 +2689,6 @@ const modeProfiles: Record<
         code: "SLEEPER",
         label: "AC Sleeper",
       },
-      {
-        code: "VOLVO",
-        label: "Volvo Premium",
-      },
     ],
 
     tagsPool: [
@@ -2692,7 +2875,8 @@ function buildTransportSegment(
           );
 
         const available =
-          5 + (availSeed % 60);
+          5 +
+          (availSeed % 60);
 
         let fare =
           computeFare(
@@ -2701,90 +2885,29 @@ function buildTransportSegment(
             demand,
           );
 
-        /*
-         * Premium transport pricing.
-         * Keeps fares realistic instead of
-         * making every mode use the exact
-         * same pricing curve.
-         */
-        if (mode === "train") {
-          const trainMinimums: Record<
-            string,
-            number
-          > = {
-            SL: 250,
-            "3A": 550,
-            "2A": 850,
-            "1A": 1400,
-            CC: 450,
-          };
-
+        // Extra realism for long-distance
+        // First AC fares.
+        if (
+          mode === "train" &&
+          cls.code === "1A"
+        ) {
           fare = Math.max(
-            trainMinimums[cls.code] ??
-              250,
             fare,
+            Math.round(
+              (km * 2.7 + 650) / 50,
+            ) * 50,
           );
         }
 
-        if (mode === "flight") {
-          const flightMinimums: Record<
-            string,
-            number
-          > = {
-            ECONOMY: 2800,
-            PREMIUM_ECONOMY: 5200,
-            BUSINESS: 9500,
-          };
-
+        if (
+          mode === "train" &&
+          cls.code === "2A"
+        ) {
           fare = Math.max(
-            flightMinimums[cls.code] ??
-              2800,
             fare,
-          );
-        }
-
-        if (mode === "bus") {
-          const busMinimums: Record<
-            string,
-            number
-          > = {
-            SEATER: 450,
-            SLEEPER: 750,
-            VOLVO: 950,
-          };
-
-          fare = Math.max(
-            busMinimums[cls.code] ??
-              450,
-            fare,
-          );
-        }
-
-        if (mode === "ferry") {
-          const ferryMinimums: Record<
-            string,
-            number
-          > = {
-            DECK: 150,
-            CABIN: 450,
-          };
-
-          fare = Math.max(
-            ferryMinimums[cls.code] ??
-              150,
-            fare,
-          );
-        }
-
-        if (mode === "metro") {
-          fare = Math.max(
-            10,
-            Math.min(
-              80,
-              Math.round(
-                (km * 2.2 + 10) / 5,
-              ) * 5,
-            ),
+            Math.round(
+              (km * 1.55 + 400) / 50,
+            ) * 50,
           );
         }
 
@@ -2862,24 +2985,44 @@ function buildTransportSegment(
 
 // ============================================================
 // HOTEL ROOM TYPES
+// AFFORDABLE → EXPENSIVE
 // ============================================================
 
-const hotelRoomTypes: ClassDef[] = [
+const hotelRoomTypes: {
+  code: string;
+  label: string;
+  multiplier: number;
+  minimumFare: number;
+}[] = [
+  {
+    code: "NORMAL",
+    label: "Normal Room",
+    multiplier: 0.55,
+    minimumFare: 799,
+  },
   {
     code: "DELUXE",
     label: "Deluxe Room",
+    multiplier: 1.0,
+    minimumFare: 1399,
   },
   {
     code: "PREMIUM",
     label: "Premium Room",
+    multiplier: 1.35,
+    minimumFare: 2199,
   },
   {
     code: "EXECUTIVE",
     label: "Executive Room",
+    multiplier: 1.7,
+    minimumFare: 3499,
   },
   {
     code: "SUITE",
     label: "Family Suite",
+    multiplier: 2.35,
+    minimumFare: 5499,
   },
 ];
 
@@ -2912,52 +3055,55 @@ function buildHotelSegment(
         )
     ];
 
-  /*
-   * Hotel room prices are based on
-   * the actual generated hotel's
-   * priceFrom value.
-   *
-   * This prevents a luxury hotel
-   * from showing a ₹300–₹800 room fare.
-   */
-  const roomMultipliers: Record<
-    string,
-    number
-  > = {
-    DELUXE: 1,
-    PREMIUM: 1.3,
-    EXECUTIVE: 1.65,
-    SUITE: 2.25,
-  };
-
   const options =
     hotelRoomTypes.map(
-      (rt) => {
+      (room) => {
         const availSeed =
           hashString(
-            `${seed}-${rt.code}`,
+            `${seed}-${room.code}`,
           );
 
         const available =
-          1 + (availSeed % 12);
+          1 +
+          (availSeed % 12);
 
-        const roomVariation =
-          (availSeed % 700) - 250;
+        let fare: number;
 
-        const baseRoomFare =
-          hotel.priceFrom *
-          (roomMultipliers[
-            rt.code
-          ] ?? 1);
+        if (
+          room.code ===
+          "NORMAL"
+        ) {
+          // Explicitly affordable,
+          // including sub-₹1000 options.
+          fare =
+            799 +
+            (availSeed % 3) *
+              50;
+        } else {
+          fare =
+            Math.round(
+              (hotel.priceFrom *
+                room.multiplier) /
+                100,
+            ) * 100;
 
-        const fare = Math.max(
-          1200,
-          Math.round(
-            (baseRoomFare +
-              roomVariation) /
-              100,
-          ) * 100,
-        );
+          fare = Math.max(
+            fare,
+            room.minimumFare,
+          );
+        }
+
+        // Keep premium/luxury rooms
+        // appropriately expensive.
+        if (
+          room.code ===
+          "SUITE"
+        ) {
+          fare = Math.max(
+            fare,
+            5499,
+          );
+        }
 
         const probability =
           Math.max(
@@ -2967,8 +3113,8 @@ function buildHotelSegment(
           );
 
         return {
-          code: rt.code,
-          label: rt.label,
+          code: room.code,
+          label: room.label,
           fare,
           available,
           probability,
@@ -2989,14 +3135,18 @@ function buildHotelSegment(
         1000 + (h % 8999)
       }`,
 
-    operator: hotel.name,
+    operator:
+      hotel.name,
 
+    // --------------------------------------------------------
     // NO FROM
     // NO FROM CODE
     // NO TO
     // NO TO CODE
+    // --------------------------------------------------------
 
     depart: "2:00 PM",
+
     arrive: "11:00 AM",
 
     durationMins: 1260,
@@ -3233,7 +3383,9 @@ export function findRoute(
   fromCode: string,
   toCode: string,
 ): RouteDef | undefined {
-  return modeRoutes[mode].find(
+  return modeRoutes[
+    mode
+  ].find(
     (route) =>
       route.from.code ===
         fromCode &&
@@ -3266,7 +3418,9 @@ export function destinationsFrom(
   >,
   fromCode: string,
 ): Station[] {
-  return modeRoutes[mode]
+  return modeRoutes[
+    mode
+  ]
     .filter(
       (route) =>
         route.from.code ===
@@ -3289,7 +3443,9 @@ export function originsTo(
   >,
   toCode: string,
 ): Station[] {
-  return modeRoutes[mode]
+  return modeRoutes[
+    mode
+  ]
     .filter(
       (route) =>
         route.to.code ===
