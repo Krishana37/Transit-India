@@ -1,26 +1,102 @@
-import { Minus, Plus, Search, UtensilsCrossed } from "lucide-react";
+import {
+  Minus,
+  Plus,
+  Search,
+  UtensilsCrossed,
+} from "lucide-react";
 import { useMemo, useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
+
 import {
   meals,
   mealCategories,
   type MealCategory,
 } from "@/lib/inventory";
+
 import { cn } from "@/lib/utils";
 
-/** Passengers may order at most 5 meals each. */
+/**
+ * Passengers may order at most 5 meals each.
+ */
 export const MEALS_PER_PASSENGER = 5;
 
-type DietaryFilter = "All" | "Vegetarian" | "Non Vegetarian";
+type DietaryFilter =
+  | "All"
+  | "Vegetarian"
+  | "Non Vegetarian";
 
 type MealPickerProps = {
   quantities: Record<string, number>;
   onChange: (id: string, qty: number) => void;
   passengerCount?: number;
 };
+
+/**
+ * ------------------------------------------------------------
+ * NON-VEGETARIAN KEYWORDS
+ * ------------------------------------------------------------
+ *
+ * This is intentionally used as a safety check because the UI
+ * should NEVER show a vegetarian-looking item as non-vegetarian
+ * just because the dummy-data flag is incorrect.
+ *
+ * Everything else is treated as vegetarian unless the meal
+ * explicitly contains one of these non-veg terms.
+ */
+const NON_VEG_KEYWORDS = [
+  "chicken",
+  "mutton",
+  "fish",
+  "prawn",
+  "prawns",
+  "shrimp",
+  "seafood",
+  "egg",
+  "eggs",
+  "omelette",
+  "omelet",
+  "non veg",
+  "non-veg",
+  "nonveg",
+  "meat",
+  "lamb",
+  "keema",
+  "kebab",
+  "kabab",
+  "tandoori chicken",
+  "chicken tikka",
+  "fish curry",
+];
+
+/**
+ * Determines the dietary type from the meal data + meal name.
+ *
+ * Name-based detection prevents an incorrect dummy-data `veg`
+ * flag from turning vegetarian meals red.
+ */
+function isMealVegetarian(meal: {
+  name: string;
+  veg?: boolean;
+}): boolean {
+  const name = meal.name
+    .trim()
+    .toLowerCase();
+
+  const explicitlyNonVeg =
+    NON_VEG_KEYWORDS.some((keyword) =>
+      name.includes(keyword),
+    );
+
+  if (explicitlyNonVeg) {
+    return false;
+  }
+
+  return true;
+}
 
 export function MealPicker({
   quantities,
@@ -30,19 +106,30 @@ export function MealPicker({
   const { formatCurrency } = useI18n();
 
   const [query, setQuery] = useState("");
+
   const [category, setCategory] =
     useState<MealCategory | "All">("All");
 
   const [diet, setDiet] =
     useState<DietaryFilter>("All");
 
-  const [limitHit, setLimitHit] = useState(false);
+  const [limitHit, setLimitHit] =
+    useState(false);
 
+  /**
+   * ----------------------------------------------------------
+   * FILTERED MEALS
+   * ----------------------------------------------------------
+   */
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query
+      .trim()
+      .toLowerCase();
 
     return meals.filter((meal) => {
-      /* Category filter */
+      /**
+       * Category filter
+       */
       if (
         category !== "All" &&
         meal.category !== category
@@ -50,22 +137,38 @@ export function MealPicker({
         return false;
       }
 
-      /* Vegetarian / Non-vegetarian filter */
+      /**
+       * IMPORTANT:
+       *
+       * Do NOT trust meal.veg directly here.
+       * Use the same classification used by the UI.
+       */
+      const isVeg =
+        isMealVegetarian(meal);
+
+      /**
+       * Vegetarian filter
+       */
       if (
         diet === "Vegetarian" &&
-        !meal.veg
+        !isVeg
       ) {
         return false;
       }
 
+      /**
+       * Non-vegetarian filter
+       */
       if (
         diet === "Non Vegetarian" &&
-        meal.veg
+        isVeg
       ) {
         return false;
       }
 
-      /* Search */
+      /**
+       * Search filter
+       */
       if (
         q &&
         !meal.name
@@ -77,8 +180,17 @@ export function MealPicker({
 
       return true;
     });
-  }, [query, category, diet]);
+  }, [
+    query,
+    category,
+    diet,
+  ]);
 
+  /**
+   * ----------------------------------------------------------
+   * GROUP MEALS BY CATEGORY
+   * ----------------------------------------------------------
+   */
   const grouped = useMemo(() => {
     const categories =
       category === "All"
@@ -89,52 +201,80 @@ export function MealPicker({
       .map((cat) => ({
         cat,
         items: filtered.filter(
-          (meal) => meal.category === cat,
+          (meal) =>
+            meal.category === cat,
         ),
       }))
       .filter(
-        (group) => group.items.length > 0,
+        (group) =>
+          group.items.length > 0,
       );
-  }, [filtered, category]);
+  }, [
+    filtered,
+    category,
+  ]);
 
+  /**
+   * ----------------------------------------------------------
+   * SUBTOTAL
+   * ----------------------------------------------------------
+   */
   const subtotal = Object.entries(
     quantities,
-  ).reduce((sum, [id, qty]) => {
-    const meal = meals.find(
-      (item) => item.id === id,
-    );
+  ).reduce(
+    (sum, [id, qty]) => {
+      const meal = meals.find(
+        (item) => item.id === id,
+      );
 
-    return (
-      sum +
-      (meal
-        ? meal.price * qty
-        : 0)
-    );
-  }, 0);
+      return (
+        sum +
+        (meal
+          ? meal.price * qty
+          : 0)
+      );
+    },
+    0,
+  );
 
+  /**
+   * ----------------------------------------------------------
+   * PASSENGER / ORDER LIMIT
+   * ----------------------------------------------------------
+   */
   const pax = Math.max(
     1,
     passengerCount,
   );
 
   const maxMeals =
-    pax * MEALS_PER_PASSENGER;
+    pax *
+    MEALS_PER_PASSENGER;
 
-  const ordered = Object.values(
-    quantities,
-  ).reduce(
-    (total, qty) => total + qty,
-    0,
-  );
+  const ordered =
+    Object.values(
+      quantities,
+    ).reduce(
+      (total, qty) =>
+        total + qty,
+      0,
+    );
 
   const atLimit =
     ordered >= maxMeals;
 
+  /**
+   * ----------------------------------------------------------
+   * INCREASE QUANTITY
+   * ----------------------------------------------------------
+   */
   const increase = (
     id: string,
     qty: number,
   ) => {
-    if (ordered >= maxMeals) {
+    if (
+      ordered >= maxMeals
+    ) {
       setLimitHit(true);
       return;
     }
@@ -147,6 +287,11 @@ export function MealPicker({
     );
   };
 
+  /**
+   * ----------------------------------------------------------
+   * RESET FILTERS
+   * ----------------------------------------------------------
+   */
   const resetFilters = () => {
     setCategory("All");
     setDiet("All");
@@ -155,7 +300,10 @@ export function MealPicker({
 
   return (
     <div className="space-y-4">
-      {/* Search */}
+
+      {/* =====================================================
+          SEARCH
+      ====================================================== */}
       <div className="relative">
         <Search
           className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -165,14 +313,18 @@ export function MealPicker({
         <Input
           value={query}
           onChange={(event) =>
-            setQuery(event.target.value)
+            setQuery(
+              event.target.value,
+            )
           }
           placeholder="Search meals..."
           className="h-10 rounded-full pl-9"
         />
       </div>
 
-      {/* Dietary filter */}
+      {/* =====================================================
+          DIETARY FILTER
+      ====================================================== */}
       <div className="flex flex-wrap gap-1.5">
         {(
           [
@@ -189,6 +341,7 @@ export function MealPicker({
             }
             className={cn(
               "rounded-full border px-3 py-1 text-[12px] transition",
+
               diet === filter
                 ? filter ===
                   "Vegetarian"
@@ -208,7 +361,9 @@ export function MealPicker({
         ))}
       </div>
 
-      {/* Meal categories */}
+      {/* =====================================================
+          MEAL CATEGORIES
+      ====================================================== */}
       <div className="flex flex-wrap gap-1.5">
         <button
           type="button"
@@ -217,6 +372,7 @@ export function MealPicker({
           }
           className={cn(
             "rounded-full border px-3 py-1 text-[12px] transition",
+
             category === "All"
               ? "border-primary bg-[color:var(--brand-soft)] text-primary"
               : "border-border text-muted-foreground hover:border-primary/40",
@@ -235,6 +391,7 @@ export function MealPicker({
               }
               className={cn(
                 "rounded-full border px-3 py-1 text-[12px] transition",
+
                 category === cat
                   ? "border-primary bg-[color:var(--brand-soft)] text-primary"
                   : "border-border text-muted-foreground hover:border-primary/40",
@@ -246,35 +403,48 @@ export function MealPicker({
         )}
       </div>
 
-      {/* Selection information */}
+      {/* =====================================================
+          SELECTION INFORMATION
+      ====================================================== */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/60 px-3 py-2">
         <span className="text-[12px] text-muted-foreground">
           Up to{" "}
           {MEALS_PER_PASSENGER}{" "}
           meals per passenger ·{" "}
           {pax} passenger
-          {pax > 1 ? "s" : ""}
+          {pax > 1
+            ? "s"
+            : ""}
         </span>
 
         <Badge
           variant="outline"
           className="rounded-full text-[10px]"
         >
-          {ordered} / {maxMeals} selected
+          {ordered} /{" "}
+          {maxMeals} selected
         </Badge>
       </div>
 
-      {/* Limit message */}
+      {/* =====================================================
+          LIMIT MESSAGE
+      ====================================================== */}
       {limitHit && (
         <p className="text-[12px] text-destructive">
-          Meal limit reached — maximum{" "}
-          {maxMeals} meals can be ordered
-          for {pax} passenger
-          {pax > 1 ? "s" : ""}.
+          Meal limit reached —
+          maximum{" "}
+          {maxMeals} meals can
+          be ordered for{" "}
+          {pax} passenger
+          {pax > 1
+            ? "s"
+            : ""}.
         </p>
       )}
 
-      {/* Subtotal */}
+      {/* =====================================================
+          SUBTOTAL
+      ====================================================== */}
       {subtotal > 0 && (
         <div className="flex items-center justify-between rounded-xl bg-muted px-3 py-2">
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -282,13 +452,19 @@ export function MealPicker({
           </span>
 
           <span className="text-sm font-semibold">
-            {formatCurrency(subtotal)}
+            {formatCurrency(
+              subtotal,
+            )}
           </span>
         </div>
       )}
 
-      {/* Meal list */}
+      {/* =====================================================
+          MEAL LIST
+      ====================================================== */}
       <div className="space-y-5">
+
+        {/* No results */}
         {grouped.length === 0 && (
           <div className="rounded-xl border border-dashed border-border p-5 text-center">
             <p className="text-[13px] text-muted-foreground">
@@ -298,7 +474,9 @@ export function MealPicker({
 
             <button
               type="button"
-              onClick={resetFilters}
+              onClick={
+                resetFilters
+              }
               className="mt-2 text-[12px] font-medium text-primary hover:underline"
             >
               Clear filters
@@ -306,14 +484,20 @@ export function MealPicker({
           </div>
         )}
 
+        {/* Groups */}
         {grouped.map(
-          ({ cat, items }) => (
+          ({
+            cat,
+            items,
+          }) => (
             <div key={cat}>
+
               <div className="mb-2 text-[11px] uppercase tracking-widest text-muted-foreground">
                 {cat}
               </div>
 
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+
                 {items.map(
                   (meal) => {
                     const qty =
@@ -321,69 +505,118 @@ export function MealPicker({
                         meal.id
                       ] ?? 0;
 
+                    /**
+                     * IMPORTANT:
+                     *
+                     * This is the ONLY classification
+                     * used by the visual UI.
+                     */
                     const isVeg =
-                      meal.veg;
+                      isMealVegetarian(
+                        meal,
+                      );
+
+                    const dietaryLabel =
+                      isVeg
+                        ? "Vegetarian"
+                        : "Non-Vegetarian";
 
                     return (
                       <Card
                         key={meal.id}
                         className={cn(
                           "flex items-center justify-between gap-2 rounded-2xl p-3 transition",
+
                           qty > 0 &&
                             isVeg &&
                             "border-emerald-500/50 bg-emerald-50/60 dark:bg-emerald-950/20",
+
                           qty > 0 &&
                             !isVeg &&
                             "border-red-500/50 bg-red-50/60 dark:bg-red-950/20",
                         )}
                       >
+
+                        {/* =================================
+                            MEAL INFORMATION
+                        ================================== */}
                         <div className="flex min-w-0 items-center gap-2">
+
                           {/* Meal icon */}
                           <span
                             className={cn(
                               "relative grid h-9 w-9 shrink-0 place-items-center rounded-xl",
+
                               isVeg
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
                                 : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400",
                             )}
                           >
-                            <UtensilsCrossed className="h-4 w-4" />
+                            <UtensilsCrossed
+                              className="h-4 w-4"
+                            />
 
-                            {/* ONLY VEG = GREEN, ONLY NON-VEG = RED */}
+                            {/* =================================
+                                DIETARY DOT
+                            ================================== */}
                             <span
                               className={cn(
                                 "absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-background",
+
                                 isVeg
                                   ? "bg-emerald-500"
                                   : "bg-red-500",
                               )}
                               aria-label={
-                                isVeg
-                                  ? "Vegetarian"
-                                  : "Non-vegetarian"
+                                dietaryLabel
                               }
                             />
                           </span>
 
+                          {/* Meal text */}
                           <div className="min-w-0">
+
                             <div className="truncate text-sm font-medium">
                               {meal.name}
                             </div>
 
-                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                              <span>
+                            {/* =================================
+                                PRICE + DIETARY LABEL
+                            ================================== */}
+                            <div className="flex flex-wrap items-center gap-1 text-[11px]">
+
+                              <span className="text-muted-foreground">
                                 {formatCurrency(
                                   meal.price,
                                 )}
                               </span>
 
+                              <span className="text-muted-foreground">
+                                ·
+                              </span>
+
+                              <span
+                                className={cn(
+                                  "font-medium",
+
+                                  isVeg
+                                    ? "text-emerald-600 dark:text-emerald-400"
+                                    : "text-red-600 dark:text-red-400",
+                                )}
+                              >
+                                {dietaryLabel}
+                              </span>
+
                               {meal.note && (
                                 <>
-                                  <span>
+                                  <span className="text-muted-foreground">
                                     ·
                                   </span>
-                                  <span>
-                                    {meal.note}
+
+                                  <span className="text-muted-foreground">
+                                    {
+                                      meal.note
+                                    }
                                   </span>
                                 </>
                               )}
@@ -391,8 +624,12 @@ export function MealPicker({
                           </div>
                         </div>
 
-                        {/* Quantity */}
+                        {/* =================================
+                            QUANTITY CONTROLS
+                        ================================== */}
                         <div className="flex items-center gap-1.5">
+
+                          {/* Minus */}
                           <button
                             type="button"
                             aria-label={`Decrease ${meal.name}`}
@@ -410,10 +647,12 @@ export function MealPicker({
                             <Minus className="h-3.5 w-3.5" />
                           </button>
 
+                          {/* Quantity */}
                           <span className="w-4 text-center text-sm font-medium">
                             {qty}
                           </span>
 
+                          {/* Plus */}
                           <button
                             type="button"
                             aria-label={`Increase ${meal.name}`}
@@ -430,11 +669,13 @@ export function MealPicker({
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
+
                         </div>
                       </Card>
                     );
                   },
                 )}
+
               </div>
             </div>
           ),
