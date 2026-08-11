@@ -1,18 +1,3 @@
-// src/lib/dummy-data.ts
-
-// ============================================================
-// TRANSIT INDIA — DUMMY / DEMO DATA ENGINE
-// ============================================================
-
-export type LocationType =
-  | "train_station"
-  | "bus_stand"
-  | "airport"
-  | "metro_station"
-  | "seaport"
-  | "hotel_location"
-  | "cab_pickup";
-
 export type Station = {
   name: string;
   code: string;
