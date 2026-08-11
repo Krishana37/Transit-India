@@ -1,5 +1,3 @@
-// src/lib/dummy-data.ts
-
 // ============================================================
 // TRANSIT INDIA — DUMMY / DEMO DATA ENGINE
 // ============================================================
@@ -30,115 +28,517 @@ export type Station = {
 
 export const trainStations: Station[] = [
   // DELHI
-  { name: "New Delhi Railway Station", code: "NDLS", city: "Delhi", state: "Delhi", locationType: "train_station" },
-  { name: "Hazrat Nizamuddin Railway Station", code: "NZM", city: "Delhi", state: "Delhi", locationType: "train_station" },
-  { name: "Anand Vihar Terminal", code: "ANVT", city: "Delhi", state: "Delhi", locationType: "train_station" },
+  {
+    name: "New Delhi Railway Station",
+    code: "NDLS",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "train_station",
+  },
+  {
+    name: "Hazrat Nizamuddin Railway Station",
+    code: "NZM",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "train_station",
+  },
+  {
+    name: "Anand Vihar Terminal",
+    code: "ANVT",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "train_station",
+  },
 
   // RAJASTHAN
-  { name: "Jaipur Junction", code: "JP", city: "Jaipur", state: "Rajasthan", locationType: "train_station" },
-  { name: "Jodhpur Junction", code: "JU", city: "Jodhpur", state: "Rajasthan", locationType: "train_station" },
-  { name: "Ajmer Junction", code: "AII", city: "Ajmer", state: "Rajasthan", locationType: "train_station" },
-  { name: "Kota Junction", code: "KOTA", city: "Kota", state: "Rajasthan", locationType: "train_station" },
-  { name: "Udaipur City Railway Station", code: "UDZ", city: "Udaipur", state: "Rajasthan", locationType: "train_station" },
+  {
+    name: "Jaipur Junction",
+    code: "JP",
+    city: "Jaipur",
+    state: "Rajasthan",
+    locationType: "train_station",
+  },
+  {
+    name: "Jodhpur Junction",
+    code: "JU",
+    city: "Jodhpur",
+    state: "Rajasthan",
+    locationType: "train_station",
+  },
+  {
+    name: "Ajmer Junction",
+    code: "AII",
+    city: "Ajmer",
+    state: "Rajasthan",
+    locationType: "train_station",
+  },
+  {
+    name: "Kota Junction",
+    code: "KOTA",
+    city: "Kota",
+    state: "Rajasthan",
+    locationType: "train_station",
+  },
+  {
+    name: "Udaipur City Railway Station",
+    code: "UDZ",
+    city: "Udaipur",
+    state: "Rajasthan",
+    locationType: "train_station",
+  },
 
   // MAHARASHTRA
-  { name: "Mumbai Central", code: "BCT", city: "Mumbai", state: "Maharashtra", locationType: "train_station" },
-  { name: "Chhatrapati Shivaji Maharaj Terminus", code: "CSMT", city: "Mumbai", state: "Maharashtra", locationType: "train_station" },
-  { name: "Lokmanya Tilak Terminus", code: "LTT", city: "Mumbai", state: "Maharashtra", locationType: "train_station" },
-  { name: "Pune Junction", code: "PUNE", city: "Pune", state: "Maharashtra", locationType: "train_station" },
-  { name: "Nagpur Junction", code: "NGP", city: "Nagpur", state: "Maharashtra", locationType: "train_station" },
-  { name: "Nashik Road Railway Station", code: "NK", city: "Nashik", state: "Maharashtra", locationType: "train_station" },
+  {
+    name: "Mumbai Central",
+    code: "BCT",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "train_station",
+  },
+  {
+    name: "Chhatrapati Shivaji Maharaj Terminus",
+    code: "CSMT",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "train_station",
+  },
+  {
+    name: "Lokmanya Tilak Terminus",
+    code: "LTT",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "train_station",
+  },
+  {
+    name: "Pune Junction",
+    code: "PUNE",
+    city: "Pune",
+    state: "Maharashtra",
+    locationType: "train_station",
+  },
+  {
+    name: "Nagpur Junction",
+    code: "NGP",
+    city: "Nagpur",
+    state: "Maharashtra",
+    locationType: "train_station",
+  },
+  {
+    name: "Nashik Road Railway Station",
+    code: "NK",
+    city: "Nashik",
+    state: "Maharashtra",
+    locationType: "train_station",
+  },
 
   // GUJARAT
-  { name: "Ahmedabad Junction", code: "ADI", city: "Ahmedabad", state: "Gujarat", locationType: "train_station" },
-  { name: "Vadodara Junction", code: "BRC", city: "Vadodara", state: "Gujarat", locationType: "train_station" },
-  { name: "Surat Railway Station", code: "ST", city: "Surat", state: "Gujarat", locationType: "train_station" },
-  { name: "Rajkot Junction", code: "RJT", city: "Rajkot", state: "Gujarat", locationType: "train_station" },
+  {
+    name: "Ahmedabad Junction",
+    code: "ADI",
+    city: "Ahmedabad",
+    state: "Gujarat",
+    locationType: "train_station",
+  },
+  {
+    name: "Vadodara Junction",
+    code: "BRC",
+    city: "Vadodara",
+    state: "Gujarat",
+    locationType: "train_station",
+  },
+  {
+    name: "Surat Railway Station",
+    code: "ST",
+    city: "Surat",
+    state: "Gujarat",
+    locationType: "train_station",
+  },
+  {
+    name: "Rajkot Junction",
+    code: "RJT",
+    city: "Rajkot",
+    state: "Gujarat",
+    locationType: "train_station",
+  },
 
   // UTTAR PRADESH
-  { name: "Lucknow Charbagh Railway Station", code: "LKO", city: "Lucknow", state: "Uttar Pradesh", locationType: "train_station" },
-  { name: "Kanpur Central", code: "CNB", city: "Kanpur", state: "Uttar Pradesh", locationType: "train_station" },
-  { name: "Varanasi Junction", code: "BSB", city: "Varanasi", state: "Uttar Pradesh", locationType: "train_station" },
-  { name: "Prayagraj Junction", code: "PRYJ", city: "Prayagraj", state: "Uttar Pradesh", locationType: "train_station" },
-  { name: "Agra Cantt", code: "AGC", city: "Agra", state: "Uttar Pradesh", locationType: "train_station" },
-  { name: "Gorakhpur Junction", code: "GKP", city: "Gorakhpur", state: "Uttar Pradesh", locationType: "train_station" },
+  {
+    name: "Lucknow Charbagh Railway Station",
+    code: "LKO",
+    city: "Lucknow",
+    state: "Uttar Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Kanpur Central",
+    code: "CNB",
+    city: "Kanpur",
+    state: "Uttar Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Varanasi Junction",
+    code: "BSB",
+    city: "Varanasi",
+    state: "Uttar Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Prayagraj Junction",
+    code: "PRYJ",
+    city: "Prayagraj",
+    state: "Uttar Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Agra Cantt",
+    code: "AGC",
+    city: "Agra",
+    state: "Uttar Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Gorakhpur Junction",
+    code: "GKP",
+    city: "Gorakhpur",
+    state: "Uttar Pradesh",
+    locationType: "train_station",
+  },
 
   // WEST BENGAL
-  { name: "Howrah Junction", code: "HWH", city: "Kolkata", state: "West Bengal", locationType: "train_station" },
-  { name: "Sealdah Railway Station", code: "SDAH", city: "Kolkata", state: "West Bengal", locationType: "train_station" },
-  { name: "Durgapur Railway Station", code: "DGR", city: "Durgapur", state: "West Bengal", locationType: "train_station" },
+  {
+    name: "Howrah Junction",
+    code: "HWH",
+    city: "Kolkata",
+    state: "West Bengal",
+    locationType: "train_station",
+  },
+  {
+    name: "Sealdah Railway Station",
+    code: "SDAH",
+    city: "Kolkata",
+    state: "West Bengal",
+    locationType: "train_station",
+  },
+  {
+    name: "Durgapur Railway Station",
+    code: "DGR",
+    city: "Durgapur",
+    state: "West Bengal",
+    locationType: "train_station",
+  },
 
   // BIHAR
-  { name: "Patna Junction", code: "PNBE", city: "Patna", state: "Bihar", locationType: "train_station" },
-  { name: "Gaya Junction", code: "GAYA", city: "Gaya", state: "Bihar", locationType: "train_station" },
-  { name: "Muzaffarpur Junction", code: "MFP", city: "Muzaffarpur", state: "Bihar", locationType: "train_station" },
+  {
+    name: "Patna Junction",
+    code: "PNBE",
+    city: "Patna",
+    state: "Bihar",
+    locationType: "train_station",
+  },
+  {
+    name: "Gaya Junction",
+    code: "GAYA",
+    city: "Gaya",
+    state: "Bihar",
+    locationType: "train_station",
+  },
+  {
+    name: "Muzaffarpur Junction",
+    code: "MFP",
+    city: "Muzaffarpur",
+    state: "Bihar",
+    locationType: "train_station",
+  },
 
   // JHARKHAND
-  { name: "Ranchi Junction", code: "RNC", city: "Ranchi", state: "Jharkhand", locationType: "train_station" },
-  { name: "Dhanbad Junction", code: "DHN", city: "Dhanbad", state: "Jharkhand", locationType: "train_station" },
+  {
+    name: "Ranchi Junction",
+    code: "RNC",
+    city: "Ranchi",
+    state: "Jharkhand",
+    locationType: "train_station",
+  },
+  {
+    name: "Dhanbad Junction",
+    code: "DHN",
+    city: "Dhanbad",
+    state: "Jharkhand",
+    locationType: "train_station",
+  },
 
   // MADHYA PRADESH
-  { name: "Bhopal Junction", code: "BPL", city: "Bhopal", state: "Madhya Pradesh", locationType: "train_station" },
-  { name: "Indore Junction", code: "INDB", city: "Indore", state: "Madhya Pradesh", locationType: "train_station" },
-  { name: "Gwalior Junction", code: "GWL", city: "Gwalior", state: "Madhya Pradesh", locationType: "train_station" },
+  {
+    name: "Bhopal Junction",
+    code: "BPL",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Indore Junction",
+    code: "INDB",
+    city: "Indore",
+    state: "Madhya Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Gwalior Junction",
+    code: "GWL",
+    city: "Gwalior",
+    state: "Madhya Pradesh",
+    locationType: "train_station",
+  },
 
   // CHHATTISGARH
-  { name: "Raipur Junction", code: "R", city: "Raipur", state: "Chhattisgarh", locationType: "train_station" },
-  { name: "Bilaspur Junction", code: "BSP", city: "Bilaspur", state: "Chhattisgarh", locationType: "train_station" },
+  {
+    name: "Raipur Junction",
+    code: "R",
+    city: "Raipur",
+    state: "Chhattisgarh",
+    locationType: "train_station",
+  },
+  {
+    name: "Bilaspur Junction",
+    code: "BSP",
+    city: "Bilaspur",
+    state: "Chhattisgarh",
+    locationType: "train_station",
+  },
 
   // PUNJAB / HARYANA
-  { name: "Chandigarh Railway Station", code: "CDG", city: "Chandigarh", state: "Chandigarh", locationType: "train_station" },
-  { name: "Amritsar Junction", code: "ASR", city: "Amritsar", state: "Punjab", locationType: "train_station" },
-  { name: "Ludhiana Junction", code: "LDH", city: "Ludhiana", state: "Punjab", locationType: "train_station" },
-  { name: "Ambala Cantt", code: "UMB", city: "Ambala", state: "Haryana", locationType: "train_station" },
-  { name: "Gurugram Railway Station", code: "GGN", city: "Gurugram", state: "Haryana", locationType: "train_station" },
+  {
+    name: "Chandigarh Railway Station",
+    code: "CDG",
+    city: "Chandigarh",
+    state: "Chandigarh",
+    locationType: "train_station",
+  },
+  {
+    name: "Amritsar Junction",
+    code: "ASR",
+    city: "Amritsar",
+    state: "Punjab",
+    locationType: "train_station",
+  },
+  {
+    name: "Ludhiana Junction",
+    code: "LDH",
+    city: "Ludhiana",
+    state: "Punjab",
+    locationType: "train_station",
+  },
+  {
+    name: "Ambala Cantt",
+    code: "UMB",
+    city: "Ambala",
+    state: "Haryana",
+    locationType: "train_station",
+  },
+  {
+    name: "Gurugram Railway Station",
+    code: "GGN",
+    city: "Gurugram",
+    state: "Haryana",
+    locationType: "train_station",
+  },
 
   // JAMMU & KASHMIR
-  { name: "Jammu Tawi", code: "JAT", city: "Jammu", state: "Jammu & Kashmir", locationType: "train_station" },
-  { name: "Srinagar Railway Station", code: "SINA", city: "Srinagar", state: "Jammu & Kashmir", locationType: "train_station" },
+  {
+    name: "Jammu Tawi",
+    code: "JAT",
+    city: "Jammu",
+    state: "Jammu & Kashmir",
+    locationType: "train_station",
+  },
+  {
+    name: "Srinagar Railway Station",
+    code: "SINA",
+    city: "Srinagar",
+    state: "Jammu & Kashmir",
+    locationType: "train_station",
+  },
 
   // HIMACHAL
-  { name: "Shimla Railway Station", code: "SML", city: "Shimla", state: "Himachal Pradesh", locationType: "train_station" },
+  {
+    name: "Shimla Railway Station",
+    code: "SML",
+    city: "Shimla",
+    state: "Himachal Pradesh",
+    locationType: "train_station",
+  },
 
   // ODISHA
-  { name: "Bhubaneswar Railway Station", code: "BBS", city: "Bhubaneswar", state: "Odisha", locationType: "train_station" },
-  { name: "Cuttack Railway Station", code: "CTC", city: "Cuttack", state: "Odisha", locationType: "train_station" },
+  {
+    name: "Bhubaneswar Railway Station",
+    code: "BBS",
+    city: "Bhubaneswar",
+    state: "Odisha",
+    locationType: "train_station",
+  },
+  {
+    name: "Cuttack Railway Station",
+    code: "CTC",
+    city: "Cuttack",
+    state: "Odisha",
+    locationType: "train_station",
+  },
 
   // ASSAM
-  { name: "Guwahati Railway Station", code: "GHY", city: "Guwahati", state: "Assam", locationType: "train_station" },
-  { name: "Dibrugarh Railway Station", code: "DBRG", city: "Dibrugarh", state: "Assam", locationType: "train_station" },
+  {
+    name: "Guwahati Railway Station",
+    code: "GHY",
+    city: "Guwahati",
+    state: "Assam",
+    locationType: "train_station",
+  },
+  {
+    name: "Dibrugarh Railway Station",
+    code: "DBRG",
+    city: "Dibrugarh",
+    state: "Assam",
+    locationType: "train_station",
+  },
 
   // TELANGANA
-  { name: "Secunderabad Junction", code: "SC", city: "Hyderabad", state: "Telangana", locationType: "train_station" },
-  { name: "Hyderabad Deccan", code: "HYB", city: "Hyderabad", state: "Telangana", locationType: "train_station" },
+  {
+    name: "Secunderabad Junction",
+    code: "SC",
+    city: "Hyderabad",
+    state: "Telangana",
+    locationType: "train_station",
+  },
+  {
+    name: "Hyderabad Deccan",
+    code: "HYB",
+    city: "Hyderabad",
+    state: "Telangana",
+    locationType: "train_station",
+  },
 
   // KARNATAKA
-  { name: "KSR Bengaluru", code: "SBC", city: "Bengaluru", state: "Karnataka", locationType: "train_station" },
-  { name: "Yesvantpur Junction", code: "YPR", city: "Bengaluru", state: "Karnataka", locationType: "train_station" },
-  { name: "Mysuru Junction", code: "MYS", city: "Mysuru", state: "Karnataka", locationType: "train_station" },
+  {
+    name: "KSR Bengaluru",
+    code: "SBC",
+    city: "Bengaluru",
+    state: "Karnataka",
+    locationType: "train_station",
+  },
+  {
+    name: "Yesvantpur Junction",
+    code: "YPR",
+    city: "Bengaluru",
+    state: "Karnataka",
+    locationType: "train_station",
+  },
+  {
+    name: "Mysuru Junction",
+    code: "MYS",
+    city: "Mysuru",
+    state: "Karnataka",
+    locationType: "train_station",
+  },
 
   // TAMIL NADU
-  { name: "Chennai Central", code: "MAS", city: "Chennai", state: "Tamil Nadu", locationType: "train_station" },
-  { name: "Coimbatore Junction", code: "CBE", city: "Coimbatore", state: "Tamil Nadu", locationType: "train_station" },
-  { name: "Madurai Junction", code: "MDU", city: "Madurai", state: "Tamil Nadu", locationType: "train_station" },
+  {
+    name: "Chennai Central",
+    code: "MAS",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    locationType: "train_station",
+  },
+  {
+    name: "Coimbatore Junction",
+    code: "CBE",
+    city: "Coimbatore",
+    state: "Tamil Nadu",
+    locationType: "train_station",
+  },
+  {
+    name: "Madurai Junction",
+    code: "MDU",
+    city: "Madurai",
+    state: "Tamil Nadu",
+    locationType: "train_station",
+  },
 
   // KERALA
-  { name: "Ernakulam Junction", code: "ERS", city: "Kochi", state: "Kerala", locationType: "train_station" },
-  { name: "Thiruvananthapuram Central", code: "TVC", city: "Thiruvananthapuram", state: "Kerala", locationType: "train_station" },
-  { name: "Kozhikode Railway Station", code: "CLT", city: "Kozhikode", state: "Kerala", locationType: "train_station" },
+  {
+    name: "Ernakulam Junction",
+    code: "ERS",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "train_station",
+  },
+  {
+    name: "Thiruvananthapuram Central",
+    code: "TVC",
+    city: "Thiruvananthapuram",
+    state: "Kerala",
+    locationType: "train_station",
+  },
+  {
+    name: "Kozhikode Railway Station",
+    code: "CLT",
+    city: "Kozhikode",
+    state: "Kerala",
+    locationType: "train_station",
+  },
 
   // ANDHRA PRADESH
-  { name: "Vijayawada Junction", code: "BZA", city: "Vijayawada", state: "Andhra Pradesh", locationType: "train_station" },
-  { name: "Visakhapatnam Railway Station", code: "VSKP", city: "Visakhapatnam", state: "Andhra Pradesh", locationType: "train_station" },
-  { name: "Tirupati Railway Station", code: "TPTY", city: "Tirupati", state: "Andhra Pradesh", locationType: "train_station" },
+  {
+    name: "Vijayawada Junction",
+    code: "BZA",
+    city: "Vijayawada",
+    state: "Andhra Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Visakhapatnam Railway Station",
+    code: "VSKP",
+    city: "Visakhapatnam",
+    state: "Andhra Pradesh",
+    locationType: "train_station",
+  },
+  {
+    name: "Tirupati Railway Station",
+    code: "TPTY",
+    city: "Tirupati",
+    state: "Andhra Pradesh",
+    locationType: "train_station",
+  },
 
   // GOA
-  { name: "Madgaon Junction", code: "MAO", city: "Madgaon", state: "Goa", locationType: "train_station" },
-  { name: "Vasco Da Gama Railway Station", code: "VSG", city: "Vasco", state: "Goa", locationType: "train_station" },
+  {
+    name: "Madgaon Junction",
+    code: "MAO",
+    city: "Madgaon",
+    state: "Goa",
+    locationType: "train_station",
+  },
+  {
+    name: "Vasco Da Gama Railway Station",
+    code: "VSG",
+    city: "Vasco",
+    state: "Goa",
+    locationType: "train_station",
+  },
 
   // KONKAN
-  { name: "Ratnagiri Railway Station", code: "RN", city: "Ratnagiri", state: "Maharashtra", locationType: "train_station" },
-  { name: "Karmali Railway Station", code: "KRMI", city: "Karmali", state: "Goa", locationType: "train_station" },
+  {
+    name: "Ratnagiri Railway Station",
+    code: "RN",
+    city: "Ratnagiri",
+    state: "Maharashtra",
+    locationType: "train_station",
+  },
+  {
+    name: "Karmali Railway Station",
+    code: "KRMI",
+    city: "Karmali",
+    state: "Goa",
+    locationType: "train_station",
+  },
 ];
 
 // ============================================================
@@ -146,26 +546,146 @@ export const trainStations: Station[] = [
 // ============================================================
 
 export const busStands: Station[] = [
-  { name: "Kashmere Gate ISBT", code: "KGT", city: "Delhi", state: "Delhi", locationType: "bus_stand" },
-  { name: "Anand Vihar ISBT", code: "AVB", city: "Delhi", state: "Delhi", locationType: "bus_stand" },
-  { name: "Jaipur Sindhi Camp Bus Stand", code: "JSC", city: "Jaipur", state: "Rajasthan", locationType: "bus_stand" },
-  { name: "Jodhpur Central Bus Stand", code: "JBS", city: "Jodhpur", state: "Rajasthan", locationType: "bus_stand" },
-  { name: "Ajmer Bus Stand", code: "ABS", city: "Ajmer", state: "Rajasthan", locationType: "bus_stand" },
-  { name: "Udaipur Bus Stand", code: "UBS", city: "Udaipur", state: "Rajasthan", locationType: "bus_stand" },
-  { name: "Mumbai Central Bus Depot", code: "MCB", city: "Mumbai", state: "Maharashtra", locationType: "bus_stand" },
-  { name: "Pune Swargate Bus Stand", code: "PSB", city: "Pune", state: "Maharashtra", locationType: "bus_stand" },
-  { name: "Ahmedabad Geeta Mandir Bus Stand", code: "AGM", city: "Ahmedabad", state: "Gujarat", locationType: "bus_stand" },
-  { name: "Vadodara Central Bus Station", code: "VDB", city: "Vadodara", state: "Gujarat", locationType: "bus_stand" },
-  { name: "Lucknow Alambagh Bus Stand", code: "LAB", city: "Lucknow", state: "Uttar Pradesh", locationType: "bus_stand" },
-  { name: "Kanpur Jhakarkati Bus Stand", code: "KJB", city: "Kanpur", state: "Uttar Pradesh", locationType: "bus_stand" },
-  { name: "Varanasi Cantt Bus Stand", code: "VCB", city: "Varanasi", state: "Uttar Pradesh", locationType: "bus_stand" },
-  { name: "Agra ISBT", code: "AIB", city: "Agra", state: "Uttar Pradesh", locationType: "bus_stand" },
-  { name: "Kolkata Esplanade Bus Stand", code: "KEB", city: "Kolkata", state: "West Bengal", locationType: "bus_stand" },
-  { name: "Patna Mithapur Bus Stand", code: "PMB", city: "Patna", state: "Bihar", locationType: "bus_stand" },
-  { name: "Bengaluru Kempegowda Bus Station", code: "KBS", city: "Bengaluru", state: "Karnataka", locationType: "bus_stand" },
-  { name: "Chennai CMBT", code: "CMBT", city: "Chennai", state: "Tamil Nadu", locationType: "bus_stand" },
-  { name: "Hyderabad MGBS", code: "MGBS", city: "Hyderabad", state: "Telangana", locationType: "bus_stand" },
-  { name: "Kochi Vyttila Mobility Hub", code: "VMH", city: "Kochi", state: "Kerala", locationType: "bus_stand" },
+  {
+    name: "Kashmere Gate ISBT",
+    code: "KGT",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Anand Vihar ISBT",
+    code: "AVB",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Jaipur Sindhi Camp Bus Stand",
+    code: "JSC",
+    city: "Jaipur",
+    state: "Rajasthan",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Jodhpur Central Bus Stand",
+    code: "JBS",
+    city: "Jodhpur",
+    state: "Rajasthan",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Ajmer Bus Stand",
+    code: "ABS",
+    city: "Ajmer",
+    state: "Rajasthan",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Udaipur Bus Stand",
+    code: "UBS",
+    city: "Udaipur",
+    state: "Rajasthan",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Mumbai Central Bus Depot",
+    code: "MCB",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Pune Swargate Bus Stand",
+    code: "PSB",
+    city: "Pune",
+    state: "Maharashtra",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Ahmedabad Geeta Mandir Bus Stand",
+    code: "AGM",
+    city: "Ahmedabad",
+    state: "Gujarat",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Vadodara Central Bus Station",
+    code: "VDB",
+    city: "Vadodara",
+    state: "Gujarat",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Lucknow Alambagh Bus Stand",
+    code: "LAB",
+    city: "Lucknow",
+    state: "Uttar Pradesh",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Kanpur Jhakarkati Bus Stand",
+    code: "KJB",
+    city: "Kanpur",
+    state: "Uttar Pradesh",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Varanasi Cantt Bus Stand",
+    code: "VCB",
+    city: "Varanasi",
+    state: "Uttar Pradesh",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Agra ISBT",
+    code: "AIB",
+    city: "Agra",
+    state: "Uttar Pradesh",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Kolkata Esplanade Bus Stand",
+    code: "KEB",
+    city: "Kolkata",
+    state: "West Bengal",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Patna Mithapur Bus Stand",
+    code: "PMB",
+    city: "Patna",
+    state: "Bihar",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Bengaluru Kempegowda Bus Station",
+    code: "KBS",
+    city: "Bengaluru",
+    state: "Karnataka",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Chennai CMBT",
+    code: "CMBT",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Hyderabad MGBS",
+    code: "MGBS",
+    city: "Hyderabad",
+    state: "Telangana",
+    locationType: "bus_stand",
+  },
+  {
+    name: "Kochi Vyttila Mobility Hub",
+    code: "VMH",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "bus_stand",
+  },
 ];
 
 // ============================================================
@@ -173,38 +693,230 @@ export const busStands: Station[] = [
 // ============================================================
 
 export const airports: Station[] = [
-  { name: "Indira Gandhi International Airport", code: "DEL", city: "Delhi", state: "Delhi", locationType: "airport" },
-  { name: "Jaipur International Airport", code: "JAI", city: "Jaipur", state: "Rajasthan", locationType: "airport" },
-  { name: "Jodhpur Airport", code: "JDH", city: "Jodhpur", state: "Rajasthan", locationType: "airport" },
-  { name: "Mumbai Chhatrapati Shivaji Maharaj International Airport", code: "BOM", city: "Mumbai", state: "Maharashtra", locationType: "airport" },
-  { name: "Pune International Airport", code: "PNQ", city: "Pune", state: "Maharashtra", locationType: "airport" },
-  { name: "Ahmedabad International Airport", code: "AMD", city: "Ahmedabad", state: "Gujarat", locationType: "airport" },
-  { name: "Surat Airport", code: "STV", city: "Surat", state: "Gujarat", locationType: "airport" },
-  { name: "Lucknow Chaudhary Charan Singh International Airport", code: "LKOA", city: "Lucknow", state: "Uttar Pradesh", locationType: "airport" },
-  { name: "Lal Bahadur Shastri International Airport", code: "VNS", city: "Varanasi", state: "Uttar Pradesh", locationType: "airport" },
-  { name: "Agra Airport", code: "AGR", city: "Agra", state: "Uttar Pradesh", locationType: "airport" },
-  { name: "Netaji Subhas Chandra Bose International Airport", code: "CCU", city: "Kolkata", state: "West Bengal", locationType: "airport" },
-  { name: "Jay Prakash Narayan International Airport", code: "PAT", city: "Patna", state: "Bihar", locationType: "airport" },
-  { name: "Ranchi Birsa Munda Airport", code: "IXR", city: "Ranchi", state: "Jharkhand", locationType: "airport" },
-  { name: "Bhopal Raja Bhoj Airport", code: "BHO", city: "Bhopal", state: "Madhya Pradesh", locationType: "airport" },
-  { name: "Indore Devi Ahilya Bai Holkar Airport", code: "IDR", city: "Indore", state: "Madhya Pradesh", locationType: "airport" },
-  { name: "Chandigarh International Airport", code: "IXC", city: "Chandigarh", state: "Chandigarh", locationType: "airport" },
-  { name: "Amritsar Sri Guru Ram Dass Jee International Airport", code: "ATQ", city: "Amritsar", state: "Punjab", locationType: "airport" },
-  { name: "Srinagar International Airport", code: "SXR", city: "Srinagar", state: "Jammu & Kashmir", locationType: "airport" },
-  { name: "Shimla Airport", code: "SLV", city: "Shimla", state: "Himachal Pradesh", locationType: "airport" },
-  { name: "Bhubaneswar Biju Patnaik International Airport", code: "BBI", city: "Bhubaneswar", state: "Odisha", locationType: "airport" },
-  { name: "Guwahati Lokpriya Gopinath Bordoloi International Airport", code: "GAU", city: "Guwahati", state: "Assam", locationType: "airport" },
-  { name: "Hyderabad Rajiv Gandhi International Airport", code: "HYDA", city: "Hyderabad", state: "Telangana", locationType: "airport" },
-  { name: "Kempegowda International Airport", code: "BLR", city: "Bengaluru", state: "Karnataka", locationType: "airport" },
-  { name: "Chennai International Airport", code: "MAA", city: "Chennai", state: "Tamil Nadu", locationType: "airport" },
-  { name: "Coimbatore International Airport", code: "CJB", city: "Coimbatore", state: "Tamil Nadu", locationType: "airport" },
-  { name: "Madurai Airport", code: "IXM", city: "Madurai", state: "Tamil Nadu", locationType: "airport" },
-  { name: "Cochin International Airport", code: "COK", city: "Kochi", state: "Kerala", locationType: "airport" },
-  { name: "Trivandrum International Airport", code: "TRV", city: "Thiruvananthapuram", state: "Kerala", locationType: "airport" },
-  { name: "Visakhapatnam International Airport", code: "VTZ", city: "Visakhapatnam", state: "Andhra Pradesh", locationType: "airport" },
-  { name: "Tirupati Airport", code: "TIR", city: "Tirupati", state: "Andhra Pradesh", locationType: "airport" },
-  { name: "Goa Manohar International Airport", code: "GOX", city: "Goa", state: "Goa", locationType: "airport" },
-  { name: "Dabolim Airport", code: "GOI", city: "Goa", state: "Goa", locationType: "airport" },
+  {
+    name: "Indira Gandhi International Airport",
+    code: "DEL",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "airport",
+  },
+  {
+    name: "Jaipur International Airport",
+    code: "JAI",
+    city: "Jaipur",
+    state: "Rajasthan",
+    locationType: "airport",
+  },
+  {
+    name: "Jodhpur Airport",
+    code: "JDH",
+    city: "Jodhpur",
+    state: "Rajasthan",
+    locationType: "airport",
+  },
+  {
+    name: "Mumbai Chhatrapati Shivaji Maharaj International Airport",
+    code: "BOM",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "airport",
+  },
+  {
+    name: "Pune International Airport",
+    code: "PNQ",
+    city: "Pune",
+    state: "Maharashtra",
+    locationType: "airport",
+  },
+  {
+    name: "Ahmedabad International Airport",
+    code: "AMD",
+    city: "Ahmedabad",
+    state: "Gujarat",
+    locationType: "airport",
+  },
+  {
+    name: "Surat Airport",
+    code: "STV",
+    city: "Surat",
+    state: "Gujarat",
+    locationType: "airport",
+  },
+  {
+    name: "Lucknow Chaudhary Charan Singh International Airport",
+    code: "LKOA",
+    city: "Lucknow",
+    state: "Uttar Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Lal Bahadur Shastri International Airport",
+    code: "VNS",
+    city: "Varanasi",
+    state: "Uttar Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Agra Airport",
+    code: "AGR",
+    city: "Agra",
+    state: "Uttar Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Netaji Subhas Chandra Bose International Airport",
+    code: "CCU",
+    city: "Kolkata",
+    state: "West Bengal",
+    locationType: "airport",
+  },
+  {
+    name: "Jay Prakash Narayan International Airport",
+    code: "PAT",
+    city: "Patna",
+    state: "Bihar",
+    locationType: "airport",
+  },
+  {
+    name: "Ranchi Birsa Munda Airport",
+    code: "IXR",
+    city: "Ranchi",
+    state: "Jharkhand",
+    locationType: "airport",
+  },
+  {
+    name: "Bhopal Raja Bhoj Airport",
+    code: "BHO",
+    city: "Bhopal",
+    state: "Madhya Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Indore Devi Ahilya Bai Holkar Airport",
+    code: "IDR",
+    city: "Indore",
+    state: "Madhya Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Chandigarh International Airport",
+    code: "IXC",
+    city: "Chandigarh",
+    state: "Chandigarh",
+    locationType: "airport",
+  },
+  {
+    name: "Amritsar Sri Guru Ram Dass Jee International Airport",
+    code: "ATQ",
+    city: "Amritsar",
+    state: "Punjab",
+    locationType: "airport",
+  },
+  {
+    name: "Srinagar International Airport",
+    code: "SXR",
+    city: "Srinagar",
+    state: "Jammu & Kashmir",
+    locationType: "airport",
+  },
+  {
+    name: "Shimla Airport",
+    code: "SLV",
+    city: "Shimla",
+    state: "Himachal Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Bhubaneswar Biju Patnaik International Airport",
+    code: "BBI",
+    city: "Bhubaneswar",
+    state: "Odisha",
+    locationType: "airport",
+  },
+  {
+    name: "Guwahati Lokpriya Gopinath Bordoloi International Airport",
+    code: "GAU",
+    city: "Guwahati",
+    state: "Assam",
+    locationType: "airport",
+  },
+  {
+    name: "Hyderabad Rajiv Gandhi International Airport",
+    code: "HYDA",
+    city: "Hyderabad",
+    state: "Telangana",
+    locationType: "airport",
+  },
+  {
+    name: "Kempegowda International Airport",
+    code: "BLR",
+    city: "Bengaluru",
+    state: "Karnataka",
+    locationType: "airport",
+  },
+  {
+    name: "Chennai International Airport",
+    code: "MAA",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    locationType: "airport",
+  },
+  {
+    name: "Coimbatore International Airport",
+    code: "CJB",
+    city: "Coimbatore",
+    state: "Tamil Nadu",
+    locationType: "airport",
+  },
+  {
+    name: "Madurai Airport",
+    code: "IXM",
+    city: "Madurai",
+    state: "Tamil Nadu",
+    locationType: "airport",
+  },
+  {
+    name: "Cochin International Airport",
+    code: "COK",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "airport",
+  },
+  {
+    name: "Trivandrum International Airport",
+    code: "TRV",
+    city: "Thiruvananthapuram",
+    state: "Kerala",
+    locationType: "airport",
+  },
+  {
+    name: "Visakhapatnam International Airport",
+    code: "VTZ",
+    city: "Visakhapatnam",
+    state: "Andhra Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Tirupati Airport",
+    code: "TIR",
+    city: "Tirupati",
+    state: "Andhra Pradesh",
+    locationType: "airport",
+  },
+  {
+    name: "Goa Manohar International Airport",
+    code: "GOX",
+    city: "Goa",
+    state: "Goa",
+    locationType: "airport",
+  },
+  {
+    name: "Dabolim Airport",
+    code: "GOI",
+    city: "Goa",
+    state: "Goa",
+    locationType: "airport",
+  },
 ];
 
 // ============================================================
@@ -212,39 +924,165 @@ export const airports: Station[] = [
 // ============================================================
 
 export const metroStations: Station[] = [
-  { name: "Rajiv Chowk Metro Station", code: "MRC", city: "Delhi", state: "Delhi", locationType: "metro_station" },
-  { name: "Kashmere Gate Metro Station", code: "MKG", city: "Delhi", state: "Delhi", locationType: "metro_station" },
-  { name: "Saket Metro Station", code: "MSK", city: "Delhi", state: "Delhi", locationType: "metro_station" },
-  { name: "Hauz Khas Metro Station", code: "MHK", city: "Delhi", state: "Delhi", locationType: "metro_station" },
-  { name: "Dwarka Sector 21 Metro Station", code: "MDW", city: "Delhi", state: "Delhi", locationType: "metro_station" },
-  { name: "Noida Sector 18 Metro Station", code: "MN18", city: "Noida", state: "Uttar Pradesh", locationType: "metro_station" },
-  { name: "Botanical Garden Metro Station", code: "MBG", city: "Noida", state: "Uttar Pradesh", locationType: "metro_station" },
-  { name: "Vaishali Metro Station", code: "MVS", city: "Ghaziabad", state: "Uttar Pradesh", locationType: "metro_station" },
+  {
+    name: "Rajiv Chowk Metro Station",
+    code: "MRC",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "metro_station",
+  },
+  {
+    name: "Kashmere Gate Metro Station",
+    code: "MKG",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "metro_station",
+  },
+  {
+    name: "Saket Metro Station",
+    code: "MSK",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "metro_station",
+  },
+  {
+    name: "Hauz Khas Metro Station",
+    code: "MHK",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "metro_station",
+  },
+  {
+    name: "Dwarka Sector 21 Metro Station",
+    code: "MDW",
+    city: "Delhi",
+    state: "Delhi",
+    locationType: "metro_station",
+  },
+  {
+    name: "Noida Sector 18 Metro Station",
+    code: "MN18",
+    city: "Noida",
+    state: "Uttar Pradesh",
+    locationType: "metro_station",
+  },
+  {
+    name: "Botanical Garden Metro Station",
+    code: "MBG",
+    city: "Noida",
+    state: "Uttar Pradesh",
+    locationType: "metro_station",
+  },
+  {
+    name: "Vaishali Metro Station",
+    code: "MVS",
+    city: "Ghaziabad",
+    state: "Uttar Pradesh",
+    locationType: "metro_station",
+  },
 
   // Mumbai Metro
-  { name: "Andheri Metro Station", code: "MMA", city: "Mumbai", state: "Maharashtra", locationType: "metro_station" },
-  { name: "Ghatkopar Metro Station", code: "MMG", city: "Mumbai", state: "Maharashtra", locationType: "metro_station" },
-  { name: "Dahisar East Metro Station", code: "MDE", city: "Mumbai", state: "Maharashtra", locationType: "metro_station" },
+  {
+    name: "Andheri Metro Station",
+    code: "MMA",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "metro_station",
+  },
+  {
+    name: "Ghatkopar Metro Station",
+    code: "MMG",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "metro_station",
+  },
+  {
+    name: "Dahisar East Metro Station",
+    code: "MDE",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "metro_station",
+  },
 
   // Bengaluru Metro
-  { name: "Majestic Metro Station", code: "MBM", city: "Bengaluru", state: "Karnataka", locationType: "metro_station" },
-  { name: "MG Road Metro Station", code: "MMGR", city: "Bengaluru", state: "Karnataka", locationType: "metro_station" },
+  {
+    name: "Majestic Metro Station",
+    code: "MBM",
+    city: "Bengaluru",
+    state: "Karnataka",
+    locationType: "metro_station",
+  },
+  {
+    name: "MG Road Metro Station",
+    code: "MMGR",
+    city: "Bengaluru",
+    state: "Karnataka",
+    locationType: "metro_station",
+  },
 
   // Kolkata Metro
-  { name: "Esplanade Metro Station", code: "KES", city: "Kolkata", state: "West Bengal", locationType: "metro_station" },
-  { name: "Park Street Metro Station", code: "KPS", city: "Kolkata", state: "West Bengal", locationType: "metro_station" },
+  {
+    name: "Esplanade Metro Station",
+    code: "KES",
+    city: "Kolkata",
+    state: "West Bengal",
+    locationType: "metro_station",
+  },
+  {
+    name: "Park Street Metro Station",
+    code: "KPS",
+    city: "Kolkata",
+    state: "West Bengal",
+    locationType: "metro_station",
+  },
 
   // Hyderabad Metro
-  { name: "Ameerpet Metro Station", code: "HAM", city: "Hyderabad", state: "Telangana", locationType: "metro_station" },
-  { name: "Miyapur Metro Station", code: "HMM", city: "Hyderabad", state: "Telangana", locationType: "metro_station" },
+  {
+    name: "Ameerpet Metro Station",
+    code: "HAM",
+    city: "Hyderabad",
+    state: "Telangana",
+    locationType: "metro_station",
+  },
+  {
+    name: "Miyapur Metro Station",
+    code: "HMM",
+    city: "Hyderabad",
+    state: "Telangana",
+    locationType: "metro_station",
+  },
 
   // Chennai Metro
-  { name: "Chennai Central Metro Station", code: "CMC", city: "Chennai", state: "Tamil Nadu", locationType: "metro_station" },
-  { name: "Airport Metro Station Chennai", code: "CMA", city: "Chennai", state: "Tamil Nadu", locationType: "metro_station" },
+  {
+    name: "Chennai Central Metro Station",
+    code: "CMC",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    locationType: "metro_station",
+  },
+  {
+    name: "Airport Metro Station Chennai",
+    code: "CMA",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    locationType: "metro_station",
+  },
 
   // Kochi Metro
-  { name: "Aluva Metro Station", code: "KMA", city: "Kochi", state: "Kerala", locationType: "metro_station" },
-  { name: "Maharaja's College Metro Station", code: "KMC", city: "Kochi", state: "Kerala", locationType: "metro_station" },
+  {
+    name: "Aluva Metro Station",
+    code: "KMA",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "metro_station",
+  },
+  {
+    name: "Maharaja's College Metro Station",
+    code: "KMC",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "metro_station",
+  },
 ];
 
 // ============================================================
@@ -252,25 +1090,96 @@ export const metroStations: Station[] = [
 // ============================================================
 
 export const seaports: Station[] = [
-  { name: "Gateway of India Ferry Terminal", code: "GOI-F", city: "Mumbai", state: "Maharashtra", locationType: "seaport" },
-  { name: "Mandwa Ferry Terminal", code: "MDW-F", city: "Alibaug", state: "Maharashtra", locationType: "seaport" },
-  { name: "Elephanta Island Ferry Terminal", code: "ELP-F", city: "Mumbai", state: "Maharashtra", locationType: "seaport" },
-  { name: "Mormugao Harbour", code: "MOR-F", city: "Goa", state: "Goa", locationType: "seaport" },
-  { name: "Panaji Ferry Terminal", code: "PNJ-F", city: "Panaji", state: "Goa", locationType: "seaport" },
-  { name: "Kochi Fort Ferry Terminal", code: "KFT-F", city: "Kochi", state: "Kerala", locationType: "seaport" },
-  { name: "Vypeen Ferry Terminal", code: "VYP-F", city: "Kochi", state: "Kerala", locationType: "seaport" },
-  { name: "Chennai Ferry Terminal", code: "CHE-F", city: "Chennai", state: "Tamil Nadu", locationType: "seaport" },
-  { name: "Port Blair Ferry Terminal", code: "PBR-F", city: "Port Blair", state: "Andaman & Nicobar Islands", locationType: "seaport" },
-  { name: "Swaraj Dweep Ferry Terminal", code: "SWT-F", city: "Swaraj Dweep", state: "Andaman & Nicobar Islands", locationType: "seaport" },
-  { name: "Kochi Water Metro Terminal", code: "KWM-F", city: "Kochi", state: "Kerala", locationType: "seaport" },
-  { name: "Alappuzha Boat Jetty", code: "ALP-F", city: "Alappuzha", state: "Kerala", locationType: "seaport" },
+  {
+    name: "Gateway of India Ferry Terminal",
+    code: "GOI-F",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "seaport",
+  },
+  {
+    name: "Mandwa Ferry Terminal",
+    code: "MDW-F",
+    city: "Alibaug",
+    state: "Maharashtra",
+    locationType: "seaport",
+  },
+  {
+    name: "Elephanta Island Ferry Terminal",
+    code: "ELP-F",
+    city: "Mumbai",
+    state: "Maharashtra",
+    locationType: "seaport",
+  },
+  {
+    name: "Mormugao Harbour",
+    code: "MOR-F",
+    city: "Goa",
+    state: "Goa",
+    locationType: "seaport",
+  },
+  {
+    name: "Panaji Ferry Terminal",
+    code: "PNJ-F",
+    city: "Goa",
+    state: "Goa",
+    locationType: "seaport",
+  },
+  {
+    name: "Kochi Fort Ferry Terminal",
+    code: "KFT-F",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "seaport",
+  },
+  {
+    name: "Vypeen Ferry Terminal",
+    code: "VYP-F",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "seaport",
+  },
+  {
+    name: "Chennai Ferry Terminal",
+    code: "CHE-F",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    locationType: "seaport",
+  },
+  {
+    name: "Port Blair Ferry Terminal",
+    code: "PBR-F",
+    city: "Port Blair",
+    state: "Andaman & Nicobar Islands",
+    locationType: "seaport",
+  },
+  {
+    name: "Swaraj Dweep Ferry Terminal",
+    code: "SWT-F",
+    city: "Swaraj Dweep",
+    state: "Andaman & Nicobar Islands",
+    locationType: "seaport",
+  },
+  {
+    name: "Kochi Water Metro Terminal",
+    code: "KWM-F",
+    city: "Kochi",
+    state: "Kerala",
+    locationType: "seaport",
+  },
+  {
+    name: "Alappuzha Boat Jetty",
+    code: "ALP-F",
+    city: "Alappuzha",
+    state: "Kerala",
+    locationType: "seaport",
+  },
 ];
 
 // ============================================================
 // ALL LOCATIONS
 // ============================================================
 
-// Kept as `stations` for compatibility with existing imports.
 export const stations: Station[] = [
   ...trainStations,
   ...busStands,
@@ -423,32 +1332,31 @@ function explicitRoutes(
 // ============================================================
 
 export const trainRoutes: RouteDef[] = explicitRoutes(trainStations, [
-  [0, 3],   // Delhi → Jaipur
-  [0, 8],   // Delhi → Mumbai
-  [0, 14],  // Delhi → Ahmedabad
-  [0, 18],  // Delhi → Lucknow
-  [0, 23],  // Delhi → Agra
-  [0, 27],  // Delhi → Patna
-  [0, 30],  // Delhi → Bhopal
-  [0, 37],  // Delhi → Chandigarh
-  [0, 42],  // Delhi → Srinagar
-  [0, 49],  // Delhi → Hyderabad
-  [0, 53],  // Delhi → Chennai
-  [0, 57],  // Delhi → Kochi
-  [3, 4],   // Jaipur → Jodhpur
-  [3, 8],   // Jaipur → Mumbai
-  [8, 11],  // Mumbai → Pune
-  [8, 14],  // Mumbai → Ahmedabad
-  [11, 14], // Pune → Ahmedabad
-  [14, 15], // Ahmedabad → Vadodara
-  [18, 19], // Lucknow → Kanpur
-  [19, 20], // Kanpur → Varanasi
-  [23, 20], // Agra → Varanasi
-  [27, 25], // Patna → Gaya
-  [49, 50], // Hyderabad → Bengaluru
-  [53, 54], // Chennai → Coimbatore
-  [54, 56], // Coimbatore → Kochi
-  [60, 61], // Goa → Goa
+  [0, 3],
+  [0, 8],
+  [0, 14],
+  [0, 18],
+  [0, 23],
+  [0, 27],
+  [0, 30],
+  [0, 37],
+  [0, 42],
+  [0, 49],
+  [0, 53],
+  [0, 57],
+  [3, 4],
+  [3, 8],
+  [8, 11],
+  [8, 14],
+  [11, 14],
+  [14, 15],
+  [18, 19],
+  [19, 20],
+  [23, 20],
+  [27, 25],
+  [49, 50],
+  [53, 54],
+  [54, 56],
 ]);
 
 // ============================================================
@@ -457,23 +1365,22 @@ export const trainRoutes: RouteDef[] = explicitRoutes(trainStations, [
 // ============================================================
 
 export const busRoutes: RouteDef[] = explicitRoutes(busStands, [
-  [0, 2],   // Delhi → Jaipur
-  [0, 6],   // Delhi → Mumbai
-  [0, 10],  // Delhi → Lucknow
-  [0, 13],  // Delhi → Agra
-  [0, 15],  // Delhi → Patna
-  [0, 16],  // Delhi → Bengaluru
-  [0, 17],  // Delhi → Chennai
-  [2, 3],   // Jaipur → Jodhpur
-  [2, 5],   // Jaipur → Udaipur
-  [6, 7],   // Mumbai → Pune
-  [6, 8],   // Mumbai → Ahmedabad
-  [8, 9],   // Ahmedabad → Vadodara
-  [10, 11], // Lucknow → Kanpur
-  [11, 12], // Kanpur → Varanasi
-  [16, 17], // Bengaluru → Chennai
-  [17, 18], // Chennai → Hyderabad
-  [18, 19], // Hyderabad → Kochi
+  [0, 2],
+  [0, 6],
+  [0, 10],
+  [0, 13],
+  [0, 15],
+  [0, 16],
+  [0, 17],
+  [2, 3],
+  [2, 5],
+  [6, 7],
+  [8, 9],
+  [10, 11],
+  [11, 12],
+  [16, 17],
+  [17, 18],
+  [18, 19],
 ]);
 
 // ============================================================
@@ -482,24 +1389,23 @@ export const busRoutes: RouteDef[] = explicitRoutes(busStands, [
 // ============================================================
 
 export const flightRoutes: RouteDef[] = explicitRoutes(airports, [
-  [0, 3],   // Delhi → Mumbai
-  [0, 1],   // Delhi → Jaipur
-  [0, 5],   // Delhi → Ahmedabad
-  [0, 7],   // Delhi → Lucknow
-  [0, 9],   // Delhi → Agra
-  [0, 10],  // Delhi → Kolkata
-  [0, 11],  // Delhi → Patna
-  [0, 15],  // Delhi → Chandigarh
-  [0, 17],  // Delhi → Srinagar
-  [0, 22],  // Delhi → Bengaluru
-  [0, 24],  // Delhi → Chennai
-  [0, 27],  // Delhi → Kochi
-  [0, 30],  // Delhi → Goa
-  [3, 4],   // Mumbai → Pune
-  [3, 5],   // Mumbai → Ahmedabad
-  [22, 24], // Bengaluru → Chennai
-  [24, 27], // Chennai → Kochi
-  [30, 31], // Goa → Goa
+  [0, 3],
+  [0, 1],
+  [0, 5],
+  [0, 7],
+  [0, 9],
+  [0, 10],
+  [0, 11],
+  [0, 15],
+  [0, 17],
+  [0, 22],
+  [0, 24],
+  [0, 27],
+  [0, 30],
+  [3, 4],
+  [3, 5],
+  [22, 24],
+  [24, 27],
 ]);
 
 // ============================================================
@@ -508,20 +1414,20 @@ export const flightRoutes: RouteDef[] = explicitRoutes(airports, [
 // ============================================================
 
 export const metroRoutes: RouteDef[] = explicitRoutes(metroStations, [
-  [0, 1],   // Rajiv Chowk → Kashmere Gate
-  [0, 2],   // Rajiv Chowk → Saket
-  [0, 3],   // Rajiv Chowk → Hauz Khas
-  [0, 4],   // Rajiv Chowk → Dwarka
-  [1, 5],   // Kashmere Gate → Noida Sector 18
-  [5, 6],   // Noida Sector 18 → Botanical Garden
-  [6, 7],   // Botanical Garden → Vaishali
-  [8, 9],   // Andheri → Ghatkopar
-  [9, 10],  // Ghatkopar → Dahisar
-  [11, 12], // Bengaluru Majestic → MG Road
-  [13, 14], // Kolkata Esplanade → Park Street
-  [15, 16], // Hyderabad Ameerpet → Miyapur
-  [17, 18], // Chennai Central → Airport
-  [19, 20], // Kochi Aluva → Maharaja's
+  [0, 1],
+  [0, 2],
+  [0, 3],
+  [0, 4],
+  [1, 5],
+  [5, 6],
+  [6, 7],
+  [8, 9],
+  [9, 10],
+  [11, 12],
+  [13, 14],
+  [15, 16],
+  [17, 18],
+  [19, 20],
 ]);
 
 // ============================================================
@@ -530,14 +1436,14 @@ export const metroRoutes: RouteDef[] = explicitRoutes(metroStations, [
 // ============================================================
 
 export const ferryRoutes: RouteDef[] = explicitRoutes(seaports, [
-  [0, 1],   // Gateway → Mandwa
-  [0, 2],   // Gateway → Elephanta
-  [1, 0],   // Mandwa → Gateway
-  [2, 0],   // Elephanta → Gateway
-  [3, 4],   // Mormugao → Panaji
-  [5, 6],   // Fort Kochi → Vypeen
-  [8, 9],   // Port Blair → Swaraj Dweep
-  [10, 11], // Kochi Water Metro → Alappuzha
+  [0, 1],
+  [0, 2],
+  [1, 0],
+  [2, 0],
+  [3, 4],
+  [5, 6],
+  [8, 9],
+  [10, 11],
 ]);
 
 // ============================================================
@@ -557,7 +1463,6 @@ export const modeRoutes: Record<
 
 // ============================================================
 // HOTEL DESTINATIONS
-// 50 FAMOUS INDIAN DESTINATIONS
 // ============================================================
 
 export type HotelDestination = {
@@ -567,64 +1472,272 @@ export type HotelDestination = {
 };
 
 export const famousHotelDestinations: HotelDestination[] = [
-  { city: "Delhi", state: "Delhi", landmark: "India Gate & Connaught Place" },
-  { city: "Agra", state: "Uttar Pradesh", landmark: "Taj Mahal" },
-  { city: "Jaipur", state: "Rajasthan", landmark: "Hawa Mahal & Amber Fort" },
-  { city: "Udaipur", state: "Rajasthan", landmark: "Lake Pichola" },
-  { city: "Jodhpur", state: "Rajasthan", landmark: "Mehrangarh Fort" },
-  { city: "Jaisalmer", state: "Rajasthan", landmark: "Jaisalmer Fort" },
-  { city: "Pushkar", state: "Rajasthan", landmark: "Pushkar Lake" },
-  { city: "Mumbai", state: "Maharashtra", landmark: "Gateway of India & Marine Drive" },
-  { city: "Pune", state: "Maharashtra", landmark: "Shaniwar Wada" },
-  { city: "Nashik", state: "Maharashtra", landmark: "Trimbakeshwar" },
-  { city: "Aurangabad", state: "Maharashtra", landmark: "Ajanta & Ellora Caves" },
-  { city: "Ahmedabad", state: "Gujarat", landmark: "Sabarmati Ashram" },
-  { city: "Vadodara", state: "Gujarat", landmark: "Laxmi Vilas Palace" },
-  { city: "Rann of Kutch", state: "Gujarat", landmark: "White Rann" },
-  { city: "Goa", state: "Goa", landmark: "Baga & Calangute Beach" },
-  { city: "Panaji", state: "Goa", landmark: "Fontainhas" },
-  { city: "Bengaluru", state: "Karnataka", landmark: "Bangalore Palace & MG Road" },
-  { city: "Mysuru", state: "Karnataka", landmark: "Mysore Palace" },
-  { city: "Hampi", state: "Karnataka", landmark: "Virupaksha Temple" },
-  { city: "Coorg", state: "Karnataka", landmark: "Abbey Falls" },
-  { city: "Chennai", state: "Tamil Nadu", landmark: "Marina Beach" },
-  { city: "Mahabalipuram", state: "Tamil Nadu", landmark: "Shore Temple" },
-  { city: "Ooty", state: "Tamil Nadu", landmark: "Ooty Lake" },
-  { city: "Madurai", state: "Tamil Nadu", landmark: "Meenakshi Temple" },
-  { city: "Kochi", state: "Kerala", landmark: "Fort Kochi" },
-  { city: "Munnar", state: "Kerala", landmark: "Tea Gardens" },
-  { city: "Alappuzha", state: "Kerala", landmark: "Alleppey Backwaters" },
-  { city: "Thiruvananthapuram", state: "Kerala", landmark: "Kovalam Beach" },
-  { city: "Varkala", state: "Kerala", landmark: "Varkala Cliff" },
-  { city: "Hyderabad", state: "Telangana", landmark: "Charminar" },
-  { city: "Warangal", state: "Telangana", landmark: "Warangal Fort" },
-  { city: "Visakhapatnam", state: "Andhra Pradesh", landmark: "RK Beach" },
-  { city: "Vijayawada", state: "Andhra Pradesh", landmark: "Kanaka Durga Temple" },
-  { city: "Tirupati", state: "Andhra Pradesh", landmark: "Tirumala Temple" },
-  { city: "Kolkata", state: "West Bengal", landmark: "Victoria Memorial" },
-  { city: "Darjeeling", state: "West Bengal", landmark: "Tiger Hill" },
-  { city: "Gangtok", state: "Sikkim", landmark: "MG Marg" },
-  { city: "Bhubaneswar", state: "Odisha", landmark: "Lingaraj Temple" },
-  { city: "Puri", state: "Odisha", landmark: "Jagannath Temple & Beach" },
-  { city: "Varanasi", state: "Uttar Pradesh", landmark: "Dashashwamedh Ghat" },
-  { city: "Lucknow", state: "Uttar Pradesh", landmark: "Bara Imambara" },
-  { city: "Amritsar", state: "Punjab", landmark: "Golden Temple" },
-  { city: "Chandigarh", state: "Chandigarh", landmark: "Rock Garden" },
-  { city: "Shimla", state: "Himachal Pradesh", landmark: "The Ridge & Mall Road" },
-  { city: "Manali", state: "Himachal Pradesh", landmark: "Solang Valley" },
-  { city: "Dharamshala", state: "Himachal Pradesh", landmark: "McLeod Ganj" },
-  { city: "Srinagar", state: "Jammu & Kashmir", landmark: "Dal Lake" },
-  { city: "Leh", state: "Ladakh", landmark: "Leh Palace" },
-  { city: "Rishikesh", state: "Uttarakhand", landmark: "Laxman Jhula & Ganga" },
-  { city: "Nainital", state: "Uttarakhand", landmark: "Naini Lake" },
-  { city: "Dehradun", state: "Uttarakhand", landmark: "Robber's Cave" },
-  { city: "Patna", state: "Bihar", landmark: "Golghar" },
+  {
+    city: "Delhi",
+    state: "Delhi",
+    landmark: "India Gate & Connaught Place",
+  },
+  {
+    city: "Agra",
+    state: "Uttar Pradesh",
+    landmark: "Taj Mahal",
+  },
+  {
+    city: "Jaipur",
+    state: "Rajasthan",
+    landmark: "Hawa Mahal & Amber Fort",
+  },
+  {
+    city: "Udaipur",
+    state: "Rajasthan",
+    landmark: "Lake Pichola",
+  },
+  {
+    city: "Jodhpur",
+    state: "Rajasthan",
+    landmark: "Mehrangarh Fort",
+  },
+  {
+    city: "Jaisalmer",
+    state: "Rajasthan",
+    landmark: "Jaisalmer Fort",
+  },
+  {
+    city: "Pushkar",
+    state: "Rajasthan",
+    landmark: "Pushkar Lake",
+  },
+  {
+    city: "Mumbai",
+    state: "Maharashtra",
+    landmark: "Gateway of India & Marine Drive",
+  },
+  {
+    city: "Pune",
+    state: "Maharashtra",
+    landmark: "Shaniwar Wada",
+  },
+  {
+    city: "Nashik",
+    state: "Maharashtra",
+    landmark: "Trimbakeshwar",
+  },
+  {
+    city: "Aurangabad",
+    state: "Maharashtra",
+    landmark: "Ajanta & Ellora Caves",
+  },
+  {
+    city: "Ahmedabad",
+    state: "Gujarat",
+    landmark: "Sabarmati Ashram",
+  },
+  {
+    city: "Vadodara",
+    state: "Gujarat",
+    landmark: "Laxmi Vilas Palace",
+  },
+  {
+    city: "Rann of Kutch",
+    state: "Gujarat",
+    landmark: "White Rann",
+  },
+  {
+    city: "Goa",
+    state: "Goa",
+    landmark: "Baga & Calangute Beach",
+  },
+  {
+    city: "Panaji",
+    state: "Goa",
+    landmark: "Fontainhas",
+  },
+  {
+    city: "Bengaluru",
+    state: "Karnataka",
+    landmark: "Bangalore Palace & MG Road",
+  },
+  {
+    city: "Mysuru",
+    state: "Karnataka",
+    landmark: "Mysore Palace",
+  },
+  {
+    city: "Hampi",
+    state: "Karnataka",
+    landmark: "Virupaksha Temple",
+  },
+  {
+    city: "Coorg",
+    state: "Karnataka",
+    landmark: "Abbey Falls",
+  },
+  {
+    city: "Chennai",
+    state: "Tamil Nadu",
+    landmark: "Marina Beach",
+  },
+  {
+    city: "Mahabalipuram",
+    state: "Tamil Nadu",
+    landmark: "Shore Temple",
+  },
+  {
+    city: "Ooty",
+    state: "Tamil Nadu",
+    landmark: "Ooty Lake",
+  },
+  {
+    city: "Madurai",
+    state: "Tamil Nadu",
+    landmark: "Meenakshi Temple",
+  },
+  {
+    city: "Kochi",
+    state: "Kerala",
+    landmark: "Fort Kochi",
+  },
+  {
+    city: "Munnar",
+    state: "Kerala",
+    landmark: "Tea Gardens",
+  },
+  {
+    city: "Alappuzha",
+    state: "Kerala",
+    landmark: "Alleppey Backwaters",
+  },
+  {
+    city: "Thiruvananthapuram",
+    state: "Kerala",
+    landmark: "Kovalam Beach",
+  },
+  {
+    city: "Varkala",
+    state: "Kerala",
+    landmark: "Varkala Cliff",
+  },
+  {
+    city: "Hyderabad",
+    state: "Telangana",
+    landmark: "Charminar",
+  },
+  {
+    city: "Warangal",
+    state: "Telangana",
+    landmark: "Warangal Fort",
+  },
+  {
+    city: "Visakhapatnam",
+    state: "Andhra Pradesh",
+    landmark: "RK Beach",
+  },
+  {
+    city: "Vijayawada",
+    state: "Andhra Pradesh",
+    landmark: "Kanaka Durga Temple",
+  },
+  {
+    city: "Tirupati",
+    state: "Andhra Pradesh",
+    landmark: "Tirumala Temple",
+  },
+  {
+    city: "Kolkata",
+    state: "West Bengal",
+    landmark: "Victoria Memorial",
+  },
+  {
+    city: "Darjeeling",
+    state: "West Bengal",
+    landmark: "Tiger Hill",
+  },
+  {
+    city: "Gangtok",
+    state: "Sikkim",
+    landmark: "MG Marg",
+  },
+  {
+    city: "Bhubaneswar",
+    state: "Odisha",
+    landmark: "Lingaraj Temple",
+  },
+  {
+    city: "Puri",
+    state: "Odisha",
+    landmark: "Jagannath Temple & Beach",
+  },
+  {
+    city: "Varanasi",
+    state: "Uttar Pradesh",
+    landmark: "Dashashwamedh Ghat",
+  },
+  {
+    city: "Lucknow",
+    state: "Uttar Pradesh",
+    landmark: "Bara Imambara",
+  },
+  {
+    city: "Amritsar",
+    state: "Punjab",
+    landmark: "Golden Temple",
+  },
+  {
+    city: "Chandigarh",
+    state: "Chandigarh",
+    landmark: "Rock Garden",
+  },
+  {
+    city: "Shimla",
+    state: "Himachal Pradesh",
+    landmark: "The Ridge & Mall Road",
+  },
+  {
+    city: "Manali",
+    state: "Himachal Pradesh",
+    landmark: "Solang Valley",
+  },
+  {
+    city: "Dharamshala",
+    state: "Himachal Pradesh",
+    landmark: "McLeod Ganj",
+  },
+  {
+    city: "Srinagar",
+    state: "Jammu & Kashmir",
+    landmark: "Dal Lake",
+  },
+  {
+    city: "Leh",
+    state: "Ladakh",
+    landmark: "Leh Palace",
+  },
+  {
+    city: "Rishikesh",
+    state: "Uttarakhand",
+    landmark: "Laxman Jhula & Ganga",
+  },
+  {
+    city: "Nainital",
+    state: "Uttarakhand",
+    landmark: "Naini Lake",
+  },
+  {
+    city: "Dehradun",
+    state: "Uttarakhand",
+    landmark: "Robber's Cave",
+  },
+  {
+    city: "Patna",
+    state: "Bihar",
+    landmark: "Golghar",
+  },
 ];
 
 // ============================================================
 // HOTEL DATA
-// MINIMUM 4 HOTELS PER DESTINATION
-// 50 DESTINATIONS = 200 HOTELS
+// 4 HOTELS PER DESTINATION
+// PRICES INCREASED TO REALISTIC DEMO VALUES
 // ============================================================
 
 export type HotelProperty = {
@@ -675,20 +1788,37 @@ export const allHotels: HotelProperty[] =
       const idx = di * 4 + ci;
       const h = hashString(`${dest.city}-${cat}-${idx}`);
 
+      /*
+       * Realistic demo hotel prices:
+       * Budget   : ₹1,800 – ₹3,500
+       * Standard : ₹3,500 – ₹6,500
+       * Luxury   : ₹8,500 – ₹15,000
+       */
       const priceBase =
         cat === "Budget"
-          ? 1200
+          ? 1800
           : cat === "Standard"
-            ? 2800
-            : 6500;
+            ? 3800
+            : 8500;
 
-      const price = priceBase + (h % 1800);
+      const priceVariation =
+        cat === "Budget"
+          ? h % 1700
+          : cat === "Standard"
+            ? h % 2700
+            : h % 6500;
+
+      const price = priceBase + priceVariation;
 
       const prefix =
-        hotelNamePrefixes[h % hotelNamePrefixes.length];
+        hotelNamePrefixes[
+          h % hotelNamePrefixes.length
+        ];
 
       const uniqueSuffix =
-        ci === 3 ? "Suites" : hotelNameSuffixByCategory[cat];
+        ci === 3
+          ? "Suites"
+          : hotelNameSuffixByCategory[cat];
 
       return {
         id: `hotel-${dest.city
@@ -714,8 +1844,8 @@ export const allHotels: HotelProperty[] =
         priceFrom: price,
 
         previewImages: [
-          `https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80`,
-          `https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=900&q=80`,
+          "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80",
+          "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=900&q=80",
         ],
 
         amenities:
@@ -727,6 +1857,8 @@ export const allHotels: HotelProperty[] =
                 "Breakfast Included",
                 "Valet Parking",
                 "Room Service",
+                "Gym",
+                "Airport Transfer",
               ]
             : cat === "Standard"
               ? [
@@ -734,11 +1866,14 @@ export const allHotels: HotelProperty[] =
                   "Breakfast Included",
                   "AC",
                   "Room Service",
+                  "Parking",
+                  "Gym",
                 ]
               : [
                   "Free WiFi",
                   "AC",
                   "Parking",
+                  "24x7 Reception",
                 ],
 
         category: cat,
@@ -765,8 +1900,7 @@ export type Segment = {
   code: string;
   operator?: string;
 
-  // Optional intentionally:
-  // Hotels do NOT have from/to.
+  // Hotels intentionally do NOT use from/to.
   from?: string;
   fromCode?: string;
   to?: string;
@@ -789,9 +1923,14 @@ export function distanceKm(
   from: Station,
   to: Station,
 ): number {
-  if (!from || !to || from.code === to.code) return 0;
+  if (!from || !to || from.code === to.code) {
+    return 0;
+  }
 
-  const key = [from.code, to.code].sort().join("-");
+  const key = [from.code, to.code]
+    .sort()
+    .join("-");
+
   const h = hashString(key);
 
   return 80 + (h % 1800);
@@ -818,39 +1957,50 @@ export function demandIndex(
 
 // ============================================================
 // FARE FACTORS
+// MORE REALISTIC TRANSPORT PRICING
 // ============================================================
 
-const classFareFactors: Record<string, number> = {
-  SL: 0.35,
-  "3A": 0.9,
-  "2A": 1.3,
-  "1A": 2.1,
-  CC: 0.8,
-  EC: 1.0,
+const classFareFactors: Record<
+  string,
+  number
+> = {
+  // TRAIN
+  GEN: 0.28,
+  SL: 0.62,
+  "3A": 1.05,
+  "2A": 1.45,
+  "1A": 2.35,
+  CC: 0.95,
+  EC: 1.35,
 
-  GEN: 0.2,
+  // BUS
+  SEATER: 0.72,
+  SLEEPER: 1.0,
+  VOLVO: 1.18,
 
-  SEATER: 0.5,
-  SLEEPER: 0.75,
-  VOLVO: 0.85,
-
+  // FLIGHT
   ECONOMY: 1,
-  PREMIUM_ECONOMY: 1.6,
-  BUSINESS: 2.8,
+  PREMIUM_ECONOMY: 1.55,
+  BUSINESS: 2.75,
 
-  TOKEN: 0.05,
+  // METRO
+  TOKEN: 0.08,
 
-  DECK: 0.4,
-  CABIN: 1.2,
+  // FERRY
+  DECK: 0.42,
+  CABIN: 1.15,
 
+  // HOTEL ROOMS
   DELUXE: 1,
-  PREMIUM: 1.4,
-  EXECUTIVE: 1.8,
-  SUITE: 2.5,
-  FAMILY: 1.6,
+  PREMIUM: 1.35,
+  EXECUTIVE: 1.7,
+  SUITE: 2.35,
+  FAMILY: 1.55,
 };
 
-function classFareFactor(code: string): number {
+function classFareFactor(
+  code: string,
+): number {
   return classFareFactors[code] ?? 1;
 }
 
@@ -867,48 +2017,173 @@ export function computeFare(
   const factor =
     classFareFactor(code) * multiplier;
 
+  /*
+   * Base transport fare.
+   *
+   * Train examples:
+   * Delhi → Jaipur:
+   * SL  ≈ ₹350–₹500
+   * 3A  ≈ ₹650–₹900
+   * 2A  ≈ ₹900–₹1,200
+   * 1A  ≈ ₹1,400–₹2,000
+   *
+   * Long-distance trains scale naturally
+   * with distance.
+   */
   const raw =
-    km * 1.1 * factor +
-    120 * factor;
+    km * 1.25 * factor +
+    220 * factor;
 
   const withDemand =
-    raw * Math.max(0.8, demand);
+    raw * Math.max(0.9, demand);
 
   return Math.max(
-    49,
+    60,
     Math.round(withDemand / 10) * 10,
   );
 }
 
 // ============================================================
 // MEALS
+// MORE OPTIONS
+// ALL VEG = GREEN
+// ONLY NON-VEG = RED
 // ============================================================
 
-export const meals = [
+export type MealType =
+  | "veg"
+  | "nonveg";
+
+export type Meal = {
+  id: string;
+  name: string;
+  price: number;
+  type: MealType;
+  color: "green" | "red";
+};
+
+export const meals: Meal[] = [
+  // VEG
   {
     id: "veg-thali",
     name: "Veg Thali",
     price: 180,
+    type: "veg",
+    color: "green",
   },
   {
-    id: "nonveg-thali",
-    name: "Non-Veg Thali",
+    id: "paneer-thali",
+    name: "Paneer Thali",
     price: 220,
+    type: "veg",
+    color: "green",
   },
   {
-    id: "sandwich",
-    name: "Sandwich Combo",
+    id: "south-indian-meal",
+    name: "South Indian Meal",
+    price: 170,
+    type: "veg",
+    color: "green",
+  },
+  {
+    id: "masala-dosa",
+    name: "Masala Dosa Combo",
+    price: 140,
+    type: "veg",
+    color: "green",
+  },
+  {
+    id: "veg-biryani",
+    name: "Veg Biryani",
+    price: 160,
+    type: "veg",
+    color: "green",
+  },
+  {
+    id: "paneer-biryani",
+    name: "Paneer Biryani",
+    price: 210,
+    type: "veg",
+    color: "green",
+  },
+  {
+    id: "chole-bhature",
+    name: "Chole Bhature",
+    price: 150,
+    type: "veg",
+    color: "green",
+  },
+  {
+    id: "rajma-rice",
+    name: "Rajma Rice",
+    price: 140,
+    type: "veg",
+    color: "green",
+  },
+  {
+    id: "veg-sandwich",
+    name: "Grilled Veg Sandwich",
     price: 120,
+    type: "veg",
+    color: "green",
   },
   {
-    id: "biryani",
-    name: "Chicken Biryani",
-    price: 250,
+    id: "veg-wrap",
+    name: "Veg Wrap Combo",
+    price: 135,
+    type: "veg",
+    color: "green",
+  },
+  {
+    id: "fruit-box",
+    name: "Fresh Fruit Box",
+    price: 110,
+    type: "veg",
+    color: "green",
   },
   {
     id: "snack-box",
-    name: "Snack Box",
+    name: "Vegetarian Snack Box",
     price: 90,
+    type: "veg",
+    color: "green",
+  },
+
+  // NON-VEG
+  {
+    id: "nonveg-thali",
+    name: "Non-Veg Thali",
+    price: 250,
+    type: "nonveg",
+    color: "red",
+  },
+  {
+    id: "chicken-biryani",
+    name: "Chicken Biryani",
+    price: 280,
+    type: "nonveg",
+    color: "red",
+  },
+  {
+    id: "chicken-meal",
+    name: "Chicken Meal",
+    price: 290,
+    type: "nonveg",
+    color: "red",
+  },
+  {
+    id: "chicken-wrap",
+    name: "Chicken Wrap Combo",
+    price: 210,
+    type: "nonveg",
+    color: "red",
+  },
+  {
+    id: "egg-meal",
+    name: "Egg Meal",
+    price: 190,
+    type: "nonveg",
+    color: "red",
   },
 ];
 
@@ -927,12 +2202,16 @@ export function seatState(
   key: string,
   availableBase: number,
   tick: number,
-  opts?: { racWl?: boolean },
+  opts?: {
+    racWl?: boolean;
+  },
 ): {
   tone: SeatTone;
   label: string;
 } {
-  const h = hashString(`${key}:${tick}`);
+  const h = hashString(
+    `${key}:${tick}`,
+  );
 
   const avail = Math.max(
     0,
@@ -945,7 +2224,8 @@ export function seatState(
       opts?.racWl &&
       h % 5 !== 0
     ) {
-      const isRac = h % 2 === 0;
+      const isRac =
+        h % 2 === 0;
 
       return isRac
         ? {
@@ -1045,7 +2325,9 @@ export function allocateSeats(
           rowLetters.length
       ];
 
-    seats.push(`${letter}${seatNum}`);
+    seats.push(
+      `${letter}${seatNum}`,
+    );
   }
 
   return seats;
@@ -1080,7 +2362,8 @@ function timeFromMinutes(
   mins: number,
 ): string {
   const normalized =
-    ((mins % 1440) + 1440) % 1440;
+    ((mins % 1440) + 1440) %
+    1440;
 
   const h = Math.floor(
     normalized / 60,
@@ -1218,6 +2501,10 @@ const modeProfiles: Record<
       {
         code: "SLEEPER",
         label: "AC Sleeper",
+      },
+      {
+        code: "VOLVO",
+        label: "Volvo Premium",
       },
     ],
 
@@ -1405,15 +2692,101 @@ function buildTransportSegment(
           );
 
         const available =
-          5 +
-          (availSeed % 60);
+          5 + (availSeed % 60);
 
-        const fare =
+        let fare =
           computeFare(
             km,
             cls.code,
             demand,
           );
+
+        /*
+         * Premium transport pricing.
+         * Keeps fares realistic instead of
+         * making every mode use the exact
+         * same pricing curve.
+         */
+        if (mode === "train") {
+          const trainMinimums: Record<
+            string,
+            number
+          > = {
+            SL: 250,
+            "3A": 550,
+            "2A": 850,
+            "1A": 1400,
+            CC: 450,
+          };
+
+          fare = Math.max(
+            trainMinimums[cls.code] ??
+              250,
+            fare,
+          );
+        }
+
+        if (mode === "flight") {
+          const flightMinimums: Record<
+            string,
+            number
+          > = {
+            ECONOMY: 2800,
+            PREMIUM_ECONOMY: 5200,
+            BUSINESS: 9500,
+          };
+
+          fare = Math.max(
+            flightMinimums[cls.code] ??
+              2800,
+            fare,
+          );
+        }
+
+        if (mode === "bus") {
+          const busMinimums: Record<
+            string,
+            number
+          > = {
+            SEATER: 450,
+            SLEEPER: 750,
+            VOLVO: 950,
+          };
+
+          fare = Math.max(
+            busMinimums[cls.code] ??
+              450,
+            fare,
+          );
+        }
+
+        if (mode === "ferry") {
+          const ferryMinimums: Record<
+            string,
+            number
+          > = {
+            DECK: 150,
+            CABIN: 450,
+          };
+
+          fare = Math.max(
+            ferryMinimums[cls.code] ??
+              150,
+            fare,
+          );
+        }
+
+        if (mode === "metro") {
+          fare = Math.max(
+            10,
+            Math.min(
+              80,
+              Math.round(
+                (km * 2.2 + 10) / 5,
+              ) * 5,
+            ),
+          );
+        }
 
         const probability =
           mode === "metro"
@@ -1532,11 +2905,30 @@ function buildHotelSegment(
 
   const hotel =
     hotelCandidates[
-      h % Math.max(
-        1,
-        hotelCandidates.length,
-      )
+      h %
+        Math.max(
+          1,
+          hotelCandidates.length,
+        )
     ];
+
+  /*
+   * Hotel room prices are based on
+   * the actual generated hotel's
+   * priceFrom value.
+   *
+   * This prevents a luxury hotel
+   * from showing a ₹300–₹800 room fare.
+   */
+  const roomMultipliers: Record<
+    string,
+    number
+  > = {
+    DELUXE: 1,
+    PREMIUM: 1.3,
+    EXECUTIVE: 1.65,
+    SUITE: 2.25,
+  };
 
   const options =
     hotelRoomTypes.map(
@@ -1547,15 +2939,25 @@ function buildHotelSegment(
           );
 
         const available =
-          1 +
-          (availSeed % 12);
+          1 + (availSeed % 12);
 
-        const fare =
-          computeFare(
-            120,
-            rt.code,
-            demand,
-          );
+        const roomVariation =
+          (availSeed % 700) - 250;
+
+        const baseRoomFare =
+          hotel.priceFrom *
+          (roomMultipliers[
+            rt.code
+          ] ?? 1);
+
+        const fare = Math.max(
+          1200,
+          Math.round(
+            (baseRoomFare +
+              roomVariation) /
+              100,
+          ) * 100,
+        );
 
         const probability =
           Math.max(
@@ -1580,28 +2982,25 @@ function buildHotelSegment(
 
     mode: "hotel",
 
-    name:
-      hotel.name,
+    name: hotel.name,
 
     code:
       `HTL${
         1000 + (h % 8999)
       }`,
 
-    operator:
-      hotel.name,
+    operator: hotel.name,
 
-    // --------------------------------------------------------
     // NO FROM
     // NO FROM CODE
     // NO TO
     // NO TO CODE
-    // --------------------------------------------------------
 
     depart: "2:00 PM",
     arrive: "11:00 AM",
 
     durationMins: 1260,
+
     duration: "1 Night",
 
     distanceKm: 0,
@@ -1622,7 +3021,6 @@ function buildHotelSegment(
 
 // ============================================================
 // HOTEL DESTINATION → STATION OBJECT
-// Used internally without exposing from/to.
 // ============================================================
 
 function hotelLocationToStation(
@@ -1630,13 +3028,21 @@ function hotelLocationToStation(
 ): Station {
   return {
     name: destination.city,
+
     code:
       `HOTEL-${destination.city
         .toUpperCase()
-        .replace(/[^A-Z0-9]+/g, "-")}`,
+        .replace(
+          /[^A-Z0-9]+/g,
+          "-",
+        )}`,
+
     city: destination.city,
+
     state: destination.state,
-    locationType: "hotel_location",
+
+    locationType:
+      "hotel_location",
   };
 }
 
@@ -1657,8 +3063,6 @@ export function generateResults(
 
   // ==========================================================
   // HOTEL SEARCH
-  // Hotels use famous destinations.
-  // No From/To is included in returned Segment.
   // ==========================================================
 
   if (mode === "hotel") {
@@ -1690,13 +3094,13 @@ export function generateResults(
 
       const demand =
         1 +
-        ((hashString(
+        (hashString(
           `${destination.city}-${date
             .toISOString()
             .slice(0, 10)}`,
         ) %
           40) /
-          100);
+          100;
 
       segments.push(
         buildHotelSegment(
@@ -1755,7 +3159,6 @@ export function generateResults(
 
 // ============================================================
 // MODE-SPECIFIC LOCATION HELPERS
-// Useful for dropdown/search UI
 // ============================================================
 
 export function locationsForMode(
@@ -1795,7 +3198,9 @@ export function isValidLocationForMode(
   mode: TransportMode,
   location?: Station,
 ): boolean {
-  if (!location) return false;
+  if (!location) {
+    return false;
+  }
 
   const expected =
     mode === "train"
@@ -1821,7 +3226,10 @@ export function isValidLocationForMode(
 // ============================================================
 
 export function findRoute(
-  mode: Exclude<TransportMode, "hotel">,
+  mode: Exclude<
+    TransportMode,
+    "hotel"
+  >,
   fromCode: string,
   toCode: string,
 ): RouteDef | undefined {
@@ -1829,7 +3237,8 @@ export function findRoute(
     (route) =>
       route.from.code ===
         fromCode &&
-      route.to.code === toCode,
+      route.to.code ===
+        toCode,
   );
 }
 
@@ -1838,7 +3247,10 @@ export function findRoute(
 // ============================================================
 
 export function routesForMode(
-  mode: Exclude<TransportMode, "hotel">,
+  mode: Exclude<
+    TransportMode,
+    "hotel"
+  >,
 ): RouteDef[] {
   return modeRoutes[mode];
 }
@@ -1848,7 +3260,10 @@ export function routesForMode(
 // ============================================================
 
 export function destinationsFrom(
-  mode: Exclude<TransportMode, "hotel">,
+  mode: Exclude<
+    TransportMode,
+    "hotel"
+  >,
   fromCode: string,
 ): Station[] {
   return modeRoutes[mode]
@@ -1868,7 +3283,10 @@ export function destinationsFrom(
 // ============================================================
 
 export function originsTo(
-  mode: Exclude<TransportMode, "hotel">,
+  mode: Exclude<
+    TransportMode,
+    "hotel"
+  >,
   toCode: string,
 ): Station[] {
   return modeRoutes[mode]
