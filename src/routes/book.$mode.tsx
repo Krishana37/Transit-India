@@ -895,7 +895,7 @@ function BookPage() {
   const goPayment = () =>
     setStep("payment");
 
-  {/*
+  /*
    * IMPORTANT ROUTE FIX:
    *
    * For normal transport, booking uses the
@@ -904,7 +904,7 @@ function BookPage() {
    * This prevents the booking from always
    * saving state.from/state.to when the
    * generated result has a different route.
-   */}
+   */
   const finalizeBooking = (
     statusOverride?: Booking["status"],
     statusLabel?: string,
@@ -1607,11 +1607,11 @@ function BookPage() {
                                 </div>
                               </div>
                             ) : (
-                          { /*
+                              /*
                                * IMPORTANT FIX:
                                * Use the actual route of this
                                * result, not the search state.
-                               */}
+                               */
                               <RouteLine
                                 depart={
                                   seg.depart
@@ -1626,6 +1626,15 @@ function BookPage() {
                             )}
                           </div>
 
+                          /*
+                           * IMPORTANT FIX:
+                           * RoutePreview now receives the
+                           * actual Segment route.
+                           *
+                           * This prevents every transport
+                           * mode/result from visually showing
+                           * the same state.from → state.to.
+                           */
                           {!isHotel && (
                             <RoutePreview
                               mode={m}
