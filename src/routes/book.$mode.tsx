@@ -87,6 +87,17 @@ type Search = {
   date?: string;
   slot?: string;
   q?: string;
+
+  /*
+   * searched=1
+   * means the current mode has been explicitly searched.
+   *
+   * searched=0
+   * means the user only switched to this mode.
+   * From/To may still be visible, but results must NOT
+   * automatically appear.
+   */
+  searched?: "0" | "1";
 };
 
 export const Route = createFileRoute("/book/$mode")({
@@ -114,6 +125,11 @@ export const Route = createFileRoute("/book/$mode")({
     q:
       typeof search.q === "string"
         ? search.q
+        : undefined,
+
+    searched:
+      search.searched === "0" || search.searched === "1"
+        ? search.searched
         : undefined,
   }),
 
@@ -214,14 +230,9 @@ function BookPage() {
    * ============================================================
    *
    * IMPORTANT:
-   * NEVER create a default route such as:
+   * NEVER create a default route.
    *
-   * JP -> NDLS
-   * NDLS -> JP
-   *
-   * when the user has not selected From/To.
-   *
-   * stationByCode() is only used when an actual code exists.
+   * From/To are only populated from actual search parameters.
    */
   const [state, setState] = useState<SearchState>(() => {
     const fromStation = search.from
@@ -238,11 +249,6 @@ function BookPage() {
       return d;
     })();
 
-    /*
-     * Hotel:
-     * only selected location is used.
-     * NO NDLS fallback.
-     */
     if (isHotel) {
       return {
         from: fromStation,
@@ -255,12 +261,6 @@ function BookPage() {
       };
     }
 
-    /*
-     * Train / Bus / Flight / Metro / Ferry:
-     * use ONLY user-selected From and To.
-     *
-     * There is intentionally NO fallback route.
-     */
     return {
       from: fromStation,
       to: toStation,
@@ -270,6 +270,36 @@ function BookPage() {
       slot: search.slot ?? "morning",
       query: search.q ?? "",
     };
+  });
+
+  /*
+   * ============================================================
+   * SEARCH SUBMISSION STATE
+   * ============================================================
+   *
+   * If URL explicitly says searched=0:
+   *   user has only switched mode.
+   *
+   * If URL says searched=1:
+   *   user actually searched this mode.
+   *
+   * If searched is absent but From/To exist:
+   *   treat it as an existing/direct search for backwards
+   *   compatibility.
+   */
+  const [hasSearched, setHasSearched] = useState(() => {
+    if (search.searched === "0") {
+      return false;
+    }
+
+    if (search.searched === "1") {
+      return true;
+    }
+
+    return Boolean(
+      search.from &&
+        (isHotel || search.to),
+    );
   });
 
   useEffect(() => {
@@ -282,15 +312,19 @@ function BookPage() {
 
   const [step, setStep] = useState<Step>("results");
 
-  const [segment, setSegment] = useState<Segment | null>(null);
+  const [segment, setSegment] =
+    useState<Segment | null>(null);
 
   const [classCode, setClassCode] = useState("");
 
-  const [selectedPax, setSelectedPax] = useState<string[]>([]);
+  const [selectedPax, setSelectedPax] =
+    useState<string[]>([]);
 
-  const [contactEmail, setContactEmail] = useState("");
+  const [contactEmail, setContactEmail] =
+    useState("");
 
-  const [contactMobile, setContactMobile] = useState("");
+  const [contactMobile, setContactMobile] =
+    useState("");
 
   const [mealQty, setMealQty] =
     useState<Record<string, number>>({});
@@ -337,14 +371,6 @@ function BookPage() {
    * ============================================================
    * ROUTE SELECTION CHECK
    * ============================================================
-   *
-   * For hotel:
-   *   From/location must exist.
-   *
-   * For every other mode:
-   *   BOTH From and To must exist.
-   *
-   * If they don't exist, generateResults() is NOT called.
    */
   const hasSelectedRoute = isHotel
     ? Boolean(state.from)
@@ -355,13 +381,20 @@ function BookPage() {
    * RESULTS
    * ============================================================
    *
-   * This is the second important fix.
+   * IMPORTANT FIX:
    *
-   * No selected station/location =
-   * NO generated route.
+   * hasSelectedRoute alone is NOT enough.
+   *
+   * After switching:
+   *
+   *   Train -> Bus
+   *
+   * From/To remain selected, but hasSearched becomes false.
+   *
+   * Therefore Bus results are NOT generated automatically.
    */
   const results = useMemo(() => {
-    if (!hasSelectedRoute) {
+    if (!hasSelectedRoute || !hasSearched) {
       return [];
     }
 
@@ -376,6 +409,7 @@ function BookPage() {
     );
   }, [
     hasSelectedRoute,
+    hasSearched,
     m,
     state.from,
     state.to,
@@ -484,8 +518,9 @@ function BookPage() {
   ]);
 
   /*
-   * Distance and demand are calculated ONLY
-   * after a valid route/location exists.
+   * ============================================================
+   * DISTANCE / DEMAND
+   * ============================================================
    */
   const km =
     !hasSelectedRoute || isHotel
@@ -508,10 +543,13 @@ function BookPage() {
    * ============================================================
    * SEARCH SUBMIT
    * ============================================================
+   *
+   * Clicking Search is the ONLY action that changes
+   * hasSearched from false -> true.
    */
   const submitSearch = () => {
     /*
-     * Hotel needs a location.
+     * HOTEL
      */
     if (isHotel) {
       if (!state.from) {
@@ -519,6 +557,7 @@ function BookPage() {
       }
 
       setSearchNonce(uid());
+      setHasSearched(true);
 
       navigate({
         to: "/book/$mode",
@@ -535,6 +574,7 @@ function BookPage() {
           q:
             state.query ||
             undefined,
+          searched: "1",
         },
       });
 
@@ -542,14 +582,14 @@ function BookPage() {
     }
 
     /*
-     * Every normal transport mode needs
-     * BOTH From and To.
+     * ALL OTHER MODES
      */
     if (!state.from || !state.to) {
       return;
     }
 
     setSearchNonce(uid());
+    setHasSearched(true);
 
     navigate({
       to: "/book/$mode",
@@ -566,6 +606,7 @@ function BookPage() {
         q:
           state.query ||
           undefined,
+        searched: "1",
       },
     });
   };
@@ -614,9 +655,6 @@ function BookPage() {
       return;
     }
 
-    /*
-     * Save EXACT selected segment.
-     */
     setSegment(seg);
     setClassCode(code);
 
@@ -843,11 +881,6 @@ function BookPage() {
       return;
     }
 
-    /*
-     * For hotel, selected location is mandatory.
-     *
-     * For other modes, both stations are mandatory.
-     */
     if (
       isHotel &&
       !state.from
@@ -886,9 +919,6 @@ function BookPage() {
 
     /*
      * Segment route has priority.
-     *
-     * This prevents booking from accidentally
-     * using a default Delhi-Jaipur route.
      */
     const bookingFromCode = isHotel
       ? state.from!.code
@@ -1103,10 +1133,6 @@ function BookPage() {
   const proceedFromTatkalDraft = (
     draft: PreTatkalDraft,
   ) => {
-    /*
-     * Tatkal drafts are allowed only when
-     * an actual route/location exists.
-     */
     if (!hasSelectedRoute) {
       return;
     }
@@ -1179,7 +1205,45 @@ function BookPage() {
             return (
               <button
                 key={tm.id}
-                onClick={() =>
+                onClick={() => {
+                  /*
+                   * =================================================
+                   * IMPORTANT MODE SWITCH FIX
+                   * =================================================
+                   *
+                   * Keep From/To selected.
+                   *
+                   * But mark the new mode as NOT SEARCHED.
+                   *
+                   * Therefore:
+                   *
+                   * Train -> Bus
+                   *
+                   * From/To stay visible
+                   * BUT Bus results do not appear.
+                   *
+                   * User must click Search again.
+                   */
+
+                  setHasSearched(false);
+
+                  setSegment(null);
+                  setClassCode("");
+                  setSelectedPax([]);
+                  setMealQty({});
+                  setBooking(null);
+
+                  setIsTatkalFlow(false);
+                  setActiveTatkalDraftId(null);
+
+                  setAppliedCoins(0);
+                  setAppliedPoints(0);
+                  setSelectedRewardId(null);
+
+                  setStep("results");
+
+                  setSearchNonce(uid());
+
                   navigate({
                     to: "/book/$mode",
                     params: {
@@ -1188,6 +1252,9 @@ function BookPage() {
                     search:
                       tm.id === "hotel"
                         ? {
+                            /*
+                             * Keep the location visible.
+                             */
                             from:
                               state.from?.code,
                             to: undefined,
@@ -1201,12 +1268,17 @@ function BookPage() {
                             slot:
                               state.slot,
                             q: undefined,
+
+                            /*
+                             * Explicitly tell the route:
+                             * this is a mode switch,
+                             * NOT a fresh search.
+                             */
+                            searched: "0",
                           }
                         : {
                             /*
-                             * IMPORTANT:
-                             * Do NOT invent station codes
-                             * when switching modes.
+                             * Keep From and To visible.
                              */
                             from:
                               state.from?.code,
@@ -1222,9 +1294,14 @@ function BookPage() {
                             slot:
                               state.slot,
                             q: undefined,
+
+                            /*
+                             * Prevent automatic results.
+                             */
+                            searched: "0",
                           },
-                  })
-                }
+                  });
+                }}
                 className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition ${
                   tm.id === m
                     ? "border-primary bg-[color:var(--brand-soft)] text-primary"
@@ -1267,13 +1344,10 @@ function BookPage() {
                     /*
                      * HOTEL:
                      * From and To remain internally identical.
-                     *
-                     * But ONLY when a real location is selected.
                      */
                     if (isHotel) {
                       const nextFrom =
-                        p.from ??
-                        s.from;
+                        p.from ?? s.from;
 
                       return {
                         ...s,
@@ -1298,9 +1372,10 @@ function BookPage() {
               />
 
               {/* =================================================
-                  NO ROUTE SELECTED
+                  NO ROUTE / NOT SEARCHED
                   ================================================= */}
-              {!hasSelectedRoute ? (
+              {!hasSelectedRoute ||
+              !hasSearched ? (
                 <Card className="mt-6 rounded-2xl border-dashed border-border bg-card/50 p-8">
                   <div className="mx-auto max-w-lg text-center">
                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--brand-soft)]">
@@ -1312,15 +1387,19 @@ function BookPage() {
                     </div>
 
                     <h2 className="text-base font-semibold">
-                      {isHotel
-                        ? "Select a location"
-                        : "Select your stations"}
+                      {!hasSelectedRoute
+                        ? isHotel
+                          ? "Select a location"
+                          : "Select your stations"
+                        : `Search ${m} options`}
                     </h2>
 
                     <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-                      {isHotel
-                        ? "Choose a location above to see available hotels."
-                        : "Choose both From and To above to see available routes. No default route is shown."}
+                      {!hasSelectedRoute
+                        ? isHotel
+                          ? "Choose a location above to see available hotels."
+                          : "Choose both From and To above to see available routes. No default route is shown."
+                        : "Your From and To are selected. Click Search to see available options for this mode."}
                     </p>
                   </div>
                 </Card>
@@ -1846,7 +1925,7 @@ function BookPage() {
                                           .from
                                           .city
                                       }{" "}
-                                      →
+                                      →{" "}
                                       {
                                         state
                                           .to
@@ -1995,7 +2074,7 @@ function BookPage() {
                               {
                                 alt.depart
                               }{" "}
-                              →
+                              →{" "}
                               {
                                 alt.arrive
                               }
