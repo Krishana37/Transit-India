@@ -63,7 +63,6 @@ export type SearchState = {
   date: Date;
   slot: string;
   query: string;
-
   checkIn?: Date;
   checkOut?: Date;
   guests?: number;
@@ -81,6 +80,10 @@ function stationByCode(
   code: string | undefined,
   locations: Station[],
 ): Station | undefined {
+  if (!locations.length) {
+    return undefined;
+  }
+
   return (
     locations.find((station) => station.code === code) ??
     locations[0]
@@ -118,36 +121,34 @@ export function SmartSearch({
   );
 
   // ==========================================================
-  // HOTEL LOCATION
-  // ==========================================================
-  //
-  // Hotel has ONLY ONE location.
-  // There is NO From / To relationship in the UI.
-  //
-  const hotelLocation =
-    stationByCode(value.from?.code, modeLocations) ??
-    modeLocations[0];
-
-  // ==========================================================
-  // TRANSPORT LOCATIONS
+  // CURRENT MODE LOCATIONS
   // ==========================================================
 
-  const safeFrom =
-    stationByCode(value.from?.code, modeLocations) ??
-    modeLocations[0];
+  const hotelLocation = stationByCode(
+    value.from?.code,
+    modeLocations,
+  );
 
-  const safeTo =
-    stationByCode(value.to?.code, modeLocations) ??
-    modeLocations[1] ??
-    modeLocations[0];
+  const safeFrom = stationByCode(
+    value.from?.code,
+    modeLocations,
+  );
+
+  const safeTo = stationByCode(
+    value.to?.code,
+    modeLocations,
+  );
 
   // ==========================================================
-  // SAME STATION VALIDATION
+  // SAME STATION CHECK
+  // ONLY FOR TRANSPORT
   // ==========================================================
 
   const sameStation =
     !isHotel &&
-    safeFrom?.code === safeTo?.code;
+    !!safeFrom &&
+    !!safeTo &&
+    safeFrom.code === safeTo.code;
 
   // ==========================================================
   // HOTEL DATES
@@ -158,9 +159,9 @@ export function SmartSearch({
   const hotelCheckOut =
     value.checkOut ??
     (() => {
-      const d = new Date(hotelCheckIn);
-      d.setDate(d.getDate() + 1);
-      return d;
+      const nextDate = new Date(hotelCheckIn);
+      nextDate.setDate(nextDate.getDate() + 1);
+      return nextDate;
     })();
 
   const hotelGuests = Math.max(1, value.guests ?? 1);
@@ -180,20 +181,10 @@ export function SmartSearch({
       pushRecentSearch(query);
     }
 
-    /*
-     * Hotel search:
-     *
-     * Only hotel-specific state is updated.
-     * No visible From / To fields exist.
-     *
-     * `from` is retained internally only because the
-     * existing SearchState / BookPage expects a Station.
-     *
-     * `to` is NOT used by the hotel UI.
-     */
-    if (isHotel) {
+    if (isHotel && hotelLocation) {
       onChange({
         from: hotelLocation,
+        to: hotelLocation,
         date: hotelCheckIn,
         checkIn: hotelCheckIn,
         checkOut: hotelCheckOut,
@@ -209,7 +200,7 @@ export function SmartSearch({
   // ==========================================================
 
   const swap = () => {
-    if (isHotel) {
+    if (isHotel || !safeFrom || !safeTo) {
       return;
     }
 
@@ -226,62 +217,23 @@ export function SmartSearch({
   const voice = () => {
     setListening(true);
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       setListening(false);
 
+      const suggestion =
+        aiSuggestions[
+          Math.floor(Math.random() * aiSuggestions.length)
+        ];
+
       onChange({
-        query:
-          aiSuggestions[
-            Math.floor(
-              Math.random() * aiSuggestions.length,
-            )
-          ],
+        query: suggestion,
       });
     }, 1400);
   };
 
   // ==========================================================
-  // KEEP LOCATIONS VALID FOR CURRENT TRANSPORT MODE
+  // RENDER
   // ==========================================================
-
-  /*
-   * IMPORTANT:
-   *
-   * We do NOT render From/To for Hotel.
-   *
-   * For transport modes, if the parent accidentally contains
-   * a location from another transport mode, we correct it.
-   */
-
-  if (!isHotel) {
-    if (
-      safeFrom &&
-      safeTo &&
-      (value.from?.code !== safeFrom.code ||
-        value.to?.code !== safeTo.code)
-    ) {
-      queueMicrotask(() => {
-        onChange({
-          from: safeFrom,
-          to: safeTo,
-        });
-      });
-    }
-  } else if (
-    hotelLocation &&
-    value.from?.code !== hotelLocation.code
-  ) {
-    /*
-     * Hotel only needs one location.
-     *
-     * We intentionally do NOT set `to`.
-     */
-    queueMicrotask(() => {
-      onChange({
-        from: hotelLocation,
-      });
-    });
-  }
 
   return (
     <div className="mx-auto w-full">
@@ -292,26 +244,16 @@ export function SmartSearch({
         )}
       >
         {isHotel ? (
-          // ==================================================
+          // ====================================================
           // HOTEL SEARCH
-          // ==================================================
-          //
-          // ONLY:
-          // Location
-          // Check-in
-          // Check-out
-          // Guests
-          // Search
-          //
+          // IMPORTANT:
           // NO FROM
           // NO TO
           // NO SWAP
-          // NO SAME-LOCATION WARNING
-          //
+          // ====================================================
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.4fr_1fr_1fr_0.8fr_auto]">
               {/* HOTEL LOCATION */}
-
               <StationPicker
                 label="Location"
                 value={hotelLocation}
@@ -319,12 +261,12 @@ export function SmartSearch({
                 onChange={(station) => {
                   onChange({
                     from: station,
+                    to: station,
                   });
                 }}
               />
 
               {/* CHECK-IN */}
-
               <DateField
                 label="Check-in"
                 date={hotelCheckIn}
@@ -333,7 +275,6 @@ export function SmartSearch({
 
                   if (date >= hotelCheckOut) {
                     nextCheckOut = new Date(date);
-
                     nextCheckOut.setDate(
                       nextCheckOut.getDate() + 1,
                     );
@@ -348,7 +289,6 @@ export function SmartSearch({
               />
 
               {/* CHECK-OUT */}
-
               <DateField
                 label="Check-out"
                 date={hotelCheckOut}
@@ -361,7 +301,6 @@ export function SmartSearch({
               />
 
               {/* GUESTS */}
-
               <GuestField
                 guests={hotelGuests}
                 setGuests={(guests) => {
@@ -372,8 +311,8 @@ export function SmartSearch({
               />
 
               {/* SEARCH */}
-
               <Button
+                type="button"
                 onClick={submit}
                 className="h-full min-h-14 rounded-2xl px-5 text-white brand-gradient"
               >
@@ -383,52 +322,50 @@ export function SmartSearch({
             </div>
 
             {/* HOTEL SUMMARY */}
+            {hotelLocation && (
+              <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
+                  <MapPin className="h-3 w-3" />
+                  {hotelLocation.city}
+                </span>
 
-            <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
-                <MapPin className="h-3 w-3" />
-                {hotelLocation?.city}
-              </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
+                  <CalendarDays className="h-3 w-3" />
+                  {formatDate(hotelCheckIn)}
+                  {" → "}
+                  {formatDate(hotelCheckOut)}
+                </span>
 
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
-                <CalendarDays className="h-3 w-3" />
-
-                {formatDate(hotelCheckIn)}
-
-                {" → "}
-
-                {formatDate(hotelCheckOut)}
-              </span>
-
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
-                <Users className="h-3 w-3" />
-
-                {hotelGuests}{" "}
-                {hotelGuests === 1
-                  ? "Guest"
-                  : "Guests"}
-              </span>
-            </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
+                  <Users className="h-3 w-3" />
+                  {hotelGuests}{" "}
+                  {hotelGuests === 1 ? "Guest" : "Guests"}
+                </span>
+              </div>
+            )}
           </div>
         ) : (
-          // ==================================================
+          // ====================================================
           // NORMAL TRANSPORT SEARCH
-          // ==================================================
           //
           // Train / Bus / Flight / Metro / Ferry
           //
-          // From + To + Swap + Date + Time
-          //
+          // FROM + TO are separate.
+          // Same station is blocked.
+          // ====================================================
           <>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_1fr_auto_auto]">
               {/* FROM */}
-
               <StationPicker
                 label={t("common.from")}
                 value={safeFrom}
                 locations={modeLocations}
                 exclude={safeTo?.code}
                 onChange={(station) => {
+                  if (station.code === safeTo?.code) {
+                    return;
+                  }
+
                   onChange({
                     from: station,
                   });
@@ -436,26 +373,29 @@ export function SmartSearch({
               />
 
               {/* SWAP */}
-
               <div className="hidden items-center justify-center md:flex">
                 <button
-                  onClick={swap}
                   type="button"
+                  onClick={swap}
                   aria-label="Swap stations"
-                  className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:rotate-180 hover:border-primary/50 hover:text-primary"
+                  disabled={!safeFrom || !safeTo}
+                  className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:rotate-180 hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-50"
                 >
                   <ArrowRightLeft className="h-4 w-4" />
                 </button>
               </div>
 
               {/* TO */}
-
               <StationPicker
                 label={t("common.to")}
                 value={safeTo}
                 locations={modeLocations}
                 exclude={safeFrom?.code}
                 onChange={(station) => {
+                  if (station.code === safeFrom?.code) {
+                    return;
+                  }
+
                   onChange({
                     to: station,
                   });
@@ -463,7 +403,6 @@ export function SmartSearch({
               />
 
               {/* DATE */}
-
               <DateField
                 label="Date"
                 date={value.date}
@@ -475,7 +414,6 @@ export function SmartSearch({
               />
 
               {/* TIME */}
-
               <SlotField
                 slot={value.slot}
                 setSlot={(slot) => {
@@ -487,7 +425,6 @@ export function SmartSearch({
             </div>
 
             {/* SAME LOCATION WARNING */}
-
             {sameStation && (
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-[13px] text-destructive">
                 <TriangleAlert className="h-4 w-4" />
@@ -498,28 +435,30 @@ export function SmartSearch({
 
             <div className="mt-3 flex flex-col-reverse gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
-                  <MapPin className="h-3 w-3" />
-
-                  {safeFrom?.city} → {safeTo?.city}
-                </span>
+                {safeFrom && safeTo && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+                    <MapPin className="h-3 w-3" />
+                    {safeFrom.city} → {safeTo.city}
+                  </span>
+                )}
 
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
                   <CalendarDays className="h-3 w-3" />
-
                   {formatDate(value.date)}
                 </span>
 
                 <button
-                  onClick={swap}
                   type="button"
-                  className="underline md:hidden"
+                  onClick={swap}
+                  disabled={!safeFrom || !safeTo}
+                  className="underline md:hidden disabled:opacity-50"
                 >
                   Swap
                 </button>
               </div>
 
               <Button
+                type="button"
                 onClick={submit}
                 disabled={sameStation}
                 className="h-11 rounded-full px-6 text-white brand-gradient disabled:opacity-50"
@@ -555,8 +494,8 @@ export function SmartSearch({
           }}
           placeholder={
             isHotel
-              ? "Ask in plain language — “Find hotels near destination”"
-              : "Ask in plain language — “Book the cheapest morning train”"
+              ? 'Ask in plain language — “Find hotels near destination”'
+              : 'Ask in plain language — “Book the cheapest morning train”'
           }
           className="h-10 flex-1 border-0 bg-transparent text-[14px] shadow-none focus-visible:ring-0"
         />
@@ -623,9 +562,9 @@ export function SmartSearch({
           />
         )}
 
-        {/* ==================================================
+        {/* ====================================================
             POPULAR LOCATIONS
-            ================================================== */}
+            ==================================================== */}
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -638,24 +577,16 @@ export function SmartSearch({
               key={station.code}
               type="button"
               onClick={() => {
-                /*
-                 * HOTEL:
-                 * Popular location changes ONLY the hotel
-                 * location.
-                 */
                 if (isHotel) {
                   onChange({
                     from: station,
+                    to: station,
                   });
 
                   return;
                 }
 
-                /*
-                 * TRANSPORT:
-                 * Popular location changes TO.
-                 */
-                if (station.code === safeFrom.code) {
+                if (station.code === safeFrom?.code) {
                   return;
                 }
 
@@ -722,13 +653,12 @@ export function StationPicker({
   exclude,
 }: {
   label: string;
-  value: Station;
+  value?: Station;
   locations: Station[];
   onChange: (station: Station) => void;
   exclude?: string;
 }) {
   const [open, setOpen] = useState(false);
-
   const [query, setQuery] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -760,7 +690,7 @@ export function StationPicker({
         setOpen(isOpen);
 
         if (isOpen) {
-          setTimeout(() => {
+          window.setTimeout(() => {
             inputRef.current?.focus();
           }, 30);
         }
@@ -771,7 +701,7 @@ export function StationPicker({
           type="button"
           className="flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
         >
-          <MapPin className="h-4 w-4 text-primary" />
+          <MapPin className="h-4 w-4 shrink-0 text-primary" />
 
           <div className="min-w-0 flex-1">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -779,14 +709,19 @@ export function StationPicker({
             </div>
 
             <div className="truncate text-sm font-semibold">
-              {value?.city}{" "}
-              <span className="text-muted-foreground">
-                ({value?.code})
-              </span>
+              {value?.city ?? "Select location"}
+
+              {value?.code && (
+                <span className="text-muted-foreground">
+                  {" "}
+                  ({value.code})
+                </span>
+              )}
             </div>
 
             <div className="truncate text-[11px] text-muted-foreground">
-              {value?.name} · {value?.state}
+              {value?.name ?? "Choose a location"}
+              {value?.state ? ` · ${value.state}` : ""}
             </div>
           </div>
         </button>
@@ -885,13 +820,16 @@ function DateField({
     minDate && minDate > today ? minDate : today;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+    >
       <PopoverTrigger asChild>
         <button
           type="button"
           className="flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
         >
-          <CalendarDays className="h-4 w-4 text-primary" />
+          <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
 
           <div className="min-w-0">
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -929,13 +867,15 @@ function DateField({
 
         <div className="flex gap-1 border-t border-border p-2">
           {[0, 1, 2].map((offset) => {
-            const d = new Date();
+            const quickDate = new Date();
 
-            d.setDate(d.getDate() + offset);
+            quickDate.setDate(
+              quickDate.getDate() + offset,
+            );
 
-            d.setHours(0, 0, 0, 0);
+            quickDate.setHours(0, 0, 0, 0);
 
-            if (d < minimum) {
+            if (quickDate < minimum) {
               return null;
             }
 
@@ -944,7 +884,7 @@ function DateField({
                 key={offset}
                 type="button"
                 onClick={() => {
-                  setDate(d);
+                  setDate(quickDate);
                   setOpen(false);
                 }}
                 className="flex-1 rounded-lg px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -979,13 +919,16 @@ function GuestField({
   const guestOptions = [1, 2, 3, 4, 5, 6, 7, 8];
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+    >
       <PopoverTrigger asChild>
         <button
           type="button"
           className="flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
         >
-          <Users className="h-4 w-4 text-primary" />
+          <Users className="h-4 w-4 shrink-0 text-primary" />
 
           <div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -993,8 +936,7 @@ function GuestField({
             </div>
 
             <div className="text-sm font-semibold">
-              {guests}{" "}
-              {guests === 1 ? "Guest" : "Guests"}
+              {guests} {guests === 1 ? "Guest" : "Guests"}
             </div>
 
             <div className="text-[11px] text-muted-foreground">
@@ -1052,16 +994,20 @@ function SlotField({
 
   const current =
     timeSlots.find((time) => time.id === slot) ??
-    timeSlots[1];
+    timeSlots[1] ??
+    timeSlots[0];
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+    >
       <PopoverTrigger asChild>
         <button
           type="button"
           className="flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 text-left transition hover:border-primary/40"
         >
-          <Clock className="h-4 w-4 text-primary" />
+          <Clock className="h-4 w-4 shrink-0 text-primary" />
 
           <div>
             <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -1069,11 +1015,11 @@ function SlotField({
             </div>
 
             <div className="text-sm font-semibold">
-              {current.label}
+              {current?.label ?? "Any time"}
             </div>
 
             <div className="text-[11px] text-muted-foreground">
-              {current.range}
+              {current?.range ?? ""}
             </div>
           </div>
         </button>
@@ -1123,12 +1069,10 @@ export const searchMotion = {
     opacity: 0,
     y: 12,
   },
-
   animate: {
     opacity: 1,
     y: 0,
   },
-
   exit: {
     opacity: 0,
     y: -8,
