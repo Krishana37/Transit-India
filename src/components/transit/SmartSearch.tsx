@@ -76,14 +76,15 @@ function getModeLocations(mode: TransportMode): Station[] {
   return locationsForMode(mode);
 }
 
-function stationByCode(
+function findStation(
   code: string | undefined,
   locations: Station[],
 ): Station | undefined {
-  return (
-    locations.find((station) => station.code === code) ??
-    locations[0]
-  );
+  if (!code) {
+    return undefined;
+  }
+
+  return locations.find((station) => station.code === code);
 }
 
 // ============================================================
@@ -117,37 +118,35 @@ export function SmartSearch({
   );
 
   // ==========================================================
+  // IMPORTANT:
+  // Never automatically select the first station.
+  // ==========================================================
+
+  const selectedFrom = findStation(
+    value.from?.code,
+    modeLocations,
+  );
+
+  const selectedTo = findStation(
+    value.to?.code,
+    modeLocations,
+  );
+
+  // ==========================================================
   // HOTEL LOCATION
   // ==========================================================
 
-  const hotelLocation =
-    stationByCode(value.from?.code, modeLocations) ??
-    modeLocations[0];
+  const hotelLocation = selectedFrom;
 
   // ==========================================================
-  // NORMAL TRANSPORT LOCATIONS
-  // ==========================================================
-
-  const safeFrom =
-    stationByCode(value.from?.code, modeLocations) ??
-    modeLocations[0];
-
-  const safeTo =
-    stationByCode(value.to?.code, modeLocations) ??
-    modeLocations[1] ??
-    modeLocations[0];
-
-  // ==========================================================
-  // SAME STATION VALIDATION
-  // Only applies to transport.
-  // Hotel has no From / To.
+  // SAME STATION CHECK
   // ==========================================================
 
   const sameStation =
     !isHotel &&
-    !!safeFrom &&
-    !!safeTo &&
-    safeFrom.code === safeTo.code;
+    !!selectedFrom &&
+    !!selectedTo &&
+    selectedFrom.code === selectedTo.code;
 
   // ==========================================================
   // HOTEL DATES
@@ -166,20 +165,30 @@ export function SmartSearch({
   const hotelGuests = Math.max(1, value.guests ?? 1);
 
   // ==========================================================
+  // CAN SEARCH
+  // ==========================================================
+
+  const canSearchHotel = !!hotelLocation;
+
+  const canSearchTransport =
+    !!selectedFrom &&
+    !!selectedTo &&
+    !sameStation;
+
+  // ==========================================================
   // SUBMIT
   // ==========================================================
 
   const submit = () => {
-    // Same station is invalid only for transport.
-    if (!isHotel && sameStation) {
-      return;
-    }
-
-    if (value.query.trim()) {
-      pushRecentSearch(value.query.trim());
-    }
-
     if (isHotel) {
+      if (!canSearchHotel) {
+        return;
+      }
+
+      if (value.query.trim()) {
+        pushRecentSearch(value.query.trim());
+      }
+
       onChange({
         from: hotelLocation,
         to: hotelLocation,
@@ -188,6 +197,17 @@ export function SmartSearch({
         checkOut: hotelCheckOut,
         guests: hotelGuests,
       });
+
+      onSubmit();
+      return;
+    }
+
+    if (!canSearchTransport) {
+      return;
+    }
+
+    if (value.query.trim()) {
+      pushRecentSearch(value.query.trim());
     }
 
     onSubmit();
@@ -202,9 +222,13 @@ export function SmartSearch({
       return;
     }
 
+    if (!selectedFrom || !selectedTo) {
+      return;
+    }
+
     onChange({
-      from: safeTo,
-      to: safeFrom,
+      from: selectedTo,
+      to: selectedFrom,
     });
   };
 
@@ -229,41 +253,6 @@ export function SmartSearch({
     }, 1400);
   };
 
-  // ==========================================================
-  // NORMALIZE PARENT STATE
-  // ==========================================================
-
-  if (isHotel) {
-    if (
-      hotelLocation &&
-      (
-        value.from?.code !== hotelLocation.code ||
-        value.to?.code !== hotelLocation.code
-      )
-    ) {
-      queueMicrotask(() => {
-        onChange({
-          from: hotelLocation,
-          to: hotelLocation,
-        });
-      });
-    }
-  } else if (
-    safeFrom &&
-    safeTo &&
-    (
-      value.from?.code !== safeFrom.code ||
-      value.to?.code !== safeTo.code
-    )
-  ) {
-    queueMicrotask(() => {
-      onChange({
-        from: safeFrom,
-        to: safeTo,
-      });
-    });
-  }
-
   return (
     <div className="mx-auto w-full">
       <Card
@@ -276,13 +265,11 @@ export function SmartSearch({
           // ====================================================
           // HOTEL SEARCH
           // Location + Check-in + Check-out + Guests
-          // NO FROM
-          // NO TO
-          // NO SWAP
           // ====================================================
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.4fr_1fr_1fr_0.8fr_auto]">
               {/* HOTEL LOCATION */}
+
               <StationPicker
                 label="Location"
                 value={hotelLocation}
@@ -296,6 +283,7 @@ export function SmartSearch({
               />
 
               {/* CHECK-IN */}
+
               <DateField
                 label="Check-in"
                 date={hotelCheckIn}
@@ -304,6 +292,7 @@ export function SmartSearch({
 
                   if (date >= hotelCheckOut) {
                     nextCheckOut = new Date(date);
+
                     nextCheckOut.setDate(
                       nextCheckOut.getDate() + 1,
                     );
@@ -318,6 +307,7 @@ export function SmartSearch({
               />
 
               {/* CHECK-OUT */}
+
               <DateField
                 label="Check-out"
                 date={hotelCheckOut}
@@ -330,6 +320,7 @@ export function SmartSearch({
               />
 
               {/* GUESTS */}
+
               <GuestField
                 guests={hotelGuests}
                 setGuests={(guests) => {
@@ -340,9 +331,12 @@ export function SmartSearch({
               />
 
               {/* SEARCH */}
+
               <Button
+                type="button"
                 onClick={submit}
-                className="h-full min-h-14 rounded-2xl px-5 text-white brand-gradient"
+                disabled={!canSearchHotel}
+                className="h-full min-h-14 rounded-2xl px-5 text-white brand-gradient disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Search className="mr-1.5 h-4 w-4" />
                 Search
@@ -350,14 +344,19 @@ export function SmartSearch({
             </div>
 
             {/* HOTEL SUMMARY */}
+
             <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
               <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
                 <MapPin className="h-3 w-3" />
-                {hotelLocation?.city}
+
+                {hotelLocation
+                  ? hotelLocation.city
+                  : "Select location"}
               </span>
 
               <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
                 <CalendarDays className="h-3 w-3" />
+
                 {formatDate(hotelCheckIn)}
                 {" - "}
                 {formatDate(hotelCheckOut)}
@@ -365,6 +364,7 @@ export function SmartSearch({
 
               <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
                 <Users className="h-3 w-3" />
+
                 {hotelGuests}{" "}
                 {hotelGuests === 1 ? "Guest" : "Guests"}
               </span>
@@ -378,11 +378,12 @@ export function SmartSearch({
           <>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_1fr_auto_auto]">
               {/* FROM */}
+
               <StationPicker
                 label={t("common.from")}
-                value={safeFrom}
+                value={selectedFrom}
                 locations={modeLocations}
-                exclude={safeTo?.code}
+                exclude={selectedTo?.code}
                 onChange={(station) => {
                   onChange({
                     from: station,
@@ -391,23 +392,26 @@ export function SmartSearch({
               />
 
               {/* SWAP */}
+
               <div className="hidden items-center justify-center md:flex">
                 <button
                   onClick={swap}
                   type="button"
+                  disabled={!selectedFrom || !selectedTo}
                   aria-label="Swap stations"
-                  className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:rotate-180 hover:border-primary/50 hover:text-primary"
+                  className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:rotate-180 hover:border-primary/50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowRightLeft className="h-4 w-4" />
                 </button>
               </div>
 
               {/* TO */}
+
               <StationPicker
                 label={t("common.to")}
-                value={safeTo}
+                value={selectedTo}
                 locations={modeLocations}
-                exclude={safeFrom?.code}
+                exclude={selectedFrom?.code}
                 onChange={(station) => {
                   onChange({
                     to: station,
@@ -416,6 +420,7 @@ export function SmartSearch({
               />
 
               {/* DATE */}
+
               <DateField
                 label="Date"
                 date={value.date}
@@ -427,6 +432,7 @@ export function SmartSearch({
               />
 
               {/* TIME */}
+
               <SlotField
                 slot={value.slot}
                 setSlot={(slot) => {
@@ -438,6 +444,7 @@ export function SmartSearch({
             </div>
 
             {/* SAME LOCATION WARNING */}
+
             {sameStation && (
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-[13px] text-destructive">
                 <TriangleAlert className="h-4 w-4" />
@@ -448,13 +455,23 @@ export function SmartSearch({
 
             <div className="mt-3 flex flex-col-reverse gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                {/* ROUTE SUMMARY */}
+
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
                   <MapPin className="h-3 w-3" />
 
-                  {safeFrom?.city}
+                  {selectedFrom
+                    ? selectedFrom.city
+                    : "Select From"}
+
                   {" -> "}
-                  {safeTo?.city}
+
+                  {selectedTo
+                    ? selectedTo.city
+                    : "Select To"}
                 </span>
+
+                {/* DATE SUMMARY */}
 
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
                   <CalendarDays className="h-3 w-3" />
@@ -462,19 +479,25 @@ export function SmartSearch({
                   {formatDate(value.date)}
                 </span>
 
+                {/* MOBILE SWAP */}
+
                 <button
                   onClick={swap}
                   type="button"
-                  className="underline md:hidden"
+                  disabled={!selectedFrom || !selectedTo}
+                  className="underline disabled:cursor-not-allowed disabled:opacity-40 md:hidden"
                 >
                   Swap
                 </button>
               </div>
 
+              {/* SEARCH */}
+
               <Button
+                type="button"
                 onClick={submit}
-                disabled={sameStation}
-                className="h-11 rounded-full px-6 text-white brand-gradient disabled:opacity-50"
+                disabled={!canSearchTransport}
+                className="h-11 rounded-full px-6 text-white brand-gradient disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Search className="mr-1.5 h-4 w-4" />
 
@@ -530,7 +553,12 @@ export function SmartSearch({
         <Button
           type="submit"
           size="sm"
-          className="h-9 rounded-full px-4 text-white brand-gradient"
+          disabled={
+            isHotel
+              ? !canSearchHotel
+              : !canSearchTransport
+          }
+          className="h-9 rounded-full px-4 text-white brand-gradient disabled:cursor-not-allowed disabled:opacity-50"
         >
           Ask Yatra
         </Button>
@@ -590,10 +618,6 @@ export function SmartSearch({
               key={station.code}
               type="button"
               onClick={() => {
-                /*
-                 * HOTEL:
-                 * Popular location changes hotel location only.
-                 */
                 if (isHotel) {
                   onChange({
                     from: station,
@@ -603,12 +627,10 @@ export function SmartSearch({
                   return;
                 }
 
-                /*
-                 * TRANSPORT:
-                 * Popular location becomes TO.
-                 * It cannot be the same as FROM.
-                 */
-                if (station.code === safeFrom.code) {
+                if (
+                  selectedFrom &&
+                  station.code === selectedFrom.code
+                ) {
                   return;
                 }
 
@@ -675,7 +697,7 @@ export function StationPicker({
   exclude,
 }: {
   label: string;
-  value: Station;
+  value?: Station;
   locations: Station[];
   onChange: (station: Station) => void;
   exclude?: string;
@@ -685,13 +707,6 @@ export function StationPicker({
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /*
-   * Search ONLY inside the currently selected
-   * transport mode.
-   *
-   * Also exclude the opposite station so that
-   * From and To can never become the same.
-   */
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
@@ -737,18 +752,32 @@ export function StationPicker({
               {label}
             </div>
 
-            <div className="truncate text-sm font-semibold">
-              {value?.city}{" "}
-              <span className="text-muted-foreground">
-                ({value?.code})
-              </span>
-            </div>
+            {value ? (
+              <>
+                <div className="truncate text-sm font-semibold">
+                  {value.city}{" "}
+                  <span className="text-muted-foreground">
+                    ({value.code})
+                  </span>
+                </div>
 
-            <div className="truncate text-[11px] text-muted-foreground">
-              {value?.name}
-              {" - "}
-              {value?.state}
-            </div>
+                <div className="truncate text-[11px] text-muted-foreground">
+                  {value.name}
+                  {" - "}
+                  {value.state}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="truncate text-sm font-semibold text-muted-foreground">
+                  Select location
+                </div>
+
+                <div className="truncate text-[11px] text-muted-foreground">
+                  Choose a location to continue
+                </div>
+              </>
+            )}
           </div>
         </button>
       </PopoverTrigger>
