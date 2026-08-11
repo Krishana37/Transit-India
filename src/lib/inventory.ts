@@ -63,8 +63,8 @@ Different stations in the same city are NOT considered the same.
 
 Example:
 
-NDLS  -> New Delhi Railway Station
-ANVT  -> Anand Vihar Terminal
+NDLS -> New Delhi Railway Station
+ANVT -> Anand Vihar Terminal
 
 Both may belong to Delhi, but they are different stations.
 */
@@ -87,15 +87,6 @@ export const stations: Station[] = Array.from(
 /* ============================================================
 NORMALIZATION HELPERS
 ============================================================ */
-
-/*
-Normalize user/station input so comparisons work even when
-there are differences in:
-
-- upper/lower case
-- extra spaces
-- repeated spaces
-*/
 
 function normalizeText(
   value: string | null | undefined,
@@ -120,7 +111,7 @@ Create a stable station identity.
 
 Station code is the strongest identifier.
 
-If code is unavailable, name is used.
+If code is unavailable, station name is used.
 */
 
 function stationIdentity(
@@ -146,7 +137,7 @@ EXACT SAME-STATION CHECK
 ============================================================ */
 
 /*
-IMPORTANT FIX:
+IMPORTANT:
 
 A station is considered the same ONLY when it is actually
 the same station.
@@ -194,7 +185,7 @@ export function isSameStation(
   Fallback:
   Same normalized station name = same station.
 
-  We intentionally DO NOT compare city/state here.
+  We intentionally DO NOT compare city/state.
   */
   const fromName =
     normalizeText(from.name);
@@ -1026,8 +1017,7 @@ function hotelToLegacy(
     ) * 50;
 
   const previewImages =
-    hotel.previewImages ??
-    [];
+    hotel.previewImages ?? [];
 
   const image =
     previewImages.length > 0
@@ -1212,12 +1202,6 @@ STATION SEARCH
 
 /*
 Find station by code.
-
-Unlike the previous implementation, this does NOT silently
-return stations[0] when the code is invalid.
-
-That old fallback could accidentally make From and To point
-to the same station.
 */
 
 export function findStation(
@@ -1239,26 +1223,27 @@ export function findStation(
   }
 
   /*
-  Preserve the original function's non-null return type.
-
-  If the requested station does not exist, use the first station
-  only as a final legacy fallback.
-
-  Search and route generation never depend on this fallback.
+  Preserve the original non-null return type
+  for legacy components.
   */
   return stations[0];
 }
 
 /*
-Determine whether a station should be excluded from search.
+Determine whether a station is the exact station
+that was selected as the From station.
 
-The exclude value can be:
+IMPORTANT:
 
-- station code
-- station name
+We compare station identity only.
 
-This makes the dropdown work even when the UI passes the
-displayed station name instead of its code.
+We DO NOT compare city/state.
+
+Therefore:
+
+NDLS -> ANVT = allowed
+NDLS -> NDLS = blocked
+CSMT -> LTT = allowed
 */
 
 function matchesExcludedStation(
@@ -1275,6 +1260,9 @@ function matchesExcludedStation(
   const normalizedExclude =
     normalizeText(exclude);
 
+  const normalizedCodeExclude =
+    normalizeCode(exclude);
+
   const stationCode =
     normalizeCode(
       station.code,
@@ -1284,9 +1272,6 @@ function matchesExcludedStation(
     normalizeText(
       station.name,
     );
-
-  const normalizedCodeExclude =
-    normalizeCode(exclude);
 
   if (
     stationCode &&
@@ -1341,88 +1326,119 @@ export function searchStations(
   exclude?: string,
   limit = 30,
 ): Station[] {
-  const query = term.trim().toLowerCase();
+  const query =
+    normalizeText(term);
 
   /*
-   * Resolve the selected From station.
-   *
-   * The UI normally passes the station code
-   * (for example NDLS), but this also supports
-   * a station name or city as a fallback.
-   */
-  const excludedStation =
-    exclude?.trim()
-      ? stations.find((station) => {
-          const value =
-            exclude.trim().toLowerCase();
+  Resolve the excluded From station.
 
-          return (
-            station.code.trim().toLowerCase() === value ||
-            station.name.trim().toLowerCase() === value ||
-            station.city.trim().toLowerCase() === value
-          );
-        })
-      : undefined;
+  The UI may pass:
+  - station code
+  - station name
+  - city
+
+  We intentionally use city only as a fallback to identify
+  the selected station when no exact code/name is supplied.
+  */
+  let excludedStation:
+    | Station
+    | undefined;
+
+  if (
+    exclude &&
+    exclude.trim()
+  ) {
+    const normalizedExclude =
+      normalizeText(exclude);
+
+    const normalizedCodeExclude =
+      normalizeCode(exclude);
+
+    /*
+    1. Exact station code
+    */
+    excludedStation =
+      stations.find(
+        (station) =>
+          normalizeCode(
+            station.code,
+          ) ===
+          normalizedCodeExclude,
+      );
+
+    /*
+    2. Exact station name
+    */
+    if (!excludedStation) {
+      excludedStation =
+        stations.find(
+          (station) =>
+            normalizeText(
+              station.name,
+            ) ===
+            normalizedExclude,
+        );
+    }
+
+    /*
+    3. Exact city fallback.
+
+    This is ONLY used when the UI supplies a city rather
+    than a station. Once a station is found, the actual
+    exclusion below still compares station identity.
+    */
+    if (!excludedStation) {
+      excludedStation =
+        stations.find(
+          (station) =>
+            normalizeText(
+              station.city,
+            ) ===
+            normalizedExclude,
+        );
+    }
+  }
 
   return stations
-    .filter((station) => {
-      /*
-       * NEVER show the exact same station.
-       */
-      if (
-        excludedStation &&
-        station.code.trim().toLowerCase() ===
-          excludedStation.code.trim().toLowerCase()
-      ) {
-        return false;
-      }
+    /*
+    First remove the exact selected station.
 
-      /*
-       * NEVER show another station that represents
-       * the exact same location.
-       *
-       * This prevents things such as:
-       *
-       * From: New Delhi
-       * To:   New Delhi
-       *
-       * even when their internal identifiers differ.
-       */
-      if (
-        excludedStation &&
-        isSameLocation(
-          excludedStation,
-          station,
-        )
-      ) {
-        return false;
-      }
+    DO NOT use city/state comparison here.
+    Different stations in the same city must remain available.
+    */
+    .filter(
+      (station) => {
+        if (
+          excludedStation &&
+          isSameStation(
+            excludedStation,
+            station,
+          )
+        ) {
+          return false;
+        }
 
-      return true;
-    })
-    .filter((station) => {
-      if (!query) {
+        /*
+        If no station was resolved, still support the
+        direct code/name exclusion.
+        */
+        if (
+          !excludedStation &&
+          matchesExcludedStation(
+            station,
+            exclude,
+          )
+        ) {
+          return false;
+        }
+
         return true;
-      }
-
-      return (
-        station.name
-          .toLowerCase()
-          .includes(query) ||
-        station.code
-          .toLowerCase()
-          .includes(query) ||
-        station.city
-          .toLowerCase()
-          .includes(query) ||
-        station.state
-          .toLowerCase()
-          .includes(query)
-      );
-    })
-    .slice(0, limit);
-},
+      },
     )
+
+    /*
+    Apply search query AFTER exclusion.
+    */
     .filter(
       (station) => {
         if (!query) {
@@ -1450,7 +1466,11 @@ export function searchStations(
         );
       },
     )
-    .slice(0, limit);
+
+    .slice(
+      0,
+      limit,
+    );
 }
 
 /* ============================================================
@@ -1570,7 +1590,7 @@ or:
 "New Delhi Railway Station"
 " new   delhi railway station "
 
-All of these are normalized before comparison.
+All values are normalized before comparison.
 */
 
 function isSamePreviewLocation(
@@ -1591,7 +1611,7 @@ function isSamePreviewLocation(
   }
 
   /*
-  Exact display-name comparison.
+  Exact normalized text.
   */
   if (
     normalizedOrigin ===
@@ -1601,8 +1621,7 @@ function isSamePreviewLocation(
   }
 
   /*
-  If values look like station/airport codes,
-  compare normalized codes too.
+  Station/code comparison.
   */
   const originCode =
     normalizeCode(origin);
@@ -1620,22 +1639,24 @@ function isSamePreviewLocation(
   }
 
   /*
-  Also resolve known station names/codes from the central
-  station catalog.
+  Resolve known stations.
 
-  This catches cases such as:
+  This catches:
 
-  "NDLS"
+  NDLS
   vs
-  "New Delhi Railway Station"
+  New Delhi Railway Station
   */
 
   const originStation =
     stations.find(
       (station) =>
-        normalizeCode(
-          station.code,
-        ) === originCode ||
+        (
+          originCode &&
+          normalizeCode(
+            station.code,
+          ) === originCode
+        ) ||
         normalizeText(
           station.name,
         ) === normalizedOrigin,
@@ -1644,9 +1665,12 @@ function isSamePreviewLocation(
   const destinationStation =
     stations.find(
       (station) =>
-        normalizeCode(
-          station.code,
-        ) === destinationCode ||
+        (
+          destinationCode &&
+          normalizeCode(
+            station.code,
+          ) === destinationCode
+        ) ||
         normalizeText(
           station.name,
         ) === normalizedDestination,
@@ -1713,6 +1737,9 @@ export function buildRoutePreview(
       ),
     );
 
+  /*
+  Never create a route preview for the exact same station.
+  */
   if (
     samePreviewLocation
   ) {
@@ -1907,7 +1934,9 @@ function routeKey(
 ): string {
   return `${normalizeCode(
     fromCode,
-  )}-${normalizeCode(toCode)}`;
+  )}-${normalizeCode(
+    toCode,
+  )}`;
 }
 
 function getRouteKeys(
