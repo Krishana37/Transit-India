@@ -90,9 +90,7 @@ type Search = {
 };
 
 export const Route = createFileRoute("/book/$mode")({
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): Search => ({
+  validateSearch: (search: Record<string, unknown>): Search => ({
     from:
       typeof search.from === "string"
         ? search.from
@@ -130,10 +128,7 @@ export const Route = createFileRoute("/book/$mode")({
   component: BookPage,
 });
 
-const modeIcons: Record<
-  TransportMode,
-  typeof Train
-> = {
+const modeIcons: Record<TransportMode, typeof Train> = {
   train: Train,
   bus: Bus,
   flight: Plane,
@@ -157,18 +152,14 @@ type Step =
   | "ticket";
 
 function uid() {
-  return Math.random()
-    .toString(36)
-    .slice(2, 10);
+  return Math.random().toString(36).slice(2, 10);
 }
 
 function genPnr() {
   let s = "";
 
   for (let i = 0; i < 10; i++) {
-    s += Math.floor(
-      Math.random() * 10,
-    );
+    s += Math.floor(Math.random() * 10);
   }
 
   return s;
@@ -178,6 +169,7 @@ function BookPage() {
   const { mode } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
+
   const {
     t,
     formatCurrency,
@@ -205,9 +197,7 @@ function BookPage() {
   } = useStore();
 
   const m = (
-    transportModes.some(
-      (x) => x.id === mode,
-    )
+    transportModes.some((x) => x.id === mode)
       ? mode
       : "train"
   ) as TransportMode;
@@ -216,171 +206,112 @@ function BookPage() {
 
   /*
    * HOTEL:
-   * Hotel booking does NOT use From → To.
-   *
-   * SmartSearch is shared with other modes,
-   * therefore internally both values remain
-   * the same for hotel mode.
-   *
-   * The UI never displays hotel as a route.
+   * Hotel booking does not use From -> To.
+   * SmartSearch is shared, so internally from/to
+   * point to the same location.
    */
-  const [state, setState] =
-    useState<SearchState>(() => {
-      const hotelLocation =
-        stationByCode(search.from) ??
-        stationByCode("NDLS");
+  const [state, setState] = useState<SearchState>(() => {
+    const hotelLocation =
+      stationByCode(search.from) ??
+      stationByCode("NDLS");
 
-      if (isHotel) {
-        return {
-          from: hotelLocation,
-          to: hotelLocation,
-          date: search.date
-            ? new Date(search.date)
-            : (() => {
-                const d = new Date();
-                d.setDate(
-                  d.getDate() + 1,
-                );
-                return d;
-              })(),
-          slot:
-            search.slot ??
-            "morning",
-          query:
-            search.q ?? "",
-        };
-      }
-
+    if (isHotel) {
       return {
-        from: stationByCode(
-          search.from,
-        ),
-        to: stationByCode(
-          search.to,
-          search.from === "JP"
-            ? "NDLS"
-            : "JP",
-        ),
+        from: hotelLocation,
+        to: hotelLocation,
         date: search.date
           ? new Date(search.date)
           : (() => {
               const d = new Date();
-              d.setDate(
-                d.getDate() + 1,
-              );
+              d.setDate(d.getDate() + 1);
               return d;
             })(),
-        slot:
-          search.slot ??
-          "morning",
-        query:
-          search.q ?? "",
+        slot: search.slot ?? "morning",
+        query: search.q ?? "",
       };
-    });
+    }
+
+    return {
+      from: stationByCode(search.from),
+      to: stationByCode(
+        search.to,
+        search.from === "JP" ? "NDLS" : "JP",
+      ),
+      date: search.date
+        ? new Date(search.date)
+        : (() => {
+            const d = new Date();
+            d.setDate(d.getDate() + 1);
+            return d;
+          })(),
+      slot: search.slot ?? "morning",
+      query: search.q ?? "",
+    };
+  });
 
   useEffect(() => {
-    if (
-      hydrated &&
-      !account
-    ) {
+    if (hydrated && !account) {
       navigate({
         to: "/auth",
       });
     }
-  }, [
-    hydrated,
-    account,
-    navigate,
-  ]);
+  }, [hydrated, account, navigate]);
 
-  const [step, setStep] =
-    useState<Step>("results");
+  const [step, setStep] = useState<Step>("results");
 
-  const [segment, setSegment] =
-    useState<Segment | null>(
-      null,
-    );
+  const [segment, setSegment] = useState<Segment | null>(null);
 
-  const [classCode, setClassCode] =
-    useState("");
+  const [classCode, setClassCode] = useState("");
 
-  const [
-    selectedPax,
-    setSelectedPax,
-  ] = useState<string[]>([]);
+  const [selectedPax, setSelectedPax] = useState<string[]>([]);
 
-  const [
-    contactEmail,
-    setContactEmail,
-  ] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
 
-  const [
-    contactMobile,
-    setContactMobile,
-  ] = useState("");
+  const [contactMobile, setContactMobile] = useState("");
 
-  const [mealQty, setMealQty] =
-    useState<Record<
-      string,
-      number
-    >>({});
+  const [mealQty, setMealQty] = useState<Record<string, number>>({});
 
-  const [booking, setBooking] =
-    useState<Booking | null>(
-      null,
-    );
+  const [booking, setBooking] = useState<Booking | null>(null);
 
-  const [
-    isTatkalFlow,
-    setIsTatkalFlow,
-  ] = useState(false);
+  const [isTatkalFlow, setIsTatkalFlow] = useState(false);
 
   const [
     activeTatkalDraftId,
     setActiveTatkalDraftId,
-  ] = useState<string | null>(
-    null,
-  );
+  ] = useState<string | null>(null);
 
-  const [
-    appliedCoins,
-    setAppliedCoins,
-  ] = useState(0);
+  const [appliedCoins, setAppliedCoins] = useState(0);
 
-  const [
-    appliedPoints,
-    setAppliedPoints,
-  ] = useState(0);
+  const [appliedPoints, setAppliedPoints] = useState(0);
 
   const [
     selectedRewardId,
     setSelectedRewardId,
-  ] = useState<string | null>(
-    null,
-  );
+  ] = useState<string | null>(null);
 
-  const [
-    searchNonce,
-    setSearchNonce,
-  ] = useState(() => uid());
+  const [searchNonce, setSearchNonce] = useState(() => uid());
 
-  const [tick, setTick] =
-    useState(0);
+  const [tick, setTick] = useState(0);
 
   const [sortBy, setSortBy] =
-    useState<SortKey>(
-      "recommended",
-    );
+    useState<SortKey>("recommended");
 
   useEffect(() => {
     const id = setInterval(() => {
       setTick((x) => x + 1);
     }, 12000);
 
-    return () =>
-      clearInterval(id);
+    return () => clearInterval(id);
   }, []);
 
+  /*
+   * Generate results using the selected transport mode.
+   *
+   * IMPORTANT:
+   * The result itself contains its own from/to route.
+   * Booking and RoutePreview use the Segment route,
+   * not only the search state.
+   */
   const results = useMemo(
     () =>
       generateResults(
@@ -402,141 +333,105 @@ function BookPage() {
     ],
   );
 
-  const aiInterpretation =
-    useMemo(() => {
-      const q =
-        state.query.toLowerCase();
+  const aiInterpretation = useMemo(() => {
+    const q = state.query.toLowerCase();
 
-      if (!q) return null;
+    if (!q) return null;
 
-      if (
-        q.includes("cheapest") ||
-        q.includes("budget")
-      ) {
-        return "Sorted by lowest fare";
-      }
+    if (
+      q.includes("cheapest") ||
+      q.includes("budget")
+    ) {
+      return "Sorted by lowest fare";
+    }
 
-      if (
-        q.includes("fastest")
-      ) {
-        return "Sorted by shortest duration";
-      }
+    if (q.includes("fastest")) {
+      return "Sorted by shortest duration";
+    }
 
-      if (q.includes("ac")) {
-        return "Filtered to AC classes only";
-      }
+    if (q.includes("ac")) {
+      return "Filtered to AC classes only";
+    }
 
-      return null;
-    }, [state.query]);
+    return null;
+  }, [state.query]);
 
   const scoreOf = useCallback(
     (seg: Segment) =>
       blendRating(
         communityRating(
-          serviceRatingKey(
-            m,
-            seg.code,
-          ),
+          serviceRatingKey(m, seg.code),
         ),
         ratings[
-          serviceRatingKey(
-            m,
-            seg.code,
-          )
+          serviceRatingKey(m, seg.code)
         ]?.stars,
       ).stars,
     [m, ratings],
   );
 
-  const sortedResults =
-    useMemo(() => {
-      let list = [...results];
+  const sortedResults = useMemo(() => {
+    let list = [...results];
 
-      const q =
-        state.query.toLowerCase();
+    const q = state.query.toLowerCase();
 
-      if (q.includes("ac")) {
-        list = list.filter(
-          (s) =>
-            s.options.some(
-              (o) =>
-                /A|AC|CC|EC|3A|2A|1A|VOLVO|DELUXE|SUITE/.test(
-                  o.code,
-                ),
-            ),
-        );
-      }
+    /*
+     * AC filter.
+     */
+    if (q.includes("ac")) {
+      list = list.filter((s) =>
+        s.options.some((o) =>
+          /A|AC|CC|EC|3A|2A|1A|VOLVO|DELUXE|SUITE/.test(
+            o.code,
+          ),
+        ),
+      );
+    }
 
-      const effective =
-        sortBy !== "recommended"
-          ? sortBy
-          : q.includes(
-                "cheapest",
-              ) ||
-              q.includes(
-                "budget",
-              )
-            ? "price"
-            : q.includes(
-                  "fastest",
-                )
-              ? "duration"
-              : q.includes(
-                    "best",
-                  ) ||
-                  q.includes(
-                    "rated",
-                  )
-                ? "rating"
-                : "recommended";
+    const effective =
+      sortBy !== "recommended"
+        ? sortBy
+        : q.includes("cheapest") ||
+            q.includes("budget")
+          ? "price"
+          : q.includes("fastest")
+            ? "duration"
+            : q.includes("best") ||
+                q.includes("rated")
+              ? "rating"
+              : "recommended";
 
-      if (
-        effective === "price"
-      ) {
-        list.sort(
-          (a, b) =>
-            Math.min(
-              ...a.options.map(
-                (o) => o.fare,
-              ),
-            ) -
-            Math.min(
-              ...b.options.map(
-                (o) => o.fare,
-              ),
-            ),
-        );
-      } else if (
-        effective ===
-        "duration"
-      ) {
-        list.sort(
-          (a, b) =>
-            a.durationMins -
-            b.durationMins,
-        );
-      } else if (
-        effective === "rating"
-      ) {
-        list.sort(
-          (a, b) =>
-            scoreOf(b) -
-            scoreOf(a),
-        );
-      }
+    if (effective === "price") {
+      list.sort(
+        (a, b) =>
+          Math.min(
+            ...a.options.map((o) => o.fare),
+          ) -
+          Math.min(
+            ...b.options.map((o) => o.fare),
+          ),
+      );
+    } else if (effective === "duration") {
+      list.sort(
+        (a, b) =>
+          a.durationMins - b.durationMins,
+      );
+    } else if (effective === "rating") {
+      list.sort(
+        (a, b) => scoreOf(b) - scoreOf(a),
+      );
+    }
 
-      return list;
-    }, [
-      results,
-      state.query,
-      sortBy,
-      scoreOf,
-    ]);
+    return list;
+  }, [
+    results,
+    state.query,
+    sortBy,
+    scoreOf,
+  ]);
 
-  {/*
-   * HOTEL:
-   * Hotel booking has no travel distance.
-   */}
+  /*
+   * Hotel has no travel distance.
+   */
   const km = isHotel
     ? 0
     : distanceKm(
@@ -562,8 +457,7 @@ function BookPage() {
           mode: m,
         },
         search: {
-          from:
-            state.from.code,
+          from: state.from.code,
           to: undefined,
           date: state.date
             .toISOString()
@@ -584,10 +478,8 @@ function BookPage() {
         mode: m,
       },
       search: {
-        from:
-          state.from.code,
-        to:
-          state.to.code,
+        from: state.from.code,
+        to: state.to.code,
         date: state.date
           .toISOString()
           .slice(0, 10),
@@ -600,12 +492,11 @@ function BookPage() {
   };
 
   /*
-   * RAC / WL applies only to trains.
+   * RAC / WL applies ONLY to trains.
+   *
    * 1A and General never get RAC/WL.
    */
-  const racWlFor = (
-    code: string,
-  ) =>
+  const racWlFor = (code: string) =>
     m === "train" &&
     !code.startsWith("1A") &&
     code !== "GEN";
@@ -620,8 +511,7 @@ function BookPage() {
       availableBase,
       tick,
       {
-        racWl:
-          racWlFor(code),
+        racWl: racWlFor(code),
       },
     );
 
@@ -629,10 +519,9 @@ function BookPage() {
     seg: Segment,
     code: string,
   ) => {
-    const option =
-      seg.options.find(
-        (o) => o.code === code,
-      );
+    const option = seg.options.find(
+      (o) => o.code === code,
+    );
 
     if (!option) return;
 
@@ -642,12 +531,16 @@ function BookPage() {
       option.available,
     );
 
-    if (
-      st.tone === "sold"
-    ) {
+    if (st.tone === "sold") {
       return;
     }
 
+    /*
+     * IMPORTANT:
+     * Save the exact selected Segment.
+     * This ensures booking uses the actual route
+     * associated with the result.
+     */
     setSegment(seg);
     setClassCode(code);
 
@@ -661,28 +554,21 @@ function BookPage() {
     }
   };
 
-  const togglePax = (
-    id: string,
-  ) =>
+  const togglePax = (id: string) =>
     setSelectedPax((s) =>
       s.includes(id)
-        ? s.filter(
-            (x) => x !== id,
-          )
+        ? s.filter((x) => x !== id)
         : [...s, id],
     );
 
   const chosenPassengers: SavedPassenger[] =
     passengers.filter((p) =>
-      selectedPax.includes(
-        p.id,
-      ),
+      selectedPax.includes(p.id),
     );
 
   const option =
     segment?.options.find(
-      (o) =>
-        o.code === classCode,
+      (o) => o.code === classCode,
     );
 
   const currentSeatState =
@@ -714,29 +600,22 @@ function BookPage() {
   );
 
   const convenience =
-    chosenPassengers.length >
-    0
+    chosenPassengers.length > 0
       ? 25 +
-        chosenPassengers.length *
-          5
+        chosenPassengers.length * 5
       : 0;
 
   const mealsTotal =
-    Object.entries(
-      mealQty,
-    ).reduce(
+    Object.entries(mealQty).reduce(
       (sum, [id, qty]) => {
-        const meal =
-          meals.find(
-            (mm) =>
-              mm.id === id,
-          );
+        const meal = meals.find(
+          (mm) => mm.id === id,
+        );
 
         return (
           sum +
           (meal
-            ? meal.price *
-              qty
+            ? meal.price * qty
             : 0)
         );
       },
@@ -753,16 +632,14 @@ function BookPage() {
   const availableRewards =
     redeemedRewards.filter(
       (r) =>
-        r.status ===
-          "redeemed" &&
+        r.status === "redeemed" &&
         !isRewardExpired(r),
     );
 
   const selectedReward =
     availableRewards.find(
       (r) =>
-        r.id ===
-        selectedRewardId,
+        r.id === selectedRewardId,
     ) ?? null;
 
   const rewardStillEligible =
@@ -791,30 +668,24 @@ function BookPage() {
         )
       : 0;
 
-  const preCoinTotal =
+  const preCoinTotal = Math.max(
+    0,
+    grossTotal - rewardDiscount,
+  );
+
+  const coinDiscount = Math.round(
+    appliedCoins * 0.25,
+  );
+
+  const pointDiscount = Math.min(
+    Math.floor(
+      appliedPoints * POINT_VALUE,
+    ),
     Math.max(
       0,
-      grossTotal -
-        rewardDiscount,
-    );
-
-  const coinDiscount =
-    Math.round(
-      appliedCoins * 0.25,
-    );
-
-  const pointDiscount =
-    Math.min(
-      Math.floor(
-        appliedPoints *
-          POINT_VALUE,
-      ),
-      Math.max(
-        0,
-        preCoinTotal -
-          coinDiscount,
-      ),
-    );
+      preCoinTotal - coinDiscount,
+    ),
+  );
 
   const total = Math.max(
     0,
@@ -823,34 +694,30 @@ function BookPage() {
       pointDiscount,
   );
 
-  const fareLines: FareLine[] =
-    [
-      {
-        label: `Base fare × ${Math.max(
-          1,
-          chosenPassengers.length,
-        )}`,
-        amount: base,
-      },
-      {
-        label:
-          "Dynamic surge",
-        amount: surge,
-        muted: true,
-      },
-      {
-        label:
-          "Taxes & GST (5%)",
-        amount: gst,
-        muted: true,
-      },
-      {
-        label:
-          "Convenience fee",
-        amount: convenience,
-        muted: true,
-      },
-    ];
+  const fareLines: FareLine[] = [
+    {
+      label: `Base fare × ${Math.max(
+        1,
+        chosenPassengers.length,
+      )}`,
+      amount: base,
+    },
+    {
+      label: "Dynamic surge",
+      amount: surge,
+      muted: true,
+    },
+    {
+      label: "Taxes & GST (5%)",
+      amount: gst,
+      muted: true,
+    },
+    {
+      label: "Convenience fee",
+      amount: convenience,
+      muted: true,
+    },
+  ];
 
   if (mealsTotal > 0) {
     fareLines.push({
@@ -862,31 +729,26 @@ function BookPage() {
   if (activeReward) {
     fareLines.push({
       label: `Reward · ${activeReward.name}`,
-      amount:
-        -rewardDiscount,
+      amount: -rewardDiscount,
     });
   }
 
   if (coinDiscount > 0) {
     fareLines.push({
-      label:
-        "Transit Coins discount",
-      amount:
-        -coinDiscount,
+      label: "Transit Coins discount",
+      amount: -coinDiscount,
     });
   }
 
   if (pointDiscount > 0) {
     fareLines.push({
-      label:
-        "Transit Points discount",
-      amount:
-        -pointDiscount,
+      label: "Transit Points discount",
+      amount: -pointDiscount,
     });
   }
 
   /*
-   * Hotel and metro do not have meal selection.
+   * Hotel and Metro do not have meal selection.
    */
   const showMeals =
     m !== "hotel" &&
@@ -895,177 +757,157 @@ function BookPage() {
   const goPayment = () =>
     setStep("payment");
 
-  { /*
-   * IMPORTANT ROUTE FIX:
+  /*
+   * FINAL BOOKING
    *
-   * For normal transport, booking uses the
-   * selected Segment's actual route.
+   * For normal transport:
+   * Segment route has priority.
    *
-   * This prevents the booking from always
-   * saving state.from/state.to when the
-   * generated result has a different route.
-   */}
+   * For hotel:
+   * only hotel location is stored.
+   */
   const finalizeBooking = (
     statusOverride?: Booking["status"],
     statusLabel?: string,
   ) => {
-    if (
-      !segment ||
-      !option
-    ) {
+    if (!segment || !option) {
       return;
     }
 
     const pnr = genPnr();
 
     const mealsPayload =
-      Object.entries(
-        mealQty,
-      )
+      Object.entries(mealQty)
         .filter(
-          ([, qty]) =>
-            qty > 0,
+          ([, qty]) => qty > 0,
         )
-        .map(
-          ([id, qty]) => {
-            const meal =
-              meals.find(
-                (mm) =>
-                  mm.id === id,
-              );
+        .map(([id, qty]) => {
+          const meal = meals.find(
+            (mm) => mm.id === id,
+          );
 
-            return {
-              id,
-              name:
-                meal?.name ??
-                id,
-              price:
-                meal?.price ??
-                0,
-              qty,
-            };
-          },
-        );
+          return {
+            id,
+            name:
+              meal?.name ?? id,
+            price:
+              meal?.price ?? 0,
+            qty,
+          };
+        });
 
     /*
-     * Segment route is preferred.
-     * State route is only the fallback.
+     * IMPORTANT ROUTE FIX:
      *
-     * Hotel intentionally keeps its location
-     * instead of creating a From → To route.
+     * For train/bus/flight/metro/ferry:
+     * use actual Segment route.
+     *
+     * Hotel:
+     * use only selected hotel location.
      */
-    const bookingFromCode =
-      isHotel
-        ? state.from.code
-        : segment.fromCode ??
-          state.from.code;
+    const bookingFromCode = isHotel
+      ? state.from.code
+      : segment.fromCode ??
+        state.from.code;
 
-    const bookingFromCity =
-      isHotel
-        ? state.from.city
-        : segment.from ??
-          state.from.city;
+    const bookingFromCity = isHotel
+      ? state.from.city
+      : segment.from ??
+        state.from.city;
 
-    const bookingToCode =
-      isHotel
-        ? ""
-        : segment.toCode ??
-          state.to.code;
+    const bookingToCode = isHotel
+      ? ""
+      : segment.toCode ??
+        state.to.code;
 
-    const bookingToCity =
-      isHotel
-        ? ""
-        : segment.to ??
-          state.to.city;
+    const bookingToCity = isHotel
+      ? ""
+      : segment.to ??
+        state.to.city;
 
-    const created =
-      addBooking({
+    const created = addBooking({
+      pnr,
+
+      mode: m,
+
+      serviceName:
+        segment.name,
+
+      serviceCode:
+        segment.code,
+
+      fromCode:
+        bookingFromCode,
+
+      fromCity:
+        bookingFromCity,
+
+      toCode:
+        bookingToCode,
+
+      toCity:
+        bookingToCity,
+
+      date: state.date
+        .toISOString()
+        .slice(0, 10),
+
+      depart:
+        segment.depart,
+
+      arrive:
+        segment.arrive,
+
+      classCode:
+        statusLabel
+          ? `${classCode} · ${statusLabel}`
+          : classCode,
+
+      passengers:
+        chosenPassengers.length
+          ? chosenPassengers
+          : passengers.slice(0, 1),
+
+      meals:
+        mealsPayload,
+
+      total,
+
+      status:
+        statusOverride ??
+        "confirmed",
+
+      coach:
+        m === "train" ||
+        m === "bus"
+          ? `${classCode}${
+              1 +
+              (Math.abs(
+                pnr.charCodeAt(0),
+              ) %
+                9)
+            }`
+          : undefined,
+
+      seats: allocateSeats(
         pnr,
-        mode: m,
-        serviceName:
-          segment.name,
-        serviceCode:
-          segment.code,
-
-        fromCode:
-          bookingFromCode,
-
-        fromCity:
-          bookingFromCity,
-
-        toCode:
-          bookingToCode,
-
-        toCity:
-          bookingToCity,
-
-        date: state.date
-          .toISOString()
-          .slice(0, 10),
-
-        depart:
-          segment.depart,
-
-        arrive:
-          segment.arrive,
-
-        classCode:
-          statusLabel
-            ? `${classCode} · ${statusLabel}`
-            : classCode,
-
-        passengers:
+        m,
+        classCode,
+        (
           chosenPassengers.length
             ? chosenPassengers
-            : passengers.slice(
-                0,
-                1,
-              ),
+            : passengers.slice(0, 1)
+        ).length,
+      ),
 
-        meals:
-          mealsPayload,
+      tatkal:
+        isTatkalFlow ||
+        statusOverride ===
+          "queued",
 
-        total,
-
-        status:
-          statusOverride ??
-          "confirmed",
-
-        coach:
-          m === "train" ||
-          m === "bus"
-            ? `${classCode}${
-                1 +
-                (Math.abs(
-                  pnr.charCodeAt(
-                    0,
-                  ),
-                ) % 9)
-              }`
-            : undefined,
-
-        seats: allocateSeats(
-          pnr,
-          m,
-          classCode,
-          (
-            chosenPassengers.length
-              ? chosenPassengers
-              : passengers.slice(
-                  0,
-                  1,
-                )
-          ).length,
-        ),
-
-        tatkal:
-          isTatkalFlow ||
-          statusOverride ===
-            "queued",
-
-        coinsUsed:
-          appliedCoins,
-      });
+      coinsUsed:
+        appliedCoins,
+    });
 
     setBooking(created);
 
@@ -1105,9 +947,7 @@ function BookPage() {
     }
 
     if (appliedCoins > 0) {
-      spendCoins(
-        appliedCoins,
-      );
+      spendCoins(appliedCoins);
     }
 
     if (appliedPoints > 0) {
@@ -1138,9 +978,7 @@ function BookPage() {
       );
 
     if (created) {
-      if (
-        activeTatkalDraftId
-      ) {
+      if (activeTatkalDraftId) {
         removeTatkalDraft(
           activeTatkalDraftId,
         );
@@ -1153,9 +991,7 @@ function BookPage() {
           `${created.serviceName} · ${created.date}`,
         );
 
-        setSelectedRewardId(
-          null,
-        );
+        setSelectedRewardId(null);
 
         notify({
           kind: "coins",
@@ -1231,90 +1067,82 @@ function BookPage() {
     setStep("payment");
   };
 
-  if (
-    !hydrated ||
-    !account
-  ) {
+  if (!hydrated || !account) {
     return null;
   }
 
   return (
     <AppShell>
       <div className="space-y-5">
-        <div className="flex flex-wrap items-center gap-2">
-          {transportModes.map(
-            (tm) => {
-              const Icon =
-                modeIcons[tm.id];
 
-              return (
-                <button
-                  key={tm.id}
-                  onClick={() =>
-                    navigate({
-                      to: "/book/$mode",
-                      params: {
-                        mode: tm.id,
-                      },
-                      search:
-                        tm.id ===
-                        "hotel"
-                          ? {
-                              from:
-                                state
-                                  .from
-                                  .code,
-                              to: undefined,
-                              date:
-                                state.date
-                                  .toISOString()
-                                  .slice(
-                                    0,
-                                    10,
-                                  ),
-                              slot:
-                                state.slot,
-                              q: undefined,
-                            }
-                          : {
-                              from:
-                                state
-                                  .from
-                                  .code,
-                              to:
-                                state
-                                  .to
-                                  .code,
-                              date:
-                                state.date
-                                  .toISOString()
-                                  .slice(
-                                    0,
-                                    10,
-                                  ),
-                              slot:
-                                state.slot,
-                              q: undefined,
-                            },
-                    })
-                  }
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition ${
-                    tm.id === m
-                      ? "border-primary bg-[color:var(--brand-soft)] text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/40"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {tm.label}
-                </button>
-              );
-            },
-          )}
+        {/* TRANSPORT MODE SWITCHER */}
+        <div className="flex flex-wrap items-center gap-2">
+          {transportModes.map((tm) => {
+            const Icon = modeIcons[tm.id];
+
+            return (
+              <button
+                key={tm.id}
+                onClick={() =>
+                  navigate({
+                    to: "/book/$mode",
+                    params: {
+                      mode: tm.id,
+                    },
+                    search:
+                      tm.id === "hotel"
+                        ? {
+                            from:
+                              state.from.code,
+                            to: undefined,
+                            date:
+                              state.date
+                                .toISOString()
+                                .slice(
+                                  0,
+                                  10,
+                                ),
+                            slot:
+                              state.slot,
+                            q: undefined,
+                          }
+                        : {
+                            from:
+                              state.from.code,
+                            to:
+                              state.to.code,
+                            date:
+                              state.date
+                                .toISOString()
+                                .slice(
+                                  0,
+                                  10,
+                                ),
+                            slot:
+                              state.slot,
+                            q: undefined,
+                          },
+                  })
+                }
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition ${
+                  tm.id === m
+                    ? "border-primary bg-[color:var(--brand-soft)] text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/40"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {tm.label}
+              </button>
+            );
+          })}
         </div>
 
         <AnimatePresence mode="wait">
-          {step ===
-            "results" && (
+
+          {/* =====================================================
+              RESULTS
+          ===================================================== */}
+          {step === "results" && (
             <motion.section
               key="results"
               initial={{
@@ -1334,42 +1162,40 @@ function BookPage() {
                 mode={m}
                 value={state}
                 onChange={(p) =>
-                  setState(
-                    (s) => {
-                      /*
-                       * HOTEL:
-                       * Keep From/To internally equal.
-                       */
-                      if (isHotel) {
-                        const nextFrom =
-                          p.from ??
-                          s.from;
-
-                        return {
-                          ...s,
-                          ...p,
-                          from:
-                            nextFrom,
-                          to:
-                            nextFrom,
-                        };
-                      }
+                  setState((s) => {
+                    /*
+                     * HOTEL:
+                     * From and To stay internally identical.
+                     */
+                    if (isHotel) {
+                      const nextFrom =
+                        p.from ?? s.from;
 
                       return {
                         ...s,
                         ...p,
+                        from:
+                          nextFrom,
+                        to:
+                          nextFrom,
                       };
-                    },
-                  )
+                    }
+
+                    return {
+                      ...s,
+                      ...p,
+                    };
+                  })
                 }
-                onSubmit={
-                  submitSearch
-                }
+                onSubmit={submitSearch}
                 compact
               />
 
               <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+
+                {/* RESULTS COLUMN */}
                 <div className="space-y-4">
+
                   {aiInterpretation && (
                     <Badge
                       variant="outline"
@@ -1377,9 +1203,7 @@ function BookPage() {
                     >
                       <Sparkles className="mr-1.5 h-3 w-3" />
                       AI applied:{" "}
-                      {
-                        aiInterpretation
-                      }
+                      {aiInterpretation}
                     </Badge>
                   )}
 
@@ -1402,52 +1226,50 @@ function BookPage() {
                         [
                           {
                             id: "recommended",
-                            label: "Recommended",
+                            label:
+                              "Recommended",
                           },
                           {
                             id: "rating",
-                            label: "Top rated",
+                            label:
+                              "Top rated",
                           },
                           {
                             id: "price",
-                            label: "Cheapest",
+                            label:
+                              "Cheapest",
                           },
                           {
                             id: "duration",
-                            label: "Fastest",
+                            label:
+                              "Fastest",
                           },
                         ] as {
                           id: SortKey;
                           label: string;
                         }[]
-                      ).map(
-                        (o) => (
-                          <button
-                            key={
-                              o.id
-                            }
-                            onClick={() =>
-                              setSortBy(
-                                o.id,
-                              )
-                            }
-                            aria-pressed={
-                              sortBy ===
-                              o.id
-                            }
-                            className={`rounded-full border px-2.5 py-1 text-[12px] transition ${
-                              sortBy ===
-                              o.id
-                                ? "border-primary bg-[color:var(--brand-soft)] text-primary"
-                                : "border-border text-muted-foreground hover:border-primary/40"
-                            }`}
-                          >
-                            {
-                              o.label
-                            }
-                          </button>
-                        ),
-                      )}
+                      ).map((o) => (
+                        <button
+                          key={o.id}
+                          onClick={() =>
+                            setSortBy(
+                              o.id,
+                            )
+                          }
+                          aria-pressed={
+                            sortBy ===
+                            o.id
+                          }
+                          className={`rounded-full border px-2.5 py-1 text-[12px] transition ${
+                            sortBy ===
+                            o.id
+                              ? "border-primary bg-[color:var(--brand-soft)] text-primary"
+                              : "border-border text-muted-foreground hover:border-primary/40"
+                          }`}
+                        >
+                          {o.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -1472,12 +1294,12 @@ function BookPage() {
 
                       return (
                         <Card
-                          key={
-                            seg.id
-                          }
+                          key={seg.id}
                           className="rounded-2xl border-border/70 bg-card/70 p-4 backdrop-blur"
                         >
                           <div className="space-y-2">
+
+                            {/* SERVICE HEADER */}
                             <div className="flex min-w-0 items-start gap-3">
                               <ServicePreview
                                 mode={m}
@@ -1496,15 +1318,11 @@ function BookPage() {
                                     seg.name
                                   }
                                 >
-                                  {
-                                    seg.name
-                                  }
+                                  {seg.name}
                                 </div>
 
                                 <div className="truncate text-[12px] leading-snug text-muted-foreground">
-                                  {
-                                    seg.code
-                                  }
+                                  {seg.code}
                                   {seg.operator
                                     ? ` · ${seg.operator}`
                                     : ""}
@@ -1526,6 +1344,7 @@ function BookPage() {
                               </div>
                             </div>
 
+                            {/* DISRUPTION */}
                             {(disruption.cancelled ||
                               disruption.delayMins >
                                 0) && (
@@ -1550,14 +1369,12 @@ function BookPage() {
                               </div>
                             )}
 
-                            {seg.tags
-                              .length >
+                            {/* TAGS */}
+                            {seg.tags.length >
                               0 && (
                               <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                                 {seg.tags.map(
-                                  (
-                                    tg,
-                                  ) => (
+                                  (tg) => (
                                     <Badge
                                       key={
                                         tg
@@ -1575,6 +1392,7 @@ function BookPage() {
                             )}
                           </div>
 
+                          {/* ROUTE / HOTEL INFO */}
                           <div className="mt-3">
                             {isHotel ? (
                               <div className="rounded-xl border border-border bg-background/50 p-3">
@@ -1607,11 +1425,10 @@ function BookPage() {
                                 </div>
                               </div>
                             ) : (
-                          {   /*
-                               * IMPORTANT FIX:
-                               * Use the actual route of this
-                               * result, not the search state.
-                               */}
+                              /*
+                               * IMPORTANT:
+                               * RouteLine uses the actual Segment timing.
+                               */
                               <RouteLine
                                 depart={
                                   seg.depart
@@ -1626,28 +1443,18 @@ function BookPage() {
                             )}
                           </div>
 
-                          /*
-                           * IMPORTANT FIX:
-                           * RoutePreview now receives the
-                           * actual Segment route.
-                           *
-                           * This prevents every transport
-                           * mode/result from visually showing
-                           * the same state.from → state.to.
-                           */
+                          {/* ACTUAL SEGMENT ROUTE */}
                           {!isHotel && (
                             <RoutePreview
                               mode={m}
                               origin={
                                 seg.from ??
-                                state
-                                  .from
+                                state.from
                                   .city
                               }
                               destination={
                                 seg.to ??
-                                state
-                                  .to
+                                state.to
                                   .city
                               }
                               km={
@@ -1664,13 +1471,15 @@ function BookPage() {
 
                           <Separator className="my-3" />
 
+                          {/* CANCELLED SERVICE */}
                           {disruption.cancelled ? (
                             <div className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
                               <div className="flex items-center gap-2 text-[13px] font-medium text-destructive">
                                 <AlertTriangle className="h-4 w-4" />
+
                                 Service
                                 cancelled
-                                —
+                                —{" "}
                                 {
                                   disruption.reason
                                 }
@@ -1682,9 +1491,7 @@ function BookPage() {
 
                               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {alternatives.map(
-                                  (
-                                    alt,
-                                  ) => (
+                                  (alt) => (
                                     <div
                                       key={
                                         alt.id
@@ -1712,6 +1519,7 @@ function BookPage() {
                               </div>
                             </div>
                           ) : (
+                            /* AVAILABLE OPTIONS */
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                               {seg.options.map(
                                 (o) => {
@@ -1753,14 +1561,17 @@ function BookPage() {
                                         st.tone ===
                                         "sold"
                                       }
-                                      onClick={() =>
-                                        st.tone !==
-                                          "sold" &&
-                                        pickOption(
-                                          seg,
-                                          o.code,
-                                        )
-                                      }
+                                      onClick={() => {
+                                        if (
+                                          st.tone !==
+                                          "sold"
+                                        ) {
+                                          pickOption(
+                                            seg,
+                                            o.code,
+                                          );
+                                        }
+                                      }}
                                       onKeyDown={(
                                         e,
                                       ) => {
@@ -1846,7 +1657,9 @@ function BookPage() {
                   )}
                 </div>
 
+                {/* SIDEBAR */}
                 <div className="space-y-4">
+
                   {!isHotel && (
                     <Card
                       className="glass-card rounded-2xl p-4"
@@ -1868,9 +1681,7 @@ function BookPage() {
                               m,
                           )
                           .map(
-                            (
-                              alt,
-                            ) => (
+                            (alt) => (
                               <div
                                 key={
                                   alt
@@ -1878,10 +1689,7 @@ function BookPage() {
                                 className="rounded-xl border border-border bg-background/70 p-3 text-[13px]"
                               >
                                 <div className="font-medium capitalize">
-                                  {
-                                    alt
-                                  }{" "}
-                                  via{" "}
+                                  {alt} via{" "}
                                   {
                                     state
                                       .from
@@ -1924,16 +1732,13 @@ function BookPage() {
                     </Card>
                   )}
 
-                  {m ===
-                    "train" && (
+                  {m === "train" && (
                     <PreTatkalCard
                       segments={
                         sortedResults
                       }
                       fromCode={
-                        state
-                          .from
-                          .code
+                        state.from.code
                       }
                       toCode={
                         state.to.code
@@ -1954,8 +1759,10 @@ function BookPage() {
             </motion.section>
           )}
 
-          {step ===
-            "waitlist" &&
+          {/* =====================================================
+              WAITLIST / RAC
+          ===================================================== */}
+          {step === "waitlist" &&
             segment &&
             option &&
             currentSeatState && (
@@ -2015,56 +1822,47 @@ function BookPage() {
                           s.id !==
                           segment.id,
                       )
-                      .slice(
-                        0,
-                        3,
-                      )
-                      .map(
-                        (
-                          alt,
-                        ) => (
-                          <div
-                            key={
-                              alt.id
-                            }
-                            className="flex items-center justify-between rounded-xl border border-border bg-background/70 p-3 text-[13px]"
-                          >
-                            <div>
-                              <div className="font-medium">
-                                {
-                                  alt.name
-                                }
-                              </div>
-
-                              <div className="text-muted-foreground">
-                                {
-                                  alt.depart
-                                }{" "}
-                                →
-                                {
-                                  alt.arrive
-                                }
-                              </div>
+                      .slice(0, 3)
+                      .map((alt) => (
+                        <div
+                          key={alt.id}
+                          className="flex items-center justify-between rounded-xl border border-border bg-background/70 p-3 text-[13px]"
+                        >
+                          <div>
+                            <div className="font-medium">
+                              {
+                                alt.name
+                              }
                             </div>
 
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="rounded-full"
-                              onClick={() =>
-                                pickOption(
-                                  alt,
-                                  alt
-                                    .options[0]
-                                    .code,
-                                )
+                            <div className="text-muted-foreground">
+                              {
+                                alt.depart
+                              }{" "}
+                              →
+                              {
+                                alt.arrive
                               }
-                            >
-                              View
-                            </Button>
+                            </div>
                           </div>
-                        ),
-                      )}
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() =>
+                              pickOption(
+                                alt,
+                                alt
+                                  .options[0]
+                                  .code,
+                              )
+                            }
+                          >
+                            View
+                          </Button>
+                        </div>
+                      ))}
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
@@ -2108,8 +1906,10 @@ function BookPage() {
               </motion.section>
             )}
 
-          {step ===
-            "passengers" &&
+          {/* =====================================================
+              PASSENGERS
+          ===================================================== */}
+          {step === "passengers" &&
             segment &&
             option && (
               <motion.section
@@ -2142,14 +1942,8 @@ function BookPage() {
                     </div>
 
                     <p className="mt-1 text-[13px] text-muted-foreground">
-                      {
-                        segment.name
-                      }{" "}
-                      ·{" "}
-                      {
-                        option.label
-                      }{" "}
-                      ·{" "}
+                      {segment.name} ·{" "}
+                      {option.label} ·{" "}
                       {formatDate(
                         state.date,
                       )}
@@ -2197,9 +1991,7 @@ function BookPage() {
                           value={
                             contactEmail
                           }
-                          onChange={(
-                            e,
-                          ) =>
+                          onChange={(e) =>
                             setContactEmail(
                               e.target
                                 .value,
@@ -2218,9 +2010,7 @@ function BookPage() {
                           value={
                             contactMobile
                           }
-                          onChange={(
-                            e,
-                          ) =>
+                          onChange={(e) =>
                             setContactMobile(
                               e.target
                                 .value,
@@ -2250,9 +2040,7 @@ function BookPage() {
                   </Card>
 
                   <FareSidebar
-                    lines={
-                      fareLines
-                    }
+                    lines={fareLines}
                     total={total}
                     note={
                       isHotel
@@ -2264,8 +2052,10 @@ function BookPage() {
               </motion.section>
             )}
 
-          {step ===
-            "meals" &&
+          {/* =====================================================
+              MEALS
+          ===================================================== */}
+          {step === "meals" &&
             segment &&
             option && (
               <motion.section
@@ -2332,17 +2122,17 @@ function BookPage() {
                   </Card>
 
                   <FareSidebar
-                    lines={
-                      fareLines
-                    }
+                    lines={fareLines}
                     total={total}
                   />
                 </div>
               </motion.section>
             )}
 
-          {step ===
-            "payment" && (
+          {/* =====================================================
+              PAYMENT
+          ===================================================== */}
+          {step === "payment" && (
             <motion.section
               key="payment"
               initial={{
@@ -2371,6 +2161,7 @@ function BookPage() {
               )}
 
               <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-[1fr_280px]">
+
                 <PaymentFlow
                   total={total}
                   walletBalance={
@@ -2385,14 +2176,14 @@ function BookPage() {
                 />
 
                 <div className="space-y-4">
+
                   <RewardRedeemCard
                     rewards={
                       availableRewards
                     }
                     mode={m}
                     hasMeals={
-                      mealsTotal >
-                      0
+                      mealsTotal > 0
                     }
                     total={
                       grossTotal
@@ -2407,9 +2198,7 @@ function BookPage() {
                   />
 
                   <FareSidebar
-                    lines={
-                      fareLines
-                    }
+                    lines={fareLines}
                     total={total}
                     sticky={false}
                   />
@@ -2428,9 +2217,7 @@ function BookPage() {
                   />
 
                   <PointsRedeemCard
-                    points={
-                      points
-                    }
+                    points={points}
                     total={Math.max(
                       0,
                       preCoinTotal -
@@ -2448,8 +2235,10 @@ function BookPage() {
             </motion.section>
           )}
 
-          {step ===
-            "ticket" &&
+          {/* =====================================================
+              TICKET
+          ===================================================== */}
+          {step === "ticket" &&
             booking && (
               <motion.section
                 key="ticket"
@@ -2476,12 +2265,11 @@ function BookPage() {
                 </div>
 
                 <TicketCard
-                  booking={
-                    booking
-                  }
+                  booking={booking}
                 />
               </motion.section>
             )}
+
         </AnimatePresence>
       </div>
     </AppShell>
