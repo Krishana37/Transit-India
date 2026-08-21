@@ -1824,13 +1824,13 @@ export function demandIndex(
 
 const classFareFactors: Record<string, number> = {
   // TRAIN
-  SL: 0.65,
-  "3A": 1.35,
-  "2A": 2.05,
-  "1A": 4.2,
-  CC: 1.25,
-  EC: 1.65,
-  GEN: 0.35,
+  SL: 0.5,
+  "3A": 1.25,
+  "2A": 2.85,
+  "1A": 7.2,
+  CC: 1.15,
+  EC: 1.55,
+  GEN: 0.30,
 
   // BUS
   SEATER: 0.55,
@@ -1838,25 +1838,25 @@ const classFareFactors: Record<string, number> = {
   VOLVO: 1.15,
 
   // FLIGHT
-  ECONOMY: 1,
-  PREMIUM_ECONOMY: 1.55,
-  BUSINESS: 3.2,
+  ECONOMY: 1.75,
+  PREMIUM_ECONOMY: 2.55,
+  BUSINESS: 4.2,
 
   // METRO
-  TOKEN: 0.05,
+  TOKEN: 0.04,
 
   // FERRY
-  DECK: 0.4,
-  CABIN: 1.2,
+  DECK: 0.8,
+  CABIN: 1.9,
 
   // HOTEL ROOMS
   BUDGET_ROOM: 1,
   STANDARD_ROOM: 1.45,
   DELUXE: 1.8,
-  PREMIUM: 2.2,
-  EXECUTIVE: 2.7,
-  SUITE: 3.5,
-  FAMILY: 2.8,
+  PREMIUM: 2.0,
+  EXECUTIVE: 3.8,
+  SUITE: 5.9,
+  FAMILY: 2.6,
 };
 
 function classFareFactor(code: string): number {
@@ -1929,7 +1929,7 @@ export const meals: Meal[] = [
   {
     id: "veg-poha",
     name: "Poha",
-    price: 80,
+    price: 40,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1937,7 +1937,7 @@ export const meals: Meal[] = [
   {
     id: "veg-upma",
     name: "Vegetable Upma",
-    price: 85,
+    price: 65,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1945,7 +1945,7 @@ export const meals: Meal[] = [
   {
     id: "veg-idli",
     name: "Idli Sambar",
-    price: 90,
+    price: 50,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1953,7 +1953,7 @@ export const meals: Meal[] = [
   {
     id: "veg-vada-sambar",
     name: "Vada Sambar",
-    price: 95,
+    price: 55,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1961,7 +1961,7 @@ export const meals: Meal[] = [
   {
     id: "masala-dosa",
     name: "Masala Dosa Combo",
-    price: 140,
+    price: 100,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1969,7 +1969,7 @@ export const meals: Meal[] = [
   {
     id: "paneer-paratha",
     name: "Paneer Paratha",
-    price: 130,
+    price: 60,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1977,7 +1977,15 @@ export const meals: Meal[] = [
   {
     id: "aloo-paratha",
     name: "Aloo Paratha Combo",
-    price: 125,
+    price: 50,
+    category: "veg",
+    isVeg: true,
+    section: "breakfast",
+  },
+  {
+    id: "Ghee-paratha",
+    name: "6 Ghee Paratha",
+    price: 30,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1985,7 +1993,7 @@ export const meals: Meal[] = [
   {
     id: "veg-sandwich-breakfast",
     name: "Grilled Veg Sandwich",
-    price: 120,
+    price: 60,
     category: "veg",
     isVeg: true,
     section: "breakfast",
@@ -1998,7 +2006,7 @@ export const meals: Meal[] = [
   {
     id: "egg-bhurji",
     name: "Egg Bhurji & Toast",
-    price: 140,
+    price: 90,
     category: "nonveg",
     isVeg: false,
     section: "breakfast",
@@ -2006,7 +2014,7 @@ export const meals: Meal[] = [
   {
     id: "boiled-egg-breakfast",
     name: "Boiled Egg Breakfast",
-    price: 120,
+    price: 55,
     category: "nonveg",
     isVeg: false,
     section: "breakfast",
@@ -2014,7 +2022,7 @@ export const meals: Meal[] = [
   {
     id: "omelette-toast",
     name: "Masala Omelette & Toast",
-    price: 145,
+    price: 60,
     category: "nonveg",
     isVeg: false,
     section: "breakfast",
@@ -2022,7 +2030,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-sandwich-breakfast",
     name: "Chicken Breakfast Sandwich",
-    price: 180,
+    price: 200,
     category: "nonveg",
     isVeg: false,
     section: "breakfast",
@@ -2035,7 +2043,15 @@ export const meals: Meal[] = [
   {
     id: "paneer-tikka",
     name: "Paneer Tikka",
-    price: 210,
+    price: 180,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "chilli-paneer",
+    name: "Chilli Paneer",
+    price: 160,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2043,7 +2059,7 @@ export const meals: Meal[] = [
   {
     id: "honey-chilli-paneer",
     name: "Honey Chilli Paneer",
-    price: 220,
+    price: 190,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2051,7 +2067,7 @@ export const meals: Meal[] = [
   {
     id: "veg-manchurian",
     name: "Veg Manchurian",
-    price: 170,
+    price: 140,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2059,7 +2075,7 @@ export const meals: Meal[] = [
   {
     id: "crispy-corn",
     name: "Crispy Corn",
-    price: 160,
+    price: 120,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2067,7 +2083,31 @@ export const meals: Meal[] = [
   {
     id: "honey-chilli-potato",
     name: "Honey Chilli Potato",
-    price: 160,
+    price: 110,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "chilli-potato",
+    name: "Chilli Potato",
+    price: 90,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "gravy-momos",
+    name: "Gravy Momos",
+    price: 110,
+    category: "veg",
+    isVeg: true,
+    section: "starters",
+  },
+  {
+    id: "gravy-Roll",
+    name: "Gravy Roll",
+    price: 100,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2075,7 +2115,7 @@ export const meals: Meal[] = [
   {
     id: "veg-spring-roll",
     name: "Veg Spring Rolls",
-    price: 150,
+    price: 70,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2083,7 +2123,7 @@ export const meals: Meal[] = [
   {
     id: "hara-bhara-kebab",
     name: "Hara Bhara Kebab",
-    price: 170,
+    price: 180,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2091,7 +2131,7 @@ export const meals: Meal[] = [
   {
     id: "dahi-ke-kebab",
     name: "Dahi Ke Kebab",
-    price: 190,
+    price: 180,
     category: "veg",
     isVeg: true,
     section: "starters",
@@ -2104,7 +2144,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-tikka",
     name: "Chicken Tikka",
-    price: 240,
+    price: 260,
     category: "nonveg",
     isVeg: false,
     section: "starters",
@@ -2112,7 +2152,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-kebab",
     name: "Chicken Kebab",
-    price: 250,
+    price: 270,
     category: "nonveg",
     isVeg: false,
     section: "starters",
@@ -2120,7 +2160,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-65",
     name: "Chicken 65",
-    price: 230,
+    price: 250,
     category: "nonveg",
     isVeg: false,
     section: "starters",
@@ -2128,7 +2168,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-wings",
     name: "Chicken Wings",
-    price: 240,
+    price: 200,
     category: "nonveg",
     isVeg: false,
     section: "starters",
@@ -2136,7 +2176,7 @@ export const meals: Meal[] = [
   {
     id: "fish-fingers",
     name: "Fish Fingers",
-    price: 270,
+    price: 220,
     category: "nonveg",
     isVeg: false,
     section: "starters",
@@ -2144,7 +2184,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-spring-roll",
     name: "Chicken Spring Rolls",
-    price: 210,
+    price: 180,
     category: "nonveg",
     isVeg: false,
     section: "starters",
@@ -2157,7 +2197,7 @@ export const meals: Meal[] = [
   {
     id: "veg-thali",
     name: "Veg Thali",
-    price: 180,
+    price: 200,
     category: "veg",
     isVeg: true,
     section: "main-course",
@@ -2165,7 +2205,7 @@ export const meals: Meal[] = [
   {
     id: "paneer-thali",
     name: "Paneer Thali",
-    price: 220,
+    price: 230,
     category: "veg",
     isVeg: true,
     section: "main-course",
@@ -2173,7 +2213,7 @@ export const meals: Meal[] = [
   {
     id: "dal-tadka",
     name: "Dal Tadka",
-    price: 130,
+    price: 125,
     category: "veg",
     isVeg: true,
     section: "main-course",
@@ -2181,7 +2221,7 @@ export const meals: Meal[] = [
   {
     id: "dal-makhani",
     name: "Dal Makhani",
-    price: 160,
+    price: 125,
     category: "veg",
     isVeg: true,
     section: "main-course",
@@ -2189,7 +2229,7 @@ export const meals: Meal[] = [
   {
     id: "shahi-paneer",
     name: "Shahi Paneer",
-    price: 220,
+    price: 230,
     category: "veg",
     isVeg: true,
     section: "main-course",
@@ -2197,7 +2237,7 @@ export const meals: Meal[] = [
   {
     id: "kadai-paneer",
     name: "Kadai Paneer",
-    price: 210,
+    price: 240,
     category: "veg",
     isVeg: true,
     section: "main-course",
@@ -2205,7 +2245,7 @@ export const meals: Meal[] = [
   {
     id: "palak-paneer",
     name: "Palak Paneer",
-    price: 210,
+    price: 230,
     category: "veg",
     isVeg: true,
     section: "main-course",
@@ -2250,6 +2290,14 @@ export const meals: Meal[] = [
     isVeg: true,
     section: "main-course",
   },
+  {
+    id: "Rail-Special-meal",
+    name: "Rail Special Meal",
+    price: 200,
+    category: "veg",
+    isVeg: true,
+    section: "main-course",
+  },
 
   // ==========================================================
   // MAIN COURSE — NON VEG
@@ -2258,7 +2306,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-thali",
     name: "Chicken Thali",
-    price: 260,
+    price: 280,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2266,7 +2314,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-curry",
     name: "Chicken Curry",
-    price: 250,
+    price: 230,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2274,7 +2322,7 @@ export const meals: Meal[] = [
   {
     id: "butter-chicken",
     name: "Butter Chicken",
-    price: 280,
+    price: 250,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2282,7 +2330,7 @@ export const meals: Meal[] = [
   {
     id: "kadai-chicken",
     name: "Kadai Chicken",
-    price: 270,
+    price: 280,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2290,7 +2338,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-tikka-masala",
     name: "Chicken Tikka Masala",
-    price: 290,
+    price: 300,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2298,7 +2346,7 @@ export const meals: Meal[] = [
   {
     id: "egg-curry",
     name: "Egg Curry",
-    price: 180,
+    price: 150,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2306,7 +2354,7 @@ export const meals: Meal[] = [
   {
     id: "fish-curry",
     name: "Fish Curry",
-    price: 290,
+    price: 170,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2314,7 +2362,7 @@ export const meals: Meal[] = [
   {
     id: "mutton-curry",
     name: "Mutton Curry",
-    price: 320,
+    price: 300,
     category: "nonveg",
     isVeg: false,
     section: "main-course",
@@ -2327,7 +2375,15 @@ export const meals: Meal[] = [
   {
     id: "veg-biryani",
     name: "Veg Biryani",
-    price: 160,
+    price: 140,
+    category: "veg",
+    isVeg: true,
+    section: "rice-biryani",
+  },
+  {
+    id: "fried-rice",
+    name: "Fried Rice",
+    price: 50,
     category: "veg",
     isVeg: true,
     section: "rice-biryani",
@@ -2335,7 +2391,7 @@ export const meals: Meal[] = [
   {
     id: "paneer-biryani",
     name: "Paneer Biryani",
-    price: 210,
+    price: 230,
     category: "veg",
     isVeg: true,
     section: "rice-biryani",
@@ -2343,7 +2399,7 @@ export const meals: Meal[] = [
   {
     id: "veg-pulao",
     name: "Vegetable Pulao",
-    price: 145,
+    price: 100,
     category: "veg",
     isVeg: true,
     section: "rice-biryani",
@@ -2351,7 +2407,7 @@ export const meals: Meal[] = [
   {
     id: "jeera-rice",
     name: "Jeera Rice",
-    price: 110,
+    price: 120,
     category: "veg",
     isVeg: true,
     section: "rice-biryani",
@@ -2359,7 +2415,7 @@ export const meals: Meal[] = [
   {
     id: "dal-khichdi",
     name: "Dal Khichdi",
-    price: 130,
+    price: 100,
     category: "veg",
     isVeg: true,
     section: "rice-biryani",
@@ -2367,7 +2423,7 @@ export const meals: Meal[] = [
   {
     id: "rajma-rice",
     name: "Rajma Rice",
-    price: 140,
+    price: 150,
     category: "veg",
     isVeg: true,
     section: "rice-biryani",
@@ -2375,7 +2431,7 @@ export const meals: Meal[] = [
   {
     id: "chole-rice",
     name: "Chole Rice",
-    price: 140,
+    price: 150,
     category: "veg",
     isVeg: true,
     section: "rice-biryani",
@@ -2388,7 +2444,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-biryani",
     name: "Chicken Biryani",
-    price: 250,
+    price: 300,
     category: "nonveg",
     isVeg: false,
     section: "rice-biryani",
@@ -2396,7 +2452,7 @@ export const meals: Meal[] = [
   {
     id: "mutton-biryani",
     name: "Mutton Biryani",
-    price: 320,
+    price: 350,
     category: "nonveg",
     isVeg: false,
     section: "rice-biryani",
@@ -2404,7 +2460,7 @@ export const meals: Meal[] = [
   {
     id: "egg-biryani",
     name: "Egg Biryani",
-    price: 190,
+    price: 200,
     category: "nonveg",
     isVeg: false,
     section: "rice-biryani",
@@ -2412,7 +2468,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-fried-rice",
     name: "Chicken Fried Rice",
-    price: 220,
+    price: 200,
     category: "nonveg",
     isVeg: false,
     section: "rice-biryani",
@@ -2420,7 +2476,7 @@ export const meals: Meal[] = [
   {
     id: "egg-fried-rice",
     name: "Egg Fried Rice",
-    price: 180,
+    price: 140,
     category: "nonveg",
     isVeg: false,
     section: "rice-biryani",
@@ -2432,15 +2488,15 @@ export const meals: Meal[] = [
 
   {
     id: "tandoori-roti",
-    name: "Tandoori Roti",
-    price: 30,
+    name: "5 Tandoori Roti",
+    price: 55,
     category: "veg",
     isVeg: true,
     section: "breads",
   },
   {
     id: "butter-roti",
-    name: "Butter Roti",
+    name: "4 Butter Roti",
     price: 40,
     category: "veg",
     isVeg: true,
@@ -2448,40 +2504,48 @@ export const meals: Meal[] = [
   },
   {
     id: "plain-naan",
-    name: "Plain Naan",
-    price: 50,
+    name: "2 Plain Naan",
+    price: 17,
     category: "veg",
     isVeg: true,
     section: "breads",
   },
   {
     id: "butter-naan",
-    name: "Butter Naan",
-    price: 60,
+    name: "2 Butter Naan",
+    price: 20,
     category: "veg",
     isVeg: true,
     section: "breads",
   },
   {
     id: "garlic-naan",
-    name: "Garlic Naan",
-    price: 70,
+    name: "2 Garlic Naan",
+    price: 25,
     category: "veg",
     isVeg: true,
     section: "breads",
   },
   {
     id: "lachha-paratha",
-    name: "Lachha Paratha",
-    price: 60,
+    name: "3 Lachha Paratha",
+    price: 23,
     category: "veg",
     isVeg: true,
     section: "breads",
   },
   {
     id: "missi-roti",
-    name: "Missi Roti",
-    price: 55,
+    name: "3 Missi Roti",
+    price: 25,
+    category: "veg",
+    isVeg: true,
+    section: "breads",
+  },
+  {
+    id: "tawa-roti",
+    name: "5 Tawa Roti",
+    price: 5,
     category: "veg",
     isVeg: true,
     section: "breads",
@@ -2494,6 +2558,14 @@ export const meals: Meal[] = [
   {
     id: "samosa",
     name: "Samosa",
+    price: 30,
+    category: "veg",
+    isVeg: true,
+    section: "snacks",
+  },
+  {
+    id: "jalebi",
+    name: "Jalebi",
     price: 50,
     category: "veg",
     isVeg: true,
@@ -2502,7 +2574,7 @@ export const meals: Meal[] = [
   {
     id: "paneer-pakora",
     name: "Paneer Pakora",
-    price: 120,
+    price: 50,
     category: "veg",
     isVeg: true,
     section: "snacks",
@@ -2510,7 +2582,7 @@ export const meals: Meal[] = [
   {
     id: "veg-sandwich",
     name: "Veg Sandwich",
-    price: 110,
+    price: 60,
     category: "veg",
     isVeg: true,
     section: "snacks",
@@ -2518,15 +2590,23 @@ export const meals: Meal[] = [
   {
     id: "veg-wrap",
     name: "Veg Wrap",
-    price: 135,
+    price: 105,
     category: "veg",
     isVeg: true,
     section: "snacks",
   },
   {
     id: "pav-bhaji",
-    name: "Pav Bhaji",
-    price: 120,
+    name: "pav bhaji",
+    price: 100,
+    category: "veg",
+    isVeg: true,
+    section: "snacks",
+  },
+  {
+    id: "Jhal-Muri",
+    name: "jhal muri",
+    price: 105,
     category: "veg",
     isVeg: true,
     section: "snacks",
@@ -2534,7 +2614,7 @@ export const meals: Meal[] = [
   {
     id: "veg-noodles",
     name: "Veg Hakka Noodles",
-    price: 150,
+    price: 70,
     category: "veg",
     isVeg: true,
     section: "snacks",
@@ -2542,7 +2622,7 @@ export const meals: Meal[] = [
   {
     id: "french-fries",
     name: "French Fries",
-    price: 100,
+    price: 40,
     category: "veg",
     isVeg: true,
     section: "snacks",
@@ -2563,7 +2643,15 @@ export const meals: Meal[] = [
   {
     id: "chicken-wrap",
     name: "Chicken Wrap",
-    price: 210,
+    price: 250,
+    category: "nonveg",
+    isVeg: false,
+    section: "snacks",
+  },
+  {
+    id: "fried-chicken",
+    name: "Fried Chicken",
+    price: 70,
     category: "nonveg",
     isVeg: false,
     section: "snacks",
@@ -2571,7 +2659,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-sandwich",
     name: "Chicken Sandwich",
-    price: 190,
+    price: 200,
     category: "nonveg",
     isVeg: false,
     section: "snacks",
@@ -2579,7 +2667,7 @@ export const meals: Meal[] = [
   {
     id: "egg-sandwich",
     name: "Egg Sandwich",
-    price: 160,
+    price: 180,
     category: "nonveg",
     isVeg: false,
     section: "snacks",
@@ -2587,7 +2675,7 @@ export const meals: Meal[] = [
   {
     id: "chicken-noodles",
     name: "Chicken Hakka Noodles",
-    price: 220,
+    price: 200,
     category: "nonveg",
     isVeg: false,
     section: "snacks",
@@ -2608,7 +2696,15 @@ export const meals: Meal[] = [
   {
     id: "gulab-jamun",
     name: "Gulab Jamun",
-    price: 80,
+    price: 40,
+    category: "veg",
+    isVeg: true,
+    section: "desserts",
+  },
+  {
+    id: "laddu-combo",
+    name: "Laddu Combo",
+    price: 140,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2616,7 +2712,7 @@ export const meals: Meal[] = [
   {
     id: "rasmalai",
     name: "Rasmalai",
-    price: 110,
+    price: 70,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2624,7 +2720,7 @@ export const meals: Meal[] = [
   {
     id: "rasgulla",
     name: "Rasgulla",
-    price: 90,
+    price: 50,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2632,7 +2728,7 @@ export const meals: Meal[] = [
   {
     id: "gajar-halwa",
     name: "Gajar Halwa",
-    price: 120,
+    price: 70,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2640,7 +2736,7 @@ export const meals: Meal[] = [
   {
     id: "moong-dal-halwa",
     name: "Moong Dal Halwa",
-    price: 130,
+    price: 90,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2648,7 +2744,7 @@ export const meals: Meal[] = [
   {
     id: "kheer",
     name: "Rice Kheer",
-    price: 90,
+    price: 30,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2656,7 +2752,7 @@ export const meals: Meal[] = [
   {
     id: "fruit-custard",
     name: "Fruit Custard",
-    price: 100,
+    price: 15,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2664,7 +2760,7 @@ export const meals: Meal[] = [
   {
     id: "ice-cream",
     name: "Ice Cream",
-    price: 90,
+    price: 20,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2672,7 +2768,7 @@ export const meals: Meal[] = [
   {
     id: "chocolate-brownie",
     name: "Chocolate Brownie",
-    price: 130,
+    price: 55,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2680,7 +2776,7 @@ export const meals: Meal[] = [
   {
     id: "gulab-jamun-icecream",
     name: "Gulab Jamun with Ice Cream",
-    price: 150,
+    price: 80,
     category: "veg",
     isVeg: true,
     section: "desserts",
@@ -2693,7 +2789,39 @@ export const meals: Meal[] = [
   {
     id: "mineral-water",
     name: "Mineral Water",
-    price: 30,
+    price: 15,
+    category: "veg",
+    isVeg: true,
+    section: "beverages",
+  },
+  {
+    id: "Cold-Drink",
+    name: "Cold Drink",
+    price: 55,
+    category: "veg",
+    isVeg: true,
+    section: "beverages",
+  },
+  {
+    id: "Premium-Water",
+    name: "Premium Water",
+    price: 55,
+    category: "veg",
+    isVeg: true,
+    section: "beverages",
+  },
+  {
+    id: "Black-water",
+    name: "Black Water",
+    price: 1200,
+    category: "veg",
+    isVeg: true,
+    section: "beverages",
+  },
+  {
+    id: "Bundi-Rayta",
+    name: "Bundi Rayta",
+    price: 10,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2701,7 +2829,7 @@ export const meals: Meal[] = [
   {
     id: "fresh-lime",
     name: "Fresh Lime Water",
-    price: 60,
+    price: 65,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2709,7 +2837,7 @@ export const meals: Meal[] = [
   {
     id: "masala-chai",
     name: "Masala Chai",
-    price: 50,
+    price: 10,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2717,7 +2845,7 @@ export const meals: Meal[] = [
   {
     id: "filter-coffee",
     name: "Filter Coffee",
-    price: 70,
+    price: 30,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2725,7 +2853,7 @@ export const meals: Meal[] = [
   {
     id: "cold-coffee",
     name: "Cold Coffee",
-    price: 100,
+    price: 50,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2733,7 +2861,7 @@ export const meals: Meal[] = [
   {
     id: "mango-lassi",
     name: "Mango Lassi",
-    price: 100,
+    price: 70,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2741,7 +2869,7 @@ export const meals: Meal[] = [
   {
     id: "sweet-lassi",
     name: "Sweet Lassi",
-    price: 90,
+    price: 25,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2749,7 +2877,7 @@ export const meals: Meal[] = [
   {
     id: "fresh-orange-juice",
     name: "Fresh Orange Juice",
-    price: 110,
+    price: 30,
     category: "veg",
     isVeg: true,
     section: "beverages",
@@ -2757,7 +2885,7 @@ export const meals: Meal[] = [
   {
     id: "mixed-fruit-juice",
     name: "Mixed Fruit Juice",
-    price: 120,
+    price: 50,
     category: "veg",
     isVeg: true,
     section: "beverages",
